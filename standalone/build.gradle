@@ -1,0 +1,51 @@
+import com.github.jengelman.gradle.plugins.shadow.transformers.ApacheNoticeResourceTransformer
+
+plugins {
+    id 'com.github.johnrengelman.shadow' version '5.1.0'
+}
+
+shadowJar {
+    archiveClassifier = null
+    manifest {
+        attributes 'Main-Class': 'com.tngtech.keycloakmock.standalone.Main'
+    }
+    exclude 'META-INF/LICENSE.*'
+    transform(ApacheNoticeResourceTransformer.class) {
+        addHeader = true
+        encoding = 'UTF-8'
+        inceptionYear = 2019
+        organizationName = 'TNG Technology Consulting GmbH'
+        organizationURL = 'https://www.tngtech.com/'
+        projectName = 'Keycloak Mock Standalone'
+    }
+    metaInf {
+        from "${rootDir}/NOTICE", "${rootDir}/LICENSE"
+    }
+}
+
+publishing {
+    publications {
+        shadow(MavenPublication) {
+            publication -> project.shadow.component(publication)
+            pom {
+                licenses {
+                    license {
+                        name = license_name
+                        url = license_url
+                    }
+                }
+            }
+        }
+    }
+}
+
+dependencies {
+    implementation project(':mock')
+    implementation "info.picocli:picocli:$picocli_version"
+    implementation "io.vertx:vertx-web:$vertx_version"
+    implementation "io.vertx:vertx-web-templ-freemarker:$vertx_version"
+}
+
+configurations {
+    all*.exclude group: 'javax.servlet'
+}

@@ -1,0 +1,17 @@
+spring:
+  #allow to overwrite httpSessionManager in KeycloakWebSecurityConfigurerAdapter
+  main:
+    allow-bean-definition-overriding: true
+
+server:
+  port: 8080
+
+keycloak:
+  realm: master
+  bearer-only: true
+  auth-server-url: http://localhost:8000/auth
+  ssl-required: external
+  resource: client
+  use-resource-role-mappings: false
+  confidential-port: 0
+  disable-trust-manager: true

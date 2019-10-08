@@ -1,0 +1,116 @@
+buildscript {
+    repositories {
+        maven {
+            url 'https://plugins.gradle.org/m2/'
+        }
+    }
+    dependencies {
+        classpath 'com.jaredsburrows:gradle-license-plugin:0.8.42'
+        classpath 'gradle.plugin.com.github.sherter.google-java-format:google-java-format-gradle-plugin:0.8'
+        classpath 'net.researchgate:gradle-release:2.6.0'
+    }
+}
+
+wrapper {
+    gradleVersion = '5.5.1'
+    distributionType = Wrapper.DistributionType.ALL
+}
+
+allprojects {
+    repositories {
+        mavenCentral()
+    }
+
+    group = 'com.tngtech.keycloakmock'
+    version = '0.0.3-SNAPSHOT'
+}
+
+ext {
+    assertj_version = '3.12.2'
+    jjwt_version = '0.10.6'
+    junit5_version = '5.5.0'
+    picocli_version = '3.9.6'
+    restassured_version = '4.0.0'
+    vertx_version = '3.8.0'
+
+    license_name = "The Apache License, Version 2.0"
+    license_url = "http://www.apache.org/licenses/LICENSE-2.0.txt"
+}
+
+subprojects {
+    apply plugin: 'com.jaredsburrows.license'
+    apply plugin: 'com.github.sherter.google-java-format'
+
+    if (['mock', 'mock-junit', 'mock-junit5', 'standalone'].contains(project.name)) {
+        apply plugin: 'net.researchgate.release'
+
+        if ('standalone'.equals(project.name)) {
+            apply plugin: 'java'
+        } else {
+            apply plugin: 'java-library'
+        }
+        apply plugin: 'maven'
+        apply plugin: 'maven-publish'
+
+        sourceCompatibility = '1.8'
+
+        if (!'standalone'.equals(project.name)) {
+            task javadocJar(type: Jar) {
+                from javadoc
+                archiveClassifier = 'javadoc'
+                metaInf {
+                    from "${rootDir}/NOTICE", "${rootDir}/LICENSE"
+                }
+            }
+            task sourceJar(type: Jar) {
+                from sourceSets.main.allSource
+                classifier 'sources'
+                metaInf {
+                    from "${rootDir}/NOTICE", "${rootDir}/LICENSE"
+                }
+            }
+            jar {
+                metaInf {
+                    from "${rootDir}/NOTICE", "${rootDir}/LICENSE"
+                }
+            }
+        }
+
+        dependencies {
+            implementation 'com.google.code.findbugs:jsr305:3.0.2'
+        }
+
+        publishing {
+            publications {
+                if (!'standalone'.equals(project.name)) {
+                    mavenJava(MavenPublication) {
+                        from components.java
+                        artifact javadocJar
+                        artifact sourceJar
+                        pom {
+                            licenses {
+                                license {
+                                    name = license_name
+                                    url = license_url
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            repositories.maven {
+                if (project.version.endsWith('-SNAPSHOT')) {
+                    credentials.username project.findProperty('tngNexusUsername')
+                    credentials.password project.findProperty('tngNexusPassword')
+                    url 'https://nexus.int.tngtech.com/content/repositories/snapshots'
+                } else {
+                    credentials.username project.findProperty('tngNexusReleaseUsername')
+                    credentials.password project.findProperty('tngNexusReleasePassword')
+                    url 'https://nexus.int.tngtech.com/content/repositories/releases'
+                }
+            }
+        }
+        afterReleaseBuild.dependsOn publish
+        compileJava.dependsOn 'googleJavaFormat'
+    }
+}

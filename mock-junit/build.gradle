@@ -1,0 +1,16 @@
+dependencies {
+    api project(':mock')
+    implementation 'junit:junit:4.12'
+    testImplementation "io.rest-assured:rest-assured:$restassured_version"
+    testImplementation "org.assertj:assertj-core:$assertj_version"
+}
+
+test {
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
+    beforeTest { descriptor ->
+        logger.lifecycle("Running test: ${descriptor}")
+    }
+}
+
