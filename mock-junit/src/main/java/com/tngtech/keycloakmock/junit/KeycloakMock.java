@@ -9,15 +9,15 @@ import org.junit.rules.ExternalResource;
  *
  * <p>Example use:
  *
- * <pre>{@code
- * @ClassRule
- * public static KeycloakMock mock = new KeycloakMock();
+ * <pre><code>
+ * {@literal @}ClassRule
+ *  public static KeycloakMock mock = new KeycloakMock();
  *
- * @Test
- * public void testStuff() {
- *     String token = mock.getAccessToken(aTokenConfig().build());
- * }
- * }</pre>
+ * {@literal @}Test
+ *  public void testStuff() {
+ *    String token = mock.getAccessToken(aTokenConfig().build());
+ *  }
+ * </code></pre>
  */
 public class KeycloakMock extends ExternalResource {
 

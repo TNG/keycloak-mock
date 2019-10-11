@@ -11,15 +11,15 @@ import org.junit.jupiter.api.extension.ExtensionContext;
  *
  * <p>Example use:
  *
- * <pre>{@code
- * @RegisterExtension
- * static KeycloakMock mock = new KeycloakMock();
+ * <pre><code>
+ * {@literal @}RegisterExtension
+ *  static KeycloakMock mock = new KeycloakMock();
  *
- * @Test
- * void testStuff() {
- *     String token = mock.getAccessToken(aTokenConfig().build());
- * }
- * }</pre>
+ * {@literal @}Test
+ *  void testStuff() {
+ *    String token = mock.getAccessToken(aTokenConfig().build());
+ *  }
+ * </code></pre>
  */
 public class KeycloakMock implements BeforeAllCallback, AfterAllCallback {
 
