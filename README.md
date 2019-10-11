@@ -30,10 +30,10 @@ or use the JUnit4 test rule from module mock-junit
 import com.tngtech.keycloakmock.api.junit.KeycloakMock;
 
 public class Test {
-    @ClassRule
-    public static KeyCloakMock mock = new KeycloakMock();
+  @ClassRule
+  public static KeyCloakMock mock = new KeycloakMock();
 
-    ...
+  ...
     
 }
 ```
@@ -44,10 +44,10 @@ or JUnit5 extension from module mock-junit5
 import com.tngtech.keycloakmock.api.junit5.KeycloakMock;
 
 class Test {
-    @RegisterExtension
-    static KeyCloakMock mock = new KeyCloakMock();
+  @RegisterExtension
+  static KeyCloakMock mock = new KeyCloakMock();
 
-    ...
+  ...
     
 }
 ```

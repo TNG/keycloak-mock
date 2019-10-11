@@ -167,7 +167,7 @@ public class TokenConfig {
      *
      * @param audience the audience to add
      * @return builder
-     * @see <a href="https://openid.net/specs/openid-connect-core-1_0.html#IDToken" />
+     * @see <a href="https://openid.net/specs/openid-connect-core-1_0.html#IDToken">ID token</a>
      */
     @Nonnull
     public Builder withAudience(@Nonnull String audience) {
@@ -182,7 +182,7 @@ public class TokenConfig {
      *
      * @param audiences the audiences to add
      * @return builder
-     * @see <a href="https://openid.net/specs/openid-connect-core-1_0.html#IDToken" />
+     * @see <a href="https://openid.net/specs/openid-connect-core-1_0.html#IDToken">ID token</a>
      */
     @Nonnull
     public Builder withAudiences(@Nonnull Collection<String> audiences) {
@@ -197,7 +197,7 @@ public class TokenConfig {
      *
      * @param authorizedParty the authorized party to set
      * @return builder
-     * @see <a href="https://openid.net/specs/openid-connect-core-1_0.html#IDToken" />
+     * @see <a href="https://openid.net/specs/openid-connect-core-1_0.html#IDToken">ID token</a>
      */
     @Nonnull
     public Builder withAuthorizedParty(@Nonnull String authorizedParty) {
@@ -212,7 +212,7 @@ public class TokenConfig {
      *
      * @param subject the subject to set
      * @return builder
-     * @see <a href="https://openid.net/specs/openid-connect-core-1_0.html#IDToken" />
+     * @see <a href="https://openid.net/specs/openid-connect-core-1_0.html#IDToken">ID token</a>
      */
     @Nonnull
     public Builder withSubject(@Nonnull String subject) {
@@ -227,7 +227,8 @@ public class TokenConfig {
      *
      * @param roles the roles to add
      * @return builder
-     * @see <a href="https://www.keycloak.org/docs/latest/server_admin/index.html#realm-roles" />
+     * @see <a href="https://www.keycloak.org/docs/latest/server_admin/index.html#realm-roles">realm
+     *     roles</a>
      */
     @Nonnull
     public Builder withRealmRoles(@Nonnull Collection<String> roles) {
@@ -242,7 +243,8 @@ public class TokenConfig {
      *
      * @param role the role to add
      * @return builder
-     * @see <a href="https://www.keycloak.org/docs/latest/server_admin/index.html#realm-roles" />
+     * @see <a href="https://www.keycloak.org/docs/latest/server_admin/index.html#realm-roles">realm
+     *     roles</a>
      */
     @Nonnull
     public Builder withRealmRole(@Nonnull String role) {
@@ -258,7 +260,9 @@ public class TokenConfig {
      * @param resource the resource or client for which to add the roles
      * @param roles the roles to add
      * @return builder
-     * @see <a href="https://www.keycloak.org/docs/latest/server_admin/index.html#client-roles" />
+     * @see <a
+     *     href="https://www.keycloak.org/docs/latest/server_admin/index.html#client-roles">client
+     *     roles</a>
      */
     @Nonnull
     public Builder withResourceRoles(
@@ -277,7 +281,9 @@ public class TokenConfig {
      * @param resource the resource or client for which to add the roles
      * @param role the role to add
      * @return builder
-     * @see <a href="https://www.keycloak.org/docs/latest/server_admin/index.html#client-roles" />
+     * @see <a
+     *     href="https://www.keycloak.org/docs/latest/server_admin/index.html#client-roles">client
+     *     roles</a>
      */
     @Nonnull
     public Builder withResourceRole(@Nonnull final String resource, @Nonnull String role) {
@@ -325,7 +331,7 @@ public class TokenConfig {
      *
      * @param issuedAt the instant when the token was generated
      * @return builder
-     * @see <a href="https://openid.net/specs/openid-connect-core-1_0.html#IDToken" />
+     * @see <a href="https://openid.net/specs/openid-connect-core-1_0.html#IDToken">ID token</a>
      */
     @Nonnull
     public Builder withIssuedAt(@Nonnull Instant issuedAt) {
@@ -338,7 +344,7 @@ public class TokenConfig {
      *
      * @param expiration the instant when the token expires
      * @return builder
-     * @see <a href="https://openid.net/specs/openid-connect-core-1_0.html#IDToken" />
+     * @see <a href="https://openid.net/specs/openid-connect-core-1_0.html#IDToken">ID token</a>
      */
     @Nonnull
     public Builder withExpiration(@Nonnull Instant expiration) {
@@ -351,8 +357,9 @@ public class TokenConfig {
      *
      * @param givenName the given name of the user
      * @return builder
-     * @see <a href="https://www.keycloak.org/docs/latest/server_admin/index.html#_create-new-user"
-     *     />
+     * @see <a
+     *     href="https://www.keycloak.org/docs/latest/server_admin/index.html#_create-new-user">create
+     *     new user</a>
      */
     @Nonnull
     public Builder withGivenName(@Nullable final String givenName) {
@@ -365,8 +372,9 @@ public class TokenConfig {
      *
      * @param familyName the family name of the user
      * @return builder
-     * @see <a href="https://www.keycloak.org/docs/latest/server_admin/index.html#_create-new-user"
-     *     />
+     * @see <a
+     *     href="https://www.keycloak.org/docs/latest/server_admin/index.html#_create-new-user">create
+     *     new user</a>
      */
     @Nonnull
     public Builder withFamilyName(@Nullable final String familyName) {
@@ -379,8 +387,9 @@ public class TokenConfig {
      *
      * @param email the email address of the user
      * @return builder
-     * @see <a href="https://www.keycloak.org/docs/latest/server_admin/index.html#_create-new-user"
-     *     />
+     * @see <a
+     *     href="https://www.keycloak.org/docs/latest/server_admin/index.html#_create-new-user">create
+     *     new user</a>
      */
     @Nonnull
     public Builder withEmail(@Nullable final String email) {
@@ -393,8 +402,9 @@ public class TokenConfig {
      *
      * @param preferredUsername the preferred username of the user
      * @return builder
-     * @see <a href="https://www.keycloak.org/docs/latest/server_admin/index.html#_create-new-user"
-     *     />
+     * @see <a
+     *     href="https://www.keycloak.org/docs/latest/server_admin/index.html#_create-new-user">create
+     *     new user</a>
      */
     @Nonnull
     public Builder withPreferredUsername(@Nullable final String preferredUsername) {

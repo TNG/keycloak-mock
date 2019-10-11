@@ -11,9 +11,24 @@ buildscript {
     }
 }
 
+plugins {
+    id 'pl.allegro.tech.build.axion-release' version '1.10.2'
+}
+
 wrapper {
     gradleVersion = '5.5.1'
     distributionType = Wrapper.DistributionType.ALL
+}
+
+scmVersion {
+    tag {
+        prefix = 'v'
+        versionSeparator = ''
+    }
+    branchVersionIncrementer = [
+        'feature/.*' : 'incrementMinor',
+        'master' : 'incrementMinor',
+    ]
 }
 
 allprojects {
@@ -22,7 +37,7 @@ allprojects {
     }
 
     group = 'com.tngtech.keycloakmock'
-    version = '0.0.3-SNAPSHOT'
+    version = scmVersion.version
 }
 
 ext {
