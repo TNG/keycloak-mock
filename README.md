@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/TNG/keycloak-mock.svg?branch=master)](https://travis-ci.org/TNG/keycloak-mock)
+[![Build Status](https://travis-ci.com/TNG/keycloak-mock.svg?branch=master)](https://travis-ci.com/TNG/keycloak-mock)
 # Keycloak Mock
 
 Keycloak is a single sign-on server that supports the Open ID connect standard.
