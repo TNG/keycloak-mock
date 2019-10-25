@@ -4,6 +4,8 @@ plugins {
     id 'com.github.johnrengelman.shadow' version '5.1.0'
 }
 
+description = 'Standalone keycloak-mock server for use in frontend development'
+
 shadowJar {
     archiveClassifier = null
     manifest {
@@ -14,8 +16,8 @@ shadowJar {
         addHeader = true
         encoding = 'UTF-8'
         inceptionYear = 2019
-        organizationName = 'TNG Technology Consulting GmbH'
-        organizationURL = 'https://www.tngtech.com/'
+        organizationName = company_name
+        organizationURL = company_url
         projectName = 'Keycloak Mock Standalone'
     }
     metaInf {
@@ -27,14 +29,6 @@ publishing {
     publications {
         shadow(MavenPublication) {
             publication -> project.shadow.component(publication)
-            pom {
-                licenses {
-                    license {
-                        name = license_name
-                        url = license_url
-                    }
-                }
-            }
         }
     }
 }

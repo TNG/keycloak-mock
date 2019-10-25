@@ -1,3 +1,5 @@
+description = 'Base module of keycloak-mock'
+
 dependencies {
     implementation "io.jsonwebtoken:jjwt-impl:$jjwt_version"
     implementation "io.jsonwebtoken:jjwt-jackson:$jjwt_version"

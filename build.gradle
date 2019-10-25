@@ -49,8 +49,11 @@ ext {
     restassured_version = '4.1.2'
     vertx_version = '3.8.3'
 
-    license_name = "The Apache License, Version 2.0"
-    license_url = "http://www.apache.org/licenses/LICENSE-2.0.txt"
+    license_name = 'The Apache License, Version 2.0'
+    license_url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+
+    company_name = 'TNG Technology Consulting GmbH'
+    company_url = 'https://www.tngtech.com'
 }
 
 subprojects {
@@ -103,14 +106,6 @@ subprojects {
                         from components.java
                         artifact javadocJar
                         artifact sourceJar
-                        pom {
-                            licenses {
-                                license {
-                                    name = license_name
-                                    url = license_url
-                                }
-                            }
-                        }
                     }
                 }
             }
@@ -128,5 +123,44 @@ subprojects {
         }
         afterReleaseBuild.dependsOn publish
         compileJava.dependsOn 'googleJavaFormat'
+
+        afterEvaluate {
+            publishing.publications*.pom {
+                licenses {
+                    license {
+                        name = license_name
+                        url = license_url
+                    }
+                }
+                name = "${project.group}:${project.name}"
+                url = 'https://github.com/TNG/keycloak-mock'
+                description = "${project.description}"
+
+
+                organization {
+                    name = company_name
+                    url = company_url
+                }
+
+                scm {
+                    url = 'https://github.com/TNG/keycloak-mock'
+                    connection = 'scm:git:git://github.com/TNG/keycloak-mock'
+                    developerConnection = 'scm:git:ssh://github.com/TNG/keycloak-mock'
+                }
+
+                developers {
+                    developer {
+                        id = 'ostrya'
+                        name = 'Kai Helbig'
+                        email = 'kai.helbig@tngtech.com'
+                    }
+                    developer {
+                        id = 'ripssi'
+                        name = 'Simon Rips'
+                        email = 'simon.rips@tngtech.com'
+                    }
+                }
+            }
+        }
     }
 }
