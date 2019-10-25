@@ -1,6 +1,5 @@
 package com.tngtech.keycloakmock.examplebackend;
 
-import org.keycloak.adapters.KeycloakConfigResolver;
 import org.keycloak.adapters.springboot.KeycloakSpringBootConfigResolver;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -19,7 +18,7 @@ public class ExampleBackendApplication {
   }
 
   @Bean
-  public KeycloakConfigResolver keycloakConfigResolver() {
+  public KeycloakSpringBootConfigResolver keycloakConfigResolver() {
     return new KeycloakSpringBootConfigResolver();
   }
 
