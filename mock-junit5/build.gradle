@@ -1,3 +1,5 @@
+description = 'JUnit5 variant of keycloak-mock'
+
 dependencies {
     api project(':mock')
     implementation "org.junit.jupiter:junit-jupiter-api:$junit5_version"

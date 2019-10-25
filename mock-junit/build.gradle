@@ -1,3 +1,5 @@
+description = 'JUnit4 variant of keycloak-mock'
+
 dependencies {
     api project(':mock')
     implementation 'junit:junit:4.12'
