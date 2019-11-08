@@ -54,13 +54,15 @@ ext {
 
     company_name = 'TNG Technology Consulting GmbH'
     company_url = 'https://www.tngtech.com'
+
+    release_projects = ['mock', 'mock-junit', 'mock-junit5', 'standalone']
 }
 
 subprojects {
     apply plugin: 'com.jaredsburrows.license'
     apply plugin: 'com.github.sherter.google-java-format'
 
-    if (['mock', 'mock-junit', 'mock-junit5', 'standalone'].contains(project.name)) {
+    if (release_projects.contains(project.name)) {
         apply plugin: 'net.researchgate.release'
 
         if ('standalone'.equals(project.name)) {
@@ -70,13 +72,14 @@ subprojects {
         }
         apply plugin: 'maven'
         apply plugin: 'maven-publish'
+        apply plugin: 'signing'
 
         sourceCompatibility = '1.8'
 
         if (!'standalone'.equals(project.name)) {
             task javadocJar(type: Jar) {
                 from javadoc
-                archiveClassifier = 'javadoc'
+                classifier 'javadoc'
                 metaInf {
                     from "${rootDir}/NOTICE", "${rootDir}/LICENSE"
                 }
@@ -111,18 +114,31 @@ subprojects {
             }
             repositories.maven {
                 if (project.version.endsWith('-SNAPSHOT')) {
-                    credentials.username project.findProperty('tngNexusUsername')
-                    credentials.password project.findProperty('tngNexusPassword')
-                    url 'https://nexus.int.tngtech.com/content/repositories/snapshots'
+                    credentials.username project.findProperty('sonatypeUsername')
+                    credentials.password project.findProperty('sonatypePassword')
+                    url 'https://oss.sonatype.org/service/local/staging/deploy/maven2/'
                 } else {
-                    credentials.username project.findProperty('tngNexusReleaseUsername')
-                    credentials.password project.findProperty('tngNexusReleasePassword')
-                    url 'https://nexus.int.tngtech.com/content/repositories/releases'
+                    credentials.username project.findProperty('sonatypeUsername')
+                    credentials.password project.findProperty('sonatypePassword')
+                    url 'https://oss.sonatype.org/content/repositories/snapshots/'
                 }
             }
         }
         afterReleaseBuild.dependsOn publish
         compileJava.dependsOn 'googleJavaFormat'
+
+        signing {
+            required {
+                gradle.taskGraph.hasTask('uploadArchives')
+            }
+            if (!'standalone'.equals(project.name)) {
+                sign publishing.publications.mavenJava
+            }
+        }
+
+        tasks.withType(Sign) {
+            onlyIf { project.hasProperty('sonatypeUsername') }
+        }
 
         afterEvaluate {
             publishing.publications*.pom {
