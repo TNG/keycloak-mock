@@ -7,7 +7,7 @@ plugins {
 description = 'Standalone keycloak-mock server for use in frontend development'
 
 shadowJar {
-    archiveClassifier = null
+    classifier null
     manifest {
         attributes 'Main-Class': 'com.tngtech.keycloakmock.standalone.Main'
     }
@@ -25,12 +25,27 @@ shadowJar {
     }
 }
 
+task fakeJar(type: Jar) {
+    from file("${project.projectDir}/src/main/resources/README.md")
+    classifier 'fake'
+}
+
 publishing {
     publications {
         shadow(MavenPublication) {
             publication -> project.shadow.component(publication)
+            artifact(fakeJar) {
+                classifier 'javadoc'
+            }
+            artifact(fakeJar) {
+                classifier 'sources'
+            }
         }
     }
+}
+
+signing {
+    sign publishing.publications.shadow
 }
 
 dependencies {
