@@ -116,11 +116,11 @@ subprojects {
                 if (project.version.endsWith('-SNAPSHOT')) {
                     credentials.username project.findProperty('sonatypeUsername')
                     credentials.password project.findProperty('sonatypePassword')
-                    url 'https://oss.sonatype.org/service/local/staging/deploy/maven2/'
+                    url 'https://oss.sonatype.org/content/repositories/snapshots/'
                 } else {
                     credentials.username project.findProperty('sonatypeUsername')
                     credentials.password project.findProperty('sonatypePassword')
-                    url 'https://oss.sonatype.org/content/repositories/snapshots/'
+                    url 'https://oss.sonatype.org/service/local/staging/deploy/maven2/'
                 }
             }
         }
