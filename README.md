@@ -1,21 +1,40 @@
 [![Build Status](https://travis-ci.com/TNG/keycloak-mock.svg?branch=master)](https://travis-ci.com/TNG/keycloak-mock)
 # Keycloak Mock
 
-Keycloak is a single sign-on server that supports the Open ID connect standard.
-However, it does not deliver any test support. This library is intended to fill that gap.
+[Keycloak](https://www.keycloak.org) is a single sign-on solution that supports the
+[Open ID connect](https://openid.net/connect/) standard. However, it does not deliver any
+test support. This library is intended to fill that gap.
 
 ## Usage
 
-TODO: set up CI + release process + publishing
+All artifacts are available on [Maven Central Repository](https://search.maven.org/) under the
+group ID `com.tngtech.keycloakmock`.
 
 ### Testing authenticated backend calls
 
 When testing a REST backend that is protected by a Keycloak adapter, the mock allows to generate
 valid access tokens with configurable content (e.g. roles).
 
-You can create and start the mock directly:
+You can create and start the mock directly from the `mock` artifact using Maven
 
+```maven
+<dependency>
+    <groupId>com.tngtech.keycloakmock</groupId>
+    <artifactId>mock</artifactId>
+    <scope>test</scope>
+    <version>0.1.0</version>
+</dependency>
 ```
+
+or Gradle
+
+```gradle
+testImplementation 'com.tngtech.keycloakmock:mock:0.1.0'
+```
+
+like this:
+
+```java
 import com.tngtech.keycloakmock.api.KeycloakVerificationMock;
 
 ...
@@ -24,9 +43,9 @@ KeycloakVerificationMock mock = new KeycloakVerificationMock(8000, "master);
 mock.start();
 ```
 
-or use the JUnit4 test rule from module mock-junit
+Or you can use use the JUnit4 test rule from the `mock-junit` artifact
 
-```
+```java
 import com.tngtech.keycloakmock.api.junit.KeycloakMock;
 
 public class Test {
@@ -38,9 +57,9 @@ public class Test {
 }
 ```
 
-or JUnit5 extension from module mock-junit5
+or the JUnit5 extension from the `mock-junit5` module
 
-```
+```java
 import com.tngtech.keycloakmock.api.junit5.KeycloakMock;
 
 class Test {
@@ -52,9 +71,11 @@ class Test {
 }
 ```
 
-You can then get a token of your choosing by providing a TokenConfig:
+to let JUnit start the mock for you.
 
-```
+You can then generate a token of your choosing by providing a TokenConfig:
+
+```java
 import static com.tngtech.keycloakmock.api.TokenConfig.aTokenConfig;
 
 ...
@@ -65,7 +86,7 @@ String accessToken = mock.getAccessToken(aTokenConfig().withRole("ROLE_ADMIN").b
 ### Developing / testing frontends
 
 It is also possible to run a stand-alone mock server that provides a login page where a username
-and an optional list of roles can be specified. Just download the (self-contained) standalone JAR
+and an optional list of roles can be specified. Just get the (self-contained) `standalone` artifact
 and run it:
 
 ```bash
