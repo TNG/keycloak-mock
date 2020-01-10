@@ -12,12 +12,12 @@ buildscript {
 }
 
 plugins {
-    id 'pl.allegro.tech.build.axion-release' version '1.10.2'
+    id 'pl.allegro.tech.build.axion-release' version '1.10.3'
     id 'com.github.ben-manes.versions' version '0.27.0'
 }
 
 wrapper {
-    gradleVersion = '5.6.3'
+    gradleVersion = '6.0.1'
     distributionType = Wrapper.DistributionType.ALL
 }
 
@@ -42,12 +42,13 @@ allprojects {
 }
 
 ext {
-    assertj_version = '3.13.2'
+    assertj_version = '3.14.0'
     jjwt_version = '0.10.7'
-    junit5_version = '5.5.2'
-    picocli_version = '4.0.4'
+    junit4_version = '4.13'
+    junit5_version = '5.6.0-RC1'
+    picocli_version = '4.1.4'
     restassured_version = '4.1.2'
-    vertx_version = '3.8.3'
+    vertx_version = '4.0.0-milestone4'
 
     license_name = 'The Apache License, Version 2.0'
     license_url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'

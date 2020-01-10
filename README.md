@@ -1,4 +1,7 @@
-[![Build Status](https://travis-ci.com/TNG/keycloak-mock.svg?branch=master)](https://travis-ci.com/TNG/keycloak-mock)
+[![Java CI](https://github.com/TNG/keycloak-mock/workflows/Java%20CI/badge.svg?branch=master)](https://github.com/TNG/keycloak-mock/actions?query=branch%3Amaster)
+[![Github release date](https://img.shields.io/github/release-date/TNG/keycloak-mock.svg?logo=github)
+ ![Github release](https://img.shields.io/github/release/TNG/keycloak-mock.svg?logo=github)](https://github.com/TNG/keycloak-mock/releases)
+[![Maven release](https://img.shields.io/maven-central/v/com.tngtech.keycloakmock/mock)](https://search.maven.org/search?q=com.tngtech.keycloakmock)
 # Keycloak Mock
 
 [Keycloak](https://www.keycloak.org) is a single sign-on solution that supports the
@@ -37,10 +40,15 @@ like this:
 ```java
 import com.tngtech.keycloakmock.api.KeycloakVerificationMock;
 
-...
+class Test {
 
-KeycloakVerificationMock mock = new KeycloakVerificationMock(8000, "master);
-mock.start();
+  KeycloakVerificationMock mock = new KeycloakVerificationMock(8000, "master");
+
+  static {
+    mock.start();
+  }
+
+}
 ```
 
 Or you can use use the JUnit4 test rule from the `mock-junit` artifact
@@ -52,7 +60,7 @@ public class Test {
   @ClassRule
   public static KeyCloakMock mock = new KeycloakMock();
 
-  ...
+  // ...
     
 }
 ```
@@ -66,7 +74,7 @@ class Test {
   @RegisterExtension
   static KeyCloakMock mock = new KeyCloakMock();
 
-  ...
+  // ...
     
 }
 ```
@@ -78,9 +86,13 @@ You can then generate a token of your choosing by providing a TokenConfig:
 ```java
 import static com.tngtech.keycloakmock.api.TokenConfig.aTokenConfig;
 
-...
+class Test {
 
-String accessToken = mock.getAccessToken(aTokenConfig().withRole("ROLE_ADMIN").build());
+  String accessToken = mock.getAccessToken(aTokenConfig().withRole("ROLE_ADMIN").build());
+
+  // ...
+
+}
 ```
 
 ### Developing / testing frontends
