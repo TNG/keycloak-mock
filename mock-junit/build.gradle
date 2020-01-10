@@ -2,7 +2,7 @@ description = 'JUnit4 variant of keycloak-mock'
 
 dependencies {
     api project(':mock')
-    implementation 'junit:junit:4.12'
+    implementation "junit:junit:$junit4_version"
     testImplementation "io.rest-assured:rest-assured:$restassured_version"
     testImplementation "org.assertj:assertj-core:$assertj_version"
 }

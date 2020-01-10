@@ -3,14 +3,13 @@ package com.tngtech.keycloakmock.standalone;
 import static com.tngtech.keycloakmock.api.TokenConfig.aTokenConfig;
 
 import com.tngtech.keycloakmock.api.KeycloakVerificationMock;
+import io.vertx.core.http.Cookie;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.Cookie;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.common.template.TemplateEngine;
 import io.vertx.ext.web.handler.BodyHandler;
-import io.vertx.ext.web.handler.CookieHandler;
 import io.vertx.ext.web.handler.ErrorHandler;
 import io.vertx.ext.web.templ.freemarker.FreeMarkerTemplateEngine;
 import java.time.Instant;
@@ -46,11 +45,8 @@ class Server extends KeycloakVerificationMock {
             })
         .failureHandler(r -> r.failure().printStackTrace())
         .failureHandler(ErrorHandler.create());
-    router
-        .get("/auth/realms/:realm/protocol/openid-connect/auth")
-        .handler(CookieHandler.create())
-        .handler(this::getLoginPage);
-    router.get("/authenticate").handler(CookieHandler.create()).handler(this::authenticate);
+    router.get("/auth/realms/:realm/protocol/openid-connect/auth").handler(this::getLoginPage);
+    router.get("/authenticate").handler(this::authenticate);
     router
         .post("/auth/realms/:realm/protocol/openid-connect/token")
         .handler(BodyHandler.create())

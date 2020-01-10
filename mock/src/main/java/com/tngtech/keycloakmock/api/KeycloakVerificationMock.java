@@ -28,13 +28,37 @@ import javax.annotation.Nonnull;
  * com.tngtech.keycloakmock.junit5.KeycloakMock} from module mock-junit5 instead.
  */
 public class KeycloakVerificationMock {
+
   private static final String HTTP = "http";
   private static final String HTTPS = "https";
+  private static final String OPEN_ID_CONFIG_TEMPLATE =
+      "{\n"
+          + "  \"issuer\": \"%1$s\",\n"
+          + "  \"authorization_endpoint\": \"%2$s/authenticate\",\n"
+          + "  \"token_endpoint\": \"%1$s/protocol/openid-connect/token\",\n"
+          + "  \"jwks_uri\": \"%1$s/protocol/openid-connect/certs\",\n"
+          + "  \"response_types_supported\": [\n"
+          + "    \"code\",\n"
+          + "    \"code id_token\",\n"
+          + "    \"id_token\",\n"
+          + "    \"token id_token\"\n"
+          + "  ],\n"
+          + "  \"subject_types_supported\": [\n"
+          + "    \"public\"\n"
+          + "  ],\n"
+          + "  \"id_token_signing_alg_values_supported\": [\n"
+          + "    \"RS256\",\n"
+          + "    \"ES256\",\n"
+          + "    \"HS256\"\n"
+          + "  ],"
+          + "  \"end_session_endpoint\": \"%2$s/logout\"\n"
+          + "}";
+  private static final String ISSUER_TEMPLATE = "%s/auth/realms/%s";
   @Nonnull private final TokenGenerator tokenGenerator;
   private final int port;
   @Nonnull private final String realm;
   private final boolean tls;
-  @Nonnull private final String issuerPrefix;
+  @Nonnull private final String hostname;
   protected final Vertx vertx = Vertx.vertx();
   private HttpServer server;
 
@@ -64,7 +88,7 @@ public class KeycloakVerificationMock {
     this.port = port;
     this.realm = Objects.requireNonNull(realm);
     this.tls = tls;
-    this.issuerPrefix = tls ? HTTPS : HTTP + "://localhost:" + port + "/auth/realms/";
+    this.hostname = tls ? HTTPS : HTTP + "://localhost:" + port;
     try {
       this.tokenGenerator = new TokenGenerator();
     } catch (Exception e) {
@@ -112,6 +136,9 @@ public class KeycloakVerificationMock {
   protected Router configureRouter() {
     Router router = Router.router(vertx);
     router.get("/auth/realms/:realm/protocol/openid-connect/certs").handler(this::getJwksResponse);
+    router
+        .get("/auth/realms/:realm/.well-known/openid-configuration")
+        .handler(this::getOpenIdConfig);
     return router;
   }
 
@@ -145,12 +172,21 @@ public class KeycloakVerificationMock {
         .end(tokenGenerator.getJwksResponse());
   }
 
+  private void getOpenIdConfig(final RoutingContext routingContext) {
+    final String realm = routingContext.pathParam("realm");
+    routingContext
+        .response()
+        .putHeader("content-type", "application/json")
+        .end(String.format(OPEN_ID_CONFIG_TEMPLATE, getIssuer(realm), hostname));
+  }
+
   @Nonnull
   private String getIssuer(@Nonnull final String realm) {
-    return issuerPrefix + Objects.requireNonNull(realm);
+    return String.format(ISSUER_TEMPLATE, hostname, realm);
   }
 
   private static class ResultHandler<E> implements Handler<AsyncResult<E>> {
+
     private final CompletableFuture<Void> future = new CompletableFuture<>();
 
     @Override
