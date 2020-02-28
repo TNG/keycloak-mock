@@ -1,6 +1,6 @@
 buildscript {
     ext {
-        springBootVersion = '2.2.2.RELEASE'
+        springBootVersion = '2.2.5.RELEASE'
     }
     repositories {
         mavenCentral()
@@ -19,7 +19,7 @@ apply plugin: 'io.spring.dependency-management'
 ext['junit-jupiter.version'] = junit5_version
 
 dependencies {
-    def keycloak_version = '8.0.1'
+    def keycloak_version = '9.0.0'
 
     implementation "org.springframework.boot:spring-boot-starter-web:$springBootVersion"
     implementation "org.springframework.boot:spring-boot-starter-security:$springBootVersion"

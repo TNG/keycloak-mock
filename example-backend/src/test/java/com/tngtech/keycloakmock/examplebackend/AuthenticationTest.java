@@ -36,13 +36,14 @@ class AuthenticationTest {
     RestAssured.given()
         .auth()
         .preemptive()
-        .oauth2(keycloakVerificationMock.getAccessToken(aTokenConfig().build()))
+        .oauth2(
+            keycloakVerificationMock.getAccessToken(aTokenConfig().withSubject("Awesome").build()))
         .when()
         .get("/hello")
         .then()
         .statusCode(200)
         .and()
-        .body(equalTo("hello"));
+        .body(equalTo("Hello Awesome"));
   }
 
   @Test
