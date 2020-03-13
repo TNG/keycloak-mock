@@ -7,7 +7,7 @@ server:
   port: 8080
 
 keycloak:
-  realm: master
+  realm: realm
   bearer-only: true
   auth-server-url: http://localhost:8000/auth
   ssl-required: external
@@ -15,3 +15,4 @@ keycloak:
   use-resource-role-mappings: false
   confidential-port: 0
   disable-trust-manager: true
+  principal-attribute: preferred_username
