@@ -57,6 +57,9 @@ class Server extends KeycloakVerificationMock {
     router
         .get("/auth/realms/:realm/protocol/openid-connect/login-status-iframe.html/init")
         .handler(this::initIframe);
+    router
+        .get("/auth/realms/:realm/protocol/openid-connect/logout")
+        .handler(this::logout);
     return router;
   }
 
@@ -68,7 +71,6 @@ class Server extends KeycloakVerificationMock {
     routingContext.put("redirect_uri", routingContext.queryParam("redirect_uri").get(0));
     String realm = routingContext.pathParam("realm");
     routingContext.put("realm", realm);
-    setKeycloakSessionCookie(routingContext, realm, sessionId);
     routingContext.put("session_id", sessionId);
     renderTemplate(routingContext, "loginPage.ftl", "text/html");
   }
@@ -97,7 +99,7 @@ class Server extends KeycloakVerificationMock {
             + routingContext.queryParam("state").get(0)
             + "&code="
             + sessionId; // for simplicity, use session ID as authorization code
-    setKeycloakSessionCookie(routingContext, realm, sessionId);
+    setKeycloakSessionCookie(routingContext, realm, sessionId, 36000);
     routingContext.response().putHeader("location", redirectUri).setStatusCode(302).end();
   }
 
@@ -126,12 +128,19 @@ class Server extends KeycloakVerificationMock {
     routingContext.response().setStatusCode(204).end();
   }
 
-  private void setKeycloakSessionCookie(
-      final RoutingContext routingContext, final String realm, final String sessionId) {
+  private void logout(final RoutingContext routingContext) {
+    String redirectUri = routingContext.queryParam("redirect_uri").get(0);
+    String realm = routingContext.pathParam("realm");
+    // invalidate session cookie
+    setKeycloakSessionCookie(routingContext, realm, "", 0);
+    routingContext.response().putHeader("location", redirectUri).setStatusCode(302).end();
+  }
+
+  private void setKeycloakSessionCookie(final RoutingContext routingContext, final String realm, final String sessionId, final long maxAge) {
     routingContext.addCookie(
         Cookie.cookie("KEYCLOAK_SESSION", realm + "/no-idea-what-goes-here/" + sessionId)
             .setPath("/auth/realms/" + realm + "/")
-            .setMaxAge(36000)
+            .setMaxAge(maxAge)
             .setSecure(false));
   }
 
