@@ -29,7 +29,10 @@ export default class Hello extends React.Component {
 
   render() {
     return (
-      <p> Server says: {this.state.message} ! </p>
+      <div>
+        <p> Server says: {this.state.message} ! </p>
+        <button onClick={() => this.props.logout()}>Logout</button>
+      </div>
     )
   }
 
