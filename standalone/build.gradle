@@ -1,6 +1,7 @@
 import com.github.jengelman.gradle.plugins.shadow.transformers.ApacheNoticeResourceTransformer
 
 plugins {
+    id 'application'
     id 'com.github.johnrengelman.shadow' version '5.2.0'
 }
 
@@ -57,4 +58,8 @@ dependencies {
 
 configurations {
     all*.exclude group: 'javax.servlet'
+}
+
+application {
+    mainClassName = 'com.tngtech.keycloakmock.standalone.Main'
 }
