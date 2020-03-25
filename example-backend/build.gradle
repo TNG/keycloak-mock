@@ -44,5 +44,3 @@ test {
         logger.lifecycle("Running test: ${descriptor}")
     }
 }
-
-compileJava.dependsOn 'googleJavaFormat'

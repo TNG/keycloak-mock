@@ -57,9 +57,7 @@ class Server extends KeycloakVerificationMock {
     router
         .get("/auth/realms/:realm/protocol/openid-connect/login-status-iframe.html/init")
         .handler(this::initIframe);
-    router
-        .get("/auth/realms/:realm/protocol/openid-connect/logout")
-        .handler(this::logout);
+    router.get("/auth/realms/:realm/protocol/openid-connect/logout").handler(this::logout);
     return router;
   }
 
@@ -136,7 +134,11 @@ class Server extends KeycloakVerificationMock {
     routingContext.response().putHeader("location", redirectUri).setStatusCode(302).end();
   }
 
-  private void setKeycloakSessionCookie(final RoutingContext routingContext, final String realm, final String sessionId, final long maxAge) {
+  private void setKeycloakSessionCookie(
+      final RoutingContext routingContext,
+      final String realm,
+      final String sessionId,
+      final long maxAge) {
     routingContext.addCookie(
         Cookie.cookie("KEYCLOAK_SESSION", realm + "/no-idea-what-goes-here/" + sessionId)
             .setPath("/auth/realms/" + realm + "/")
