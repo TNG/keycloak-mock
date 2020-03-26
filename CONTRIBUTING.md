@@ -57,5 +57,5 @@ Resolves #123
 
 ### Formatting
 
-This project uses [https://github.com/google/styleguide](google code style). Running ```./gradlew build``` 
-will automatically format java code correctly. See [https://github.com/google/google-java-format] for IDE integration.
+This project uses [google code style](https://github.com/google/styleguide). Running ```./gradlew googleJavaFormat``` 
+will automatically format java code correctly. See [here](https://github.com/google/google-java-format) for IDE integration.
