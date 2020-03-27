@@ -23,7 +23,9 @@ public class Main implements Callable<Void> {
 
   public static void main(String[] args) {
     int exitCode = new CommandLine(new Main()).execute(args);
-    System.exit(exitCode);
+    if (exitCode != 0) {
+      System.exit(exitCode);
+    }
   }
 
   @Override
