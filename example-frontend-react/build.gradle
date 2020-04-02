@@ -1,7 +1,7 @@
 import static groovy.io.FileType.FILES
 
 plugins {
-    id 'com.github.node-gradle.node' version '2.2.0'
+    id 'com.github.node-gradle.node' version '2.2.3'
 }
 
 node {
@@ -9,7 +9,7 @@ node {
     version = '12.16.1'
 
     // Version of Yarn to use.
-    yarnVersion = '1.22.0'
+    yarnVersion = '1.22.4'
 
     // Base URL for fetching node distributions (change if you have a mirror).
     distBaseUrl = 'https://nodejs.org/dist'

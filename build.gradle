@@ -5,19 +5,19 @@ buildscript {
         }
     }
     dependencies {
-        classpath 'com.jaredsburrows:gradle-license-plugin:0.8.42'
+        classpath 'com.github.jk1:gradle-license-report:1.13'
         classpath 'gradle.plugin.com.github.sherter.google-java-format:google-java-format-gradle-plugin:0.8'
         classpath 'net.researchgate:gradle-release:2.8.1'
     }
 }
 
 plugins {
-    id 'com.github.ben-manes.versions' version '0.27.0'
+    id 'com.github.ben-manes.versions' version '0.28.0'
     id 'pl.allegro.tech.build.axion-release' version '1.11.0'
 }
 
 wrapper {
-    gradleVersion = '6.2.1'
+    gradleVersion = '6.3'
     distributionType = Wrapper.DistributionType.ALL
 }
 
@@ -45,10 +45,11 @@ allprojects {
 
 ext {
     assertj_version = '3.15.0'
-    jjwt_version = '0.11.0'
+    jjwt_version = '0.11.1'
     junit4_version = '4.13'
-    junit5_version = '5.6.0'
+    junit5_version = '5.6.1'
     picocli_version = '4.2.0'
+    // do not update to 4.3.0 (see https://github.com/rest-assured/rest-assured/issues/1283)
     restassured_version = '4.2.0'
     vertx_version = '4.0.0-milestone4'
 
@@ -62,7 +63,7 @@ ext {
 }
 
 subprojects {
-    apply plugin: 'com.jaredsburrows.license'
+    apply plugin: 'com.github.jk1.dependency-license-report'
 
     if (release_projects.contains(project.name)) {
         apply plugin: 'net.researchgate.release'
