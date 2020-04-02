@@ -36,6 +36,7 @@ class Server extends KeycloakVerificationMock {
             routingContext -> {
               routingContext
                   .response()
+                  .bodyEndHandler(aVoid -> logCall(routingContext))
                   .putHeader(
                       "Access-Control-Allow-Origin",
                       routingContext.request().headers().get("Origin"))
@@ -59,6 +60,14 @@ class Server extends KeycloakVerificationMock {
         .handler(this::initIframe);
     router.get("/auth/realms/:realm/protocol/openid-connect/logout").handler(this::logout);
     return router;
+  }
+
+  private void logCall(final RoutingContext routingContext) {
+    System.out.printf(
+        "%d: %-7s %s%n",
+        routingContext.response().getStatusCode(),
+        routingContext.request().rawMethod(),
+        routingContext.request().uri());
   }
 
   private void getLoginPage(final RoutingContext routingContext) {
