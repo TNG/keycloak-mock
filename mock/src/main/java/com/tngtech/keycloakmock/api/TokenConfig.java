@@ -1,11 +1,16 @@
 package com.tngtech.keycloakmock.api;
 
+import io.jsonwebtoken.ClaimJwtException;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -25,11 +30,14 @@ public class TokenConfig {
   @Nonnull private final Set<String> audience;
   @Nonnull private final String authorizedParty;
   @Nonnull private final String subject;
+  @Nonnull private final String scope;
   @Nonnull private final Map<String, Object> claims;
   @Nonnull private final Access realmAccess;
   @Nonnull private final Map<String, Access> resourceAccess;
   @Nonnull private final Instant issuedAt;
+  @Nonnull private final Instant authenticationTime;
   @Nonnull private final Instant expiration;
+  @Nullable private final Instant notBefore;
   @Nullable private final String name;
   @Nullable private final String givenName;
   @Nullable private final String familyName;
@@ -44,14 +52,19 @@ public class TokenConfig {
     }
     authorizedParty = builder.authorizedParty;
     subject = builder.subject;
+    scope = String.join(" ", builder.scope);
     claims = builder.claims;
     realmAccess = builder.realmRoles;
     resourceAccess = builder.resourceAccess;
     issuedAt = builder.issuedAt;
+    authenticationTime = builder.authenticationTime;
     expiration = builder.expiration;
+    notBefore = builder.notBefore;
     givenName = builder.givenName;
     familyName = builder.familyName;
-    if (givenName != null) {
+    if (builder.name != null) {
+      name = builder.name;
+    } else if (givenName != null) {
       if (familyName != null) {
         name = givenName + " " + familyName;
       } else {
@@ -90,6 +103,11 @@ public class TokenConfig {
   }
 
   @Nonnull
+  public String getScope() {
+    return scope;
+  }
+
+  @Nonnull
   public Map<String, Object> getClaims() {
     return Collections.unmodifiableMap(claims);
   }
@@ -110,8 +128,18 @@ public class TokenConfig {
   }
 
   @Nonnull
+  public Instant getAuthenticationTime() {
+    return authenticationTime;
+  }
+
+  @Nonnull
   public Instant getExpiration() {
     return expiration;
+  }
+
+  @Nullable
+  public Instant getNotBefore() {
+    return notBefore;
   }
 
   @Nullable
@@ -145,20 +173,114 @@ public class TokenConfig {
    * <p>Use this to generate a token configuration to your needs.
    */
   public static final class Builder {
-    @Nonnull private Set<String> audience = new HashSet<>();
+    @Nonnull private final Set<String> audience = new HashSet<>();
     @Nonnull private String authorizedParty = "client";
     @Nonnull private String subject = "user";
-    @Nonnull private Map<String, Object> claims = new HashMap<>();
-    @Nonnull private Access realmRoles = new Access();
-    @Nonnull private Map<String, Access> resourceAccess = new HashMap<>();
+    @Nonnull private final Set<String> scope = new HashSet<>();
+    @Nonnull private final Map<String, Object> claims = new HashMap<>();
+    @Nonnull private final Access realmRoles = new Access();
+    @Nonnull private final Map<String, Access> resourceAccess = new HashMap<>();
     @Nonnull private Instant issuedAt = Instant.now();
     @Nonnull private Instant expiration = issuedAt.plus(10, ChronoUnit.HOURS);
+    @Nonnull private Instant authenticationTime = Instant.now();
+    @Nullable private Instant notBefore;
     @Nullable private String givenName;
     @Nullable private String familyName;
+    @Nullable private String name;
     @Nullable private String email;
     @Nullable private String preferredUsername;
 
-    private Builder() {}
+    private Builder() {
+      scope.add("openid");
+    }
+
+    /**
+     * Add the contents of a real token.
+     *
+     * <p>The content of the token is read into this token config. Signature, issuer as well as
+     * start and end time of the original token are ignored.
+     *
+     * @param originalToken token to read from
+     * @return builder
+     */
+    @Nonnull
+    public Builder withSourceToken(@Nonnull final String originalToken) {
+      int i = originalToken.lastIndexOf('.');
+      String untrustedJwtString = originalToken.substring(0, i + 1);
+      Claims untrustedClaims;
+      try {
+        untrustedClaims = Jwts.parserBuilder().build().parseClaimsJwt(untrustedJwtString).getBody();
+      } catch (ClaimJwtException e) {
+        // ignoring expiry exceptions
+        untrustedClaims = e.getClaims();
+      }
+      for (String claim : untrustedClaims.keySet()) {
+        switch (claim) {
+          case "aud":
+            Object aud = untrustedClaims.get("aud");
+            if (aud instanceof String) {
+              withAudience((String) aud);
+            } else if (aud instanceof Collection) {
+              //noinspection unchecked
+              withAudiences((Collection<String>) aud);
+            }
+            break;
+          case "azp":
+            withAuthorizedParty(untrustedClaims.get("azp", String.class));
+            break;
+          case "sub":
+            withSubject(untrustedClaims.getSubject());
+            break;
+          case "name":
+            withName(untrustedClaims.get("name", String.class));
+            break;
+          case "given_name":
+            withGivenName(untrustedClaims.get("given_name", String.class));
+            break;
+          case "family_name":
+            withFamilyName(untrustedClaims.get("family_name", String.class));
+            break;
+          case "email":
+            withEmail(untrustedClaims.get("email", String.class));
+            break;
+          case "preferred_username":
+            withPreferredUsername(untrustedClaims.get("preferred_username", String.class));
+            break;
+          case "realm_access":
+            //noinspection unchecked
+            Map<String, List<String>> realmAccess = untrustedClaims.get("realm_access", Map.class);
+            withRealmRoles(realmAccess.get("roles"));
+            break;
+          case "resource_access":
+            //noinspection unchecked
+            Map<String, Map<String, List<String>>> resourceAccess =
+                untrustedClaims.get("resource_access", Map.class);
+            for (String resource : resourceAccess.keySet()) {
+              withResourceRoles(resource, resourceAccess.get(resource).get("roles"));
+            }
+            break;
+          case "scope":
+            withScopes(Arrays.asList(untrustedClaims.get("scope", String.class).split(" ")));
+            break;
+          case "typ":
+            if (!"Bearer".equals(untrustedClaims.get("typ", String.class))) {
+              throw new RuntimeException("Only bearer tokens are allowed here!");
+            }
+            break;
+          case "iss":
+          case "iat":
+          case "nbf":
+          case "exp":
+          case "auth_time":
+            // ignoring issuer and date information
+            break;
+          default:
+            withClaim(claim, untrustedClaims.get(claim));
+            break;
+        }
+      }
+      return this;
+    }
 
     /**
      * Add an audience.
@@ -170,7 +292,7 @@ public class TokenConfig {
      * @see <a href="https://openid.net/specs/openid-connect-core-1_0.html#IDToken">ID token</a>
      */
     @Nonnull
-    public Builder withAudience(@Nonnull String audience) {
+    public Builder withAudience(@Nonnull final String audience) {
       this.audience.add(Objects.requireNonNull(audience));
       return this;
     }
@@ -185,7 +307,7 @@ public class TokenConfig {
      * @see <a href="https://openid.net/specs/openid-connect-core-1_0.html#IDToken">ID token</a>
      */
     @Nonnull
-    public Builder withAudiences(@Nonnull Collection<String> audiences) {
+    public Builder withAudiences(@Nonnull final Collection<String> audiences) {
       this.audience.addAll(Objects.requireNonNull(audience));
       return this;
     }
@@ -200,7 +322,7 @@ public class TokenConfig {
      * @see <a href="https://openid.net/specs/openid-connect-core-1_0.html#IDToken">ID token</a>
      */
     @Nonnull
-    public Builder withAuthorizedParty(@Nonnull String authorizedParty) {
+    public Builder withAuthorizedParty(@Nonnull final String authorizedParty) {
       this.authorizedParty = Objects.requireNonNull(authorizedParty);
       return this;
     }
@@ -215,8 +337,40 @@ public class TokenConfig {
      * @see <a href="https://openid.net/specs/openid-connect-core-1_0.html#IDToken">ID token</a>
      */
     @Nonnull
-    public Builder withSubject(@Nonnull String subject) {
+    public Builder withSubject(@Nonnull final String subject) {
       this.subject = Objects.requireNonNull(subject);
+      return this;
+    }
+
+    /**
+     * Add scope.
+     *
+     * <p>The scope for which this token has been requested. Always contains "openid".
+     *
+     * @param scope the scope to add
+     * @return builder
+     * @see <a href="https://openid.net/specs/openid-connect-core-1_0.html#ScopeClaims">scope
+     *     claims</a>
+     */
+    @Nonnull
+    public Builder withScope(@Nonnull final String scope) {
+      this.scope.add(scope);
+      return this;
+    }
+
+    /**
+     * Add scopes.
+     *
+     * <p>The scope for which this token has been requested. Always contains "openid".
+     *
+     * @param scopes the scopes to add
+     * @return builder
+     * @see <a href="https://openid.net/specs/openid-connect-core-1_0.html#ScopeClaims">scope
+     *     claims</a>
+     */
+    @Nonnull
+    public Builder withScopes(@Nonnull final Collection<String> scopes) {
+      this.scope.addAll(scopes);
       return this;
     }
 
@@ -231,13 +385,13 @@ public class TokenConfig {
      *     roles</a>
      */
     @Nonnull
-    public Builder withRealmRoles(@Nonnull Collection<String> roles) {
+    public Builder withRealmRoles(@Nonnull final Collection<String> roles) {
       this.realmRoles.addRoles(Objects.requireNonNull(roles));
       return this;
     }
 
     /**
-     * Add a realm role
+     * Add a realm role.
      *
      * <p>Realm roles apply to all clients within a realm.
      *
@@ -247,7 +401,7 @@ public class TokenConfig {
      *     roles</a>
      */
     @Nonnull
-    public Builder withRealmRole(@Nonnull String role) {
+    public Builder withRealmRole(@Nonnull final String role) {
       this.realmRoles.addRole(Objects.requireNonNull(role));
       return this;
     }
@@ -266,7 +420,7 @@ public class TokenConfig {
      */
     @Nonnull
     public Builder withResourceRoles(
-        @Nonnull final String resource, @Nonnull Collection<String> roles) {
+        @Nonnull final String resource, @Nonnull final Collection<String> roles) {
       this.resourceAccess
           .computeIfAbsent(Objects.requireNonNull(resource), k -> new Access())
           .addRoles(Objects.requireNonNull(roles));
@@ -286,7 +440,7 @@ public class TokenConfig {
      *     roles</a>
      */
     @Nonnull
-    public Builder withResourceRole(@Nonnull final String resource, @Nonnull String role) {
+    public Builder withResourceRole(@Nonnull final String resource, @Nonnull final String role) {
       this.resourceAccess
           .computeIfAbsent(Objects.requireNonNull(resource), k -> new Access())
           .addRole(Objects.requireNonNull(role));
@@ -304,7 +458,7 @@ public class TokenConfig {
      * @return builder
      */
     @Nonnull
-    public Builder withClaims(@Nonnull Map<String, Object> claims) {
+    public Builder withClaims(@Nonnull final Map<String, Object> claims) {
       this.claims.putAll(Objects.requireNonNull(claims));
       return this;
     }
@@ -321,7 +475,7 @@ public class TokenConfig {
      * @return builder
      */
     @Nonnull
-    public Builder withClaim(@Nonnull String key, @Nonnull Object value) {
+    public Builder withClaim(@Nonnull final String key, @Nonnull final Object value) {
       this.claims.put(Objects.requireNonNull(key), Objects.requireNonNull(value));
       return this;
     }
@@ -334,8 +488,21 @@ public class TokenConfig {
      * @see <a href="https://openid.net/specs/openid-connect-core-1_0.html#IDToken">ID token</a>
      */
     @Nonnull
-    public Builder withIssuedAt(@Nonnull Instant issuedAt) {
+    public Builder withIssuedAt(@Nonnull final Instant issuedAt) {
       this.issuedAt = Objects.requireNonNull(issuedAt);
+      return this;
+    }
+
+    /**
+     * Set authentication time.
+     *
+     * @param authenticationTime the instant when user was authenticated at the SSO server
+     * @return builder
+     * @see <a href="https://openid.net/specs/openid-connect-core-1_0.html#IDToken">ID token</a>
+     */
+    @Nonnull
+    public Builder withAuthenticationTime(@Nonnull final Instant authenticationTime) {
+      this.authenticationTime = Objects.requireNonNull(authenticationTime);
       return this;
     }
 
@@ -347,8 +514,21 @@ public class TokenConfig {
      * @see <a href="https://openid.net/specs/openid-connect-core-1_0.html#IDToken">ID token</a>
      */
     @Nonnull
-    public Builder withExpiration(@Nonnull Instant expiration) {
+    public Builder withExpiration(@Nonnull final Instant expiration) {
       this.expiration = Objects.requireNonNull(expiration);
+      return this;
+    }
+
+    /**
+     * Set not before date.
+     *
+     * @param notBefore the instant when the token starts being valid
+     * @return builder
+     * @see <a href="https://tools.ietf.org/html/rfc7519#section-4.1.5">Not Before Claim</a>
+     */
+    @Nonnull
+    public Builder withNotBefore(@Nullable final Instant notBefore) {
+      this.notBefore = notBefore;
       return this;
     }
 
@@ -379,6 +559,20 @@ public class TokenConfig {
     @Nonnull
     public Builder withFamilyName(@Nullable final String familyName) {
       this.familyName = familyName;
+      return this;
+    }
+
+    /**
+     * Set full name.
+     *
+     * <p>If not set, this will automatically be filled using given name and family name.
+     *
+     * @param name the full name of the user
+     * @return builder
+     */
+    @Nonnull
+    public Builder withName(@Nullable final String name) {
+      this.name = name;
       return this;
     }
 

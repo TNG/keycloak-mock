@@ -12,6 +12,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.security.interfaces.RSAPublicKey;
+import java.time.Instant;
 import java.util.Base64;
 import java.util.Date;
 import java.util.Objects;
@@ -62,13 +63,18 @@ final class TokenGenerator {
     JwtBuilder builder =
         Jwts.builder()
             .setHeaderParam("kid", KEY_ID)
-            .setIssuedAt(new Date(tokenConfig.getIssuedAt().toEpochMilli()))
+            // since the specification allows for more than one audience, but JJWT only accepts
+            // one (see https://github.com/jwtk/jjwt/issues/77), use a workaround here
             .claim("aud", tokenConfig.getAudience())
+            .setIssuedAt(new Date(tokenConfig.getIssuedAt().toEpochMilli()))
+            .claim("auth_time", new Date((tokenConfig.getAuthenticationTime().toEpochMilli())))
             .setExpiration(new Date(tokenConfig.getExpiration().toEpochMilli()))
             .setIssuer(Objects.requireNonNull(issuer))
             .setSubject(tokenConfig.getSubject())
+            .claim("scope", tokenConfig.getScope())
             .claim("typ", "Bearer")
             .claim("azp", tokenConfig.getAuthorizedParty());
+    setClaimIfPresent(builder, "nbf", tokenConfig.getNotBefore());
     setClaimIfPresent(builder, "name", tokenConfig.getName());
     setClaimIfPresent(builder, "given_name", tokenConfig.getGivenName());
     setClaimIfPresent(builder, "family_name", tokenConfig.getFamilyName());
@@ -91,6 +97,13 @@ final class TokenGenerator {
       @Nonnull final JwtBuilder builder, @Nonnull final String claim, @Nullable String value) {
     if (value != null) {
       Objects.requireNonNull(builder).claim(claim, value);
+    }
+  }
+
+  private void setClaimIfPresent(
+      @Nonnull final JwtBuilder builder, @Nonnull final String claim, @Nullable Instant value) {
+    if (value != null) {
+      Objects.requireNonNull(builder).claim(claim, new Date(value.toEpochMilli()));
     }
   }
 }
