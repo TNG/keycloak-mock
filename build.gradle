@@ -47,10 +47,9 @@ ext {
     assertj_version = '3.15.0'
     jjwt_version = '0.11.1'
     junit4_version = '4.13'
-    junit5_version = '5.6.1'
+    junit5_version = '5.6.2'
     picocli_version = '4.2.0'
-    // do not update to 4.3.0 (see https://github.com/rest-assured/rest-assured/issues/1283)
-    restassured_version = '4.2.0'
+    restassured_version = '4.3.0'
     vertx_version = '4.0.0-milestone4'
 
     license_name = 'The Apache License, Version 2.0'
