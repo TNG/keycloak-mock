@@ -28,6 +28,8 @@
   <input type="hidden" name="session_id" id="session_id" value="${session_id}">
   <input type="hidden" name="client_id" id="client_id" value="${client_id}">
   <input type="hidden" name="redirect_uri" id="redirect_uri" value="${redirect_uri}">
+  <input type="hidden" name="response_type" id="response_type" value="${response_type}">
+  <input type="hidden" name="response_mode" id="response_type" value="${response_mode}">
 
   <button type="submit">Login</button>
 </form>

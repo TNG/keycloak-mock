@@ -17,6 +17,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import javax.annotation.Nullable;
 
 class Server extends KeycloakVerificationMock {
   private final Map<String, String> tokens = new HashMap<>();
@@ -72,42 +73,86 @@ class Server extends KeycloakVerificationMock {
 
   private void getLoginPage(final RoutingContext routingContext) {
     String sessionId = UUID.randomUUID().toString();
-    routingContext.put("client_id", routingContext.queryParam("client_id").get(0));
-    routingContext.put("state", routingContext.queryParam("state").get(0));
-    routingContext.put("nonce", routingContext.queryParam("nonce").get(0));
-    routingContext.put("redirect_uri", routingContext.queryParam("redirect_uri").get(0));
+    routingContext.put("client_id", routingContext.queryParams().get("client_id"));
+    routingContext.put("state", routingContext.queryParams().get("state"));
+    routingContext.put("nonce", routingContext.queryParams().get("nonce"));
+    routingContext.put("redirect_uri", routingContext.queryParams().get("redirect_uri"));
     String realm = routingContext.pathParam("realm");
     routingContext.put("realm", realm);
     routingContext.put("session_id", sessionId);
+    routingContext.put("response_type", routingContext.queryParams().get("response_type"));
+    // optional parameter
+    routingContext.put("response_mode", routingContext.queryParams().get("response_mode"));
     renderTemplate(routingContext, "loginPage.ftl", "text/html");
   }
 
   private void authenticate(final RoutingContext routingContext) {
-    String realm = routingContext.queryParam("realm").get(0);
-    String sessionId = routingContext.queryParam("session_id").get(0);
+    ResponseType responseType =
+        ResponseType.fromValueOrNull(routingContext.queryParams().get("response_type"));
+    if (responseType == null) {
+      System.out.println(
+          "Invalid response type '"
+              + routingContext.queryParams().get("response_type")
+              + "' requested!");
+      routingContext.fail(400);
+      return;
+    }
+    String realm = routingContext.queryParams().get("realm");
+    String sessionId = routingContext.queryParams().get("session_id");
     String token =
         getAccessTokenForRealm(
             aTokenConfig()
-                .withAudience(routingContext.queryParam("client_id").get(0))
+                .withAudience(routingContext.queryParams().get("client_id"))
                 .withIssuedAt(Instant.now())
-                .withSubject(routingContext.queryParam("user").get(0))
+                .withSubject(routingContext.queryParams().get("user"))
                 .withRealmRoles(
-                    Arrays.asList(routingContext.queryParam("roles").get(0).trim().split(",")))
-                .withClaim("nonce", routingContext.queryParam("nonce").get(0))
+                    Arrays.asList(routingContext.queryParams().get("roles").trim().split(",")))
+                .withClaim("nonce", routingContext.queryParams().get("nonce"))
                 .withClaim("session_state", sessionId)
                 .build(),
             realm);
     tokens.put(sessionId, token);
-    String redirectUri =
-        routingContext.queryParam("redirect_uri").get(0)
-            + "#state="
-            + routingContext.queryParam("state").get(0)
-            + "&session_state="
-            + routingContext.queryParam("state").get(0)
-            + "&code="
-            + sessionId; // for simplicity, use session ID as authorization code
+    ResponseMode responseMode =
+        responseType.getValidResponseMode(routingContext.queryParams().get("response_mode"));
+    StringBuilder redirectUri = new StringBuilder(routingContext.queryParams().get("redirect_uri"));
+    redirectUri.append(
+        getResponseParameter(responseMode, "state", routingContext.queryParams().get("state")));
+    redirectUri.append(
+        getResponseParameter(null, "session_state", routingContext.queryParams().get("state")));
+    switch (responseType) {
+      case CODE:
+        // for simplicity, use session ID as authorization code
+        redirectUri.append(getResponseParameter(null, "code", sessionId));
+        break;
+      case ID_TOKEN:
+        redirectUri.append(getResponseParameter(null, "id_token", token));
+        break;
+      case ID_TOKEN_PLUS_TOKEN:
+        redirectUri.append(getResponseParameter(null, "id_token", token));
+        redirectUri.append(getResponseParameter(null, "access_token", token));
+        redirectUri.append(getResponseParameter(null, "token_type", "bearer"));
+        break;
+      case NONE:
+      default:
+        break;
+    }
     setKeycloakSessionCookie(routingContext, realm, sessionId, 36000);
-    routingContext.response().putHeader("location", redirectUri).setStatusCode(302).end();
+    routingContext
+        .response()
+        .putHeader("location", redirectUri.toString())
+        .setStatusCode(302)
+        .end();
+  }
+
+  private String getResponseParameter(
+      @Nullable final ResponseMode responseMode, final String name, final String value) {
+    StringBuilder sb = new StringBuilder();
+    if (responseMode != null) {
+      sb.append(responseMode.getSign());
+    } else {
+      sb.append("&");
+    }
+    return sb.append(name).append("=").append(value).toString();
   }
 
   private void requestToken(final RoutingContext routingContext) {
@@ -136,7 +181,7 @@ class Server extends KeycloakVerificationMock {
   }
 
   private void logout(final RoutingContext routingContext) {
-    String redirectUri = routingContext.queryParam("redirect_uri").get(0);
+    String redirectUri = routingContext.queryParams().get("redirect_uri");
     String realm = routingContext.pathParam("realm");
     // invalidate session cookie
     setKeycloakSessionCookie(routingContext, realm, "", 0);
