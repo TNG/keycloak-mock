@@ -14,9 +14,11 @@ apply plugin: 'java'
 apply plugin: 'org.springframework.boot'
 apply plugin: 'io.spring.dependency-management'
 
-// for some reason, spring boot pulls in junit5 in an outdated version, so we need to update it
+// spring boot's bill of materials pulls in junit5 in an outdated version, so we need to update it
 // see https://stackoverflow.com/questions/54598484/gradle-5-junit-bom-and-spring-boot-incorrect-versions
 ext['junit-jupiter.version'] = junit5_version
+// same with groovy, rest assured needs groovy v3, but spring still lists v2
+ext['groovy.version'] = '3.0.2'
 
 dependencies {
     def keycloak_version = '9.0.2'
