@@ -99,6 +99,7 @@ class Server extends KeycloakVerificationMock {
     }
     String realm = routingContext.queryParams().get("realm");
     String sessionId = routingContext.queryParams().get("session_id");
+    // for simplicity, the access token is the same as the ID token
     String token =
         getAccessTokenForRealm(
             aTokenConfig()
@@ -146,13 +147,7 @@ class Server extends KeycloakVerificationMock {
 
   private String getResponseParameter(
       @Nullable final ResponseMode responseMode, final String name, final String value) {
-    StringBuilder sb = new StringBuilder();
-    if (responseMode != null) {
-      sb.append(responseMode.getSign());
-    } else {
-      sb.append("&");
-    }
-    return sb.append(name).append("=").append(value).toString();
+    return (responseMode != null ? responseMode.getSign() : "&") + name + "=" + value;
   }
 
   private void requestToken(final RoutingContext routingContext) {
