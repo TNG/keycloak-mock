@@ -4,15 +4,13 @@ buildscript {
             url 'https://plugins.gradle.org/m2/'
         }
     }
-    dependencies {
-        classpath 'com.github.jk1:gradle-license-report:1.13'
-        classpath 'gradle.plugin.com.github.sherter.google-java-format:google-java-format-gradle-plugin:0.8'
-        classpath 'net.researchgate:gradle-release:2.8.1'
-    }
 }
 
 plugins {
     id 'com.github.ben-manes.versions' version '0.28.0'
+    id 'com.github.jk1.dependency-license-report' version '1.13' apply false
+    id 'com.github.sherter.google-java-format' version '0.8' apply false
+    id 'net.researchgate.release' version '2.8.1' apply false
     id 'pl.allegro.tech.build.axion-release' version '1.11.0'
 }
 
@@ -33,6 +31,7 @@ scmVersion {
 }
 
 allprojects {
+    apply plugin: 'idea'
     apply plugin: 'com.github.sherter.google-java-format'
 
     repositories {
