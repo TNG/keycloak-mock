@@ -3,6 +3,7 @@ import com.github.jengelman.gradle.plugins.shadow.transformers.ApacheNoticeResou
 plugins {
     id 'application'
     id 'com.github.johnrengelman.shadow' version '5.2.0'
+    id 'com.github.gmazzo.buildconfig' version '1.7.1'
 }
 
 description = 'Standalone keycloak-mock server for use in frontend development'
@@ -62,4 +63,10 @@ configurations {
 
 application {
     mainClassName = 'com.tngtech.keycloakmock.standalone.Main'
+}
+
+buildConfig {
+    buildConfigField('String', 'NAME', "\"${project.name}\"")
+    buildConfigField('String', 'VERSION', "\"${project.version}\"")
+    buildConfigField('long', 'BUILD_TIME', "${System.currentTimeMillis()}L")
 }

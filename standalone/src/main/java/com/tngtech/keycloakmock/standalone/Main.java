@@ -7,7 +7,8 @@ import picocli.CommandLine.Option;
 
 @Command(
     description = "Starts a stand-alone keycloak mock.",
-    name = "keycloakmock",
+    name = BuildConfig.NAME,
+    version = BuildConfig.VERSION,
     mixinStandardHelpOptions = true)
 public class Main implements Callable<Void> {
 
