@@ -25,14 +25,14 @@ You can create and start the mock directly from the `mock` artifact using Maven
     <groupId>com.tngtech.keycloakmock</groupId>
     <artifactId>mock</artifactId>
     <scope>test</scope>
-    <version>0.2.0</version>
+    <version>0.3.0</version>
 </dependency>
 ```
 
 or Gradle
 
 ```gradle
-testImplementation 'com.tngtech.keycloakmock:mock:0.2.0'
+testImplementation 'com.tngtech.keycloakmock:mock:0.3.0'
 ```
 
 like this:
@@ -98,7 +98,8 @@ class Test {
 ### Developing / testing frontends
 
 It is also possible to run a stand-alone mock server that provides a login page where a username
-and an optional list of roles can be specified. Just get the (self-contained) `standalone` artifact
+and an optional list of roles can be specified. Just get the (self-contained) `standalone` artifact,
+e.g. from [Maven Central](https://search.maven.org/artifact/com.tngtech.keycloakmock/standalone),
 and run it:
 
 ```bash
@@ -106,7 +107,7 @@ $ java -jar standalone.jar &
 Server is running on http://localhost:8000
 ```
 
-Please note that currently, only the authorization code flow is supported.
+Please note that currently, only the authorization code flow and the implicit flow are supported.
 
 ## License
 
