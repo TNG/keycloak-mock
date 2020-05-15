@@ -2,6 +2,8 @@
 [![Github release date](https://img.shields.io/github/release-date/TNG/keycloak-mock.svg?logo=github)
  ![Github release](https://img.shields.io/github/release/TNG/keycloak-mock.svg?logo=github)](https://github.com/TNG/keycloak-mock/releases)
 [![Maven release](https://img.shields.io/maven-central/v/com.tngtech.keycloakmock/mock)](https://search.maven.org/search?q=com.tngtech.keycloakmock)
+[![Sonarcloud](https://img.shields.io/sonar/quality_gate/TNG_keycloak-mock?server=https%3A%2F%2Fsonarcloud.io)](https://sonarcloud.io/dashboard?id=TNG_keycloak-mock)
+
 # Keycloak Mock
 
 [Keycloak](https://www.keycloak.org) is a single sign-on solution that supports the
