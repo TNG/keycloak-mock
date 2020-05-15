@@ -15,6 +15,7 @@ jobs:
         java-version: 1.8
     - name: Build with Gradle (+ Sonar)
       env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         SONAR_TOKEN: ${{ secrets.SONAR_LOGIN }}
       run: ./gradlew build sonarqube
 
