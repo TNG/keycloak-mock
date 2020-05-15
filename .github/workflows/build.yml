@@ -13,8 +13,10 @@ jobs:
       uses: actions/setup-java@v1
       with:
         java-version: 1.8
-    - name: Build with Gradle
-      run: ./gradlew build
+    - name: Build with Gradle (+ Sonar)
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_LOGIN }}
+      run: ./gradlew build sonarqube
 
   build_java11:
 

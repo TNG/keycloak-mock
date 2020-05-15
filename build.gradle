@@ -10,6 +10,7 @@ plugins {
     id 'com.github.ben-manes.versions' version '0.28.0'
     id 'com.github.jk1.dependency-license-report' version '1.13' apply false
     id 'com.github.sherter.google-java-format' version '0.8' apply false
+    id 'org.sonarqube' version '2.8'
     id 'pl.allegro.tech.build.axion-release' version '1.11.0'
 }
 
@@ -63,6 +64,7 @@ subprojects {
     apply plugin: 'com.github.jk1.dependency-license-report'
 
     if (release_projects.contains(project.name)) {
+        apply plugin: 'jacoco'
         if ('standalone'.equals(project.name)) {
             apply plugin: 'java'
         } else {
@@ -136,6 +138,24 @@ subprojects {
             onlyIf { project.hasProperty('sonatypeUsername') }
         }
 
+        test {
+            finalizedBy jacocoTestReport
+        }
+
+        jacocoTestReport {
+            reports {
+                xml.enabled true
+                csv.enabled false
+                html.enabled false
+            }
+        }
+
+        sonarqube {
+            properties {
+                property "sonar.coverage.jacoco.xmlReportPaths", "${project.projectDir}/build/reports/jacoco/test/jacocoTestReport.xml"
+            }
+        }
+
         afterEvaluate {
             publishing.publications*.pom {
                 licenses {
@@ -147,7 +167,6 @@ subprojects {
                 name = "${project.group}:${project.name}"
                 url = 'https://github.com/TNG/keycloak-mock'
                 description = "${project.description}"
-
 
                 organization {
                     name = company_name
@@ -174,5 +193,13 @@ subprojects {
                 }
             }
         }
+    }
+}
+
+sonarqube {
+    properties {
+        property "sonar.host.url", "https://sonarcloud.io"
+        property "sonar.organization", "tng"
+        property "sonar.projectKey", "TNG_keycloak-mock"
     }
 }
