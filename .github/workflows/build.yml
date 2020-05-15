@@ -13,11 +13,17 @@ jobs:
       uses: actions/setup-java@v1
       with:
         java-version: 1.8
-    - name: Build with Gradle (+ Sonar)
+    - name: Build with Gradle
+      run: ./gradlew build
+    - name: Run sonar analysis
+      # As the secrets below are only correctly stored within our github account,
+      # we need to disable the sonar run for forked repositories. Otherwise, remote
+      # PRs would not be able to pass the CI check.
+      if: github.repository == 'TNG/keycloak-mock'
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         SONAR_TOKEN: ${{ secrets.SONAR_LOGIN }}
-      run: ./gradlew build sonarqube
+      run: ./gradlew sonarqube
 
   build_java11:
 
