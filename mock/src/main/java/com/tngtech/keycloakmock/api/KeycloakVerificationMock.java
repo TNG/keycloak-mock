@@ -16,6 +16,8 @@ import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import javax.annotation.Nonnull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A mock of a keycloak instance capable of producing access tokens.
@@ -28,6 +30,7 @@ import javax.annotation.Nonnull;
  * com.tngtech.keycloakmock.junit5.KeycloakMock} from module mock-junit5 instead.
  */
 public class KeycloakVerificationMock {
+  private static final Logger LOG = LoggerFactory.getLogger(KeycloakVerificationMock.class);
 
   private static final String HTTP = "http";
   private static final String HTTPS = "https";
@@ -127,11 +130,12 @@ public class KeycloakVerificationMock {
     }
     Router router = configureRouter();
     ResultHandler<HttpServer> startHandler = new ResultHandler<>();
+
     server =
         vertx
             .createHttpServer(options)
             .requestHandler(router)
-            .exceptionHandler(Throwable::printStackTrace)
+            .exceptionHandler(t -> LOG.error("Exception while processing request", t))
             .listen(startHandler);
     startHandler.await();
   }
@@ -167,7 +171,7 @@ public class KeycloakVerificationMock {
       }
       return Buffer.buffer(outputStream.toByteArray());
     } catch (IOException e) {
-      e.printStackTrace();
+      LOG.error("Error while loading keystore for TLS key configuration", e);
       throw new IllegalStateException(e);
     }
   }
@@ -209,7 +213,7 @@ public class KeycloakVerificationMock {
       try {
         future.get();
       } catch (InterruptedException | ExecutionException e) {
-        e.printStackTrace();
+        LOG.error("Error while starting/stopping mock server", e);
         Thread.currentThread().interrupt();
         throw new MockServerException(e);
       }

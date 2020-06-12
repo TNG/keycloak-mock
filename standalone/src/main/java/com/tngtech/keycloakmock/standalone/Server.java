@@ -18,8 +18,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import javax.annotation.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 class Server extends KeycloakVerificationMock {
+  private static final Logger LOG = LoggerFactory.getLogger(Server.class);
 
   private static final String CLIENT_ID = "client_id";
   private static final String STATE = "state";
@@ -47,7 +50,13 @@ class Server extends KeycloakVerificationMock {
             routingContext -> {
               routingContext
                   .response()
-                  .bodyEndHandler(aVoid -> logCall(routingContext))
+                  .bodyEndHandler(
+                      aVoid ->
+                          LOG.info(
+                              "{}: {} {}",
+                              routingContext.response().getStatusCode(),
+                              routingContext.request().rawMethod(),
+                              routingContext.request().uri()))
                   .putHeader(
                       "Access-Control-Allow-Origin",
                       routingContext.request().headers().get("Origin"))
@@ -55,7 +64,7 @@ class Server extends KeycloakVerificationMock {
                   .putHeader("Access-Control-Allow-Credentials", "true");
               routingContext.next();
             })
-        .failureHandler(r -> r.failure().printStackTrace())
+        .failureHandler(r -> LOG.error("Error while accessing route", r.failure()))
         .failureHandler(ErrorHandler.create());
     router.get("/auth/realms/:realm/protocol/openid-connect/auth").handler(this::getLoginPage);
     router.get("/authenticate").handler(this::authenticate);
@@ -71,14 +80,6 @@ class Server extends KeycloakVerificationMock {
         .handler(this::initIframe);
     router.get("/auth/realms/:realm/protocol/openid-connect/logout").handler(this::logout);
     return router;
-  }
-
-  private void logCall(final RoutingContext routingContext) {
-    System.out.printf(
-        "%d: %-7s %s%n",
-        routingContext.response().getStatusCode(),
-        routingContext.request().rawMethod(),
-        routingContext.request().uri());
   }
 
   private void getLoginPage(final RoutingContext routingContext) {
@@ -100,10 +101,8 @@ class Server extends KeycloakVerificationMock {
     ResponseType responseType =
         ResponseType.fromValueOrNull(routingContext.queryParams().get(RESPONSE_TYPE));
     if (responseType == null) {
-      System.out.println(
-          "Invalid response type '"
-              + routingContext.queryParams().get(RESPONSE_TYPE)
-              + "' requested!");
+      LOG.warn(
+          "Invalid response type '{}' requested!", routingContext.queryParams().get(RESPONSE_TYPE));
       routingContext.fail(400);
       return;
     }
@@ -217,7 +216,7 @@ class Server extends KeycloakVerificationMock {
                 .putHeader(HttpHeaders.CONTENT_TYPE, contentType)
                 .end(res.result());
           } else {
-            res.cause().printStackTrace();
+            LOG.error("Unable to render template {}", name, res.cause());
             routingContext.fail(res.cause());
           }
         });

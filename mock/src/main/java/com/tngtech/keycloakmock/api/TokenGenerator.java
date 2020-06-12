@@ -18,8 +18,11 @@ import java.util.Date;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 final class TokenGenerator {
+  private static final Logger LOG = LoggerFactory.getLogger(TokenGenerator.class);
   private static final String KEY_ID = "keyId";
   private static final String KEY = "rsa";
   private static final String JWKS_TEMPLATE =
@@ -53,7 +56,7 @@ final class TokenGenerator {
         | NoSuchAlgorithmException
         | UnrecoverableKeyException
         | KeyStoreException e) {
-      e.printStackTrace();
+      LOG.error("Error while loading keystore for signing token", e);
       throw new IllegalStateException(e);
     }
   }

@@ -49,6 +49,7 @@ ext {
     junit5_version = '5.6.2'
     picocli_version = '4.2.0'
     restassured_version = '4.3.0'
+    slf4j_version = '1.7.30'
     vertx_version = '4.0.0-milestone4'
 
     license_name = 'The Apache License, Version 2.0'
