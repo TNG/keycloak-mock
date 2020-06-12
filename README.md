@@ -40,7 +40,7 @@ testImplementation 'com.tngtech.keycloakmock:mock:0.3.0'
 like this:
 
 ```java
-import com.tngtech.keycloakmock.api.KeycloakVerificationMock;
+import com.tngtech.keycloakmock.api.KeycloakMock;
 
 class Test {
 

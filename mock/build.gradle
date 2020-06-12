@@ -5,9 +5,10 @@ dependencies {
     implementation "io.jsonwebtoken:jjwt-jackson:$jjwt_version"
     implementation "io.vertx:vertx-web:$vertx_version"
     implementation "org.slf4j:slf4j-api:$slf4j_version"
-    testImplementation "org.junit.jupiter:junit-jupiter-api:$junit5_version"
     testImplementation "io.rest-assured:rest-assured:$restassured_version"
     testImplementation "org.assertj:assertj-core:$assertj_version"
+    testImplementation "org.junit.jupiter:junit-jupiter-api:$junit5_version"
+    testImplementation "org.junit.jupiter:junit-jupiter-params:$junit5_version"
     testRuntime "org.junit.jupiter:junit-jupiter-engine:$junit5_version"
     testRuntime "org.slf4j:slf4j-simple:$slf4j_version"
 }

@@ -2,7 +2,7 @@ package com.tngtech.keycloakmock.standalone;
 
 import static com.tngtech.keycloakmock.api.TokenConfig.aTokenConfig;
 
-import com.tngtech.keycloakmock.api.KeycloakVerificationMock;
+import com.tngtech.keycloakmock.api.KeycloakMock;
 import io.vertx.core.http.Cookie;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.json.JsonObject;
@@ -21,7 +21,7 @@ import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-class Server extends KeycloakVerificationMock {
+class Server extends KeycloakMock {
   private static final Logger LOG = LoggerFactory.getLogger(Server.class);
 
   private static final String CLIENT_ID = "client_id";

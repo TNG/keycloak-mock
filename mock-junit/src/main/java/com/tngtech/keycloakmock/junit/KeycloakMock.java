@@ -1,6 +1,5 @@
 package com.tngtech.keycloakmock.junit;
 
-import com.tngtech.keycloakmock.api.KeycloakVerificationMock;
 import com.tngtech.keycloakmock.api.TokenConfig;
 import org.junit.rules.ExternalResource;
 
@@ -21,7 +20,7 @@ import org.junit.rules.ExternalResource;
  */
 public class KeycloakMock extends ExternalResource {
 
-  private final KeycloakVerificationMock mock;
+  private final com.tngtech.keycloakmock.api.KeycloakMock mock;
 
   /**
    * Create a mock instance for a given realm.
@@ -62,7 +61,7 @@ public class KeycloakMock extends ExternalResource {
    * @param tls whether to use HTTPS instead of HTTP
    */
   public KeycloakMock(final int port, final String realm, final boolean tls) {
-    this.mock = new KeycloakVerificationMock(port, realm, tls);
+    this.mock = new com.tngtech.keycloakmock.api.KeycloakMock(port, realm, tls);
   }
 
   /**
