@@ -173,11 +173,11 @@ public class KeycloakVerificationMock {
   }
 
   private void getOpenIdConfig(final RoutingContext routingContext) {
-    final String realm = routingContext.pathParam("realm");
+    final String requestRealm = routingContext.pathParam("realm");
     routingContext
         .response()
         .putHeader("content-type", "application/json")
-        .end(String.format(OPEN_ID_CONFIG_TEMPLATE, getIssuer(realm), hostname));
+        .end(String.format(OPEN_ID_CONFIG_TEMPLATE, getIssuer(requestRealm), hostname));
   }
 
   @Nonnull
