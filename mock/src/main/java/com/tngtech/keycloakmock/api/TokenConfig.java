@@ -214,10 +214,10 @@ public class TokenConfig {
         // ignoring expiry exceptions
         untrustedClaims = e.getClaims();
       }
-      for (String claim : untrustedClaims.keySet()) {
-        switch (claim) {
+      for (Map.Entry<String, Object> entry : untrustedClaims.entrySet()) {
+        switch (entry.getKey()) {
           case "aud":
-            Object aud = untrustedClaims.get("aud");
+            Object aud = entry.getValue();
             if (aud instanceof String) {
               withAudience((String) aud);
             } else if (aud instanceof Collection) {
@@ -226,44 +226,43 @@ public class TokenConfig {
             }
             break;
           case "azp":
-            withAuthorizedParty(untrustedClaims.get("azp", String.class));
+            withAuthorizedParty(getTypedValue(entry, String.class));
             break;
           case "sub":
-            withSubject(untrustedClaims.getSubject());
+            withSubject(getTypedValue(entry, String.class));
             break;
           case "name":
-            withName(untrustedClaims.get("name", String.class));
+            withName(getTypedValue(entry, String.class));
             break;
           case "given_name":
-            withGivenName(untrustedClaims.get("given_name", String.class));
+            withGivenName(getTypedValue(entry, String.class));
             break;
           case "family_name":
-            withFamilyName(untrustedClaims.get("family_name", String.class));
+            withFamilyName(getTypedValue(entry, String.class));
             break;
           case "email":
-            withEmail(untrustedClaims.get("email", String.class));
+            withEmail(getTypedValue(entry, String.class));
             break;
           case "preferred_username":
-            withPreferredUsername(untrustedClaims.get("preferred_username", String.class));
+            withPreferredUsername(getTypedValue(entry, String.class));
             break;
           case "realm_access":
             //noinspection unchecked
-            Map<String, List<String>> realmAccess = untrustedClaims.get("realm_access", Map.class);
-            withRealmRoles(realmAccess.get("roles"));
+            Map<String, List<String>> sourceRealmAccess = getTypedValue(entry, Map.class);
+            withRealmRoles(sourceRealmAccess.get("roles"));
             break;
           case "resource_access":
             //noinspection unchecked
-            Map<String, Map<String, List<String>>> resourceAccess =
-                untrustedClaims.get("resource_access", Map.class);
-            for (String resource : resourceAccess.keySet()) {
-              withResourceRoles(resource, resourceAccess.get(resource).get("roles"));
-            }
+            Map<String, Map<String, List<String>>> sourceResourceAccess =
+                getTypedValue(entry, Map.class);
+            sourceResourceAccess.forEach(
+                (key, value) -> withResourceRoles(key, value.get("roles")));
             break;
           case "scope":
-            withScopes(Arrays.asList(untrustedClaims.get("scope", String.class).split(" ")));
+            withScopes(Arrays.asList(getTypedValue(entry, String.class).split(" ")));
             break;
           case "typ":
-            if (!"Bearer".equals(untrustedClaims.get("typ", String.class))) {
+            if (!"Bearer".equals(getTypedValue(entry, String.class))) {
               throw new IllegalArgumentException("Only bearer tokens are allowed here!");
             }
             break;
@@ -275,11 +274,21 @@ public class TokenConfig {
             // ignoring issuer and date information
             break;
           default:
-            withClaim(claim, untrustedClaims.get(claim));
+            withClaim(entry.getKey(), entry.getValue());
             break;
         }
       }
       return this;
+    }
+
+    private <T> T getTypedValue(Map.Entry<String, Object> entry, Class<T> clazz) {
+      if (clazz.isInstance(entry.getValue())) {
+        return (T) entry.getValue();
+      }
+      throw new IllegalArgumentException(
+          String.format(
+              "Expected %s for key %s, but found %s",
+              clazz, entry.getKey(), entry.getValue().getClass()));
     }
 
     /**
