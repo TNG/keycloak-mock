@@ -264,7 +264,7 @@ public class TokenConfig {
             break;
           case "typ":
             if (!"Bearer".equals(untrustedClaims.get("typ", String.class))) {
-              throw new RuntimeException("Only bearer tokens are allowed here!");
+              throw new IllegalArgumentException("Only bearer tokens are allowed here!");
             }
             break;
           case "iss":
