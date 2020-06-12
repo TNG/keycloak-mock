@@ -1,6 +1,5 @@
 package com.tngtech.keycloakmock.junit5;
 
-import com.tngtech.keycloakmock.api.KeycloakVerificationMock;
 import com.tngtech.keycloakmock.api.TokenConfig;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
@@ -23,7 +22,7 @@ import org.junit.jupiter.api.extension.ExtensionContext;
  */
 public class KeycloakMock implements BeforeAllCallback, AfterAllCallback {
 
-  private final KeycloakVerificationMock mock;
+  private final com.tngtech.keycloakmock.api.KeycloakMock mock;
 
   /**
    * Create a mock instance for a given realm.
@@ -64,7 +63,7 @@ public class KeycloakMock implements BeforeAllCallback, AfterAllCallback {
    * @param tls whether to use HTTPS instead of HTTP
    */
   public KeycloakMock(final int port, final String realm, final boolean tls) {
-    this.mock = new KeycloakVerificationMock(port, realm, tls);
+    this.mock = new com.tngtech.keycloakmock.api.KeycloakMock(port, realm, tls);
   }
 
   /**

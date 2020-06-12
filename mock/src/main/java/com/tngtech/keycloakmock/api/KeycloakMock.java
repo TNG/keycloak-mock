@@ -29,9 +29,11 @@ import org.slf4j.LoggerFactory;
  * com.tngtech.keycloakmock.junit.KeycloakMock} from module mock-junit or {@code
  * com.tngtech.keycloakmock.junit5.KeycloakMock} from module mock-junit5 instead.
  */
-public class KeycloakVerificationMock {
-  private static final Logger LOG = LoggerFactory.getLogger(KeycloakVerificationMock.class);
+public class KeycloakMock {
+  private static final Logger LOG = LoggerFactory.getLogger(KeycloakMock.class);
 
+  public static final int DEFAULT_PORT = 8000;
+  public static final String DEFAULT_REALM = "master";
   private static final String HTTP = "http";
   private static final String HTTPS = "https";
   private static final String OPEN_ID_CONFIG_TEMPLATE =
@@ -66,16 +68,28 @@ public class KeycloakVerificationMock {
   private HttpServer server;
 
   /**
+   * Create a mock instance for realm "master".
+   *
+   * <p>The JWKS endpoint is served via HTTP on port 8000. If you need HTTPS or a different realm or
+   * port use {@link KeycloakMock#KeycloakMock(int, String, boolean)} instead.
+   *
+   * @throws IllegalStateException when the built-in keystore could not be read
+   */
+  public KeycloakMock() {
+    this(DEFAULT_PORT, DEFAULT_REALM);
+  }
+
+  /**
    * Create a mock instance for a given realm.
    *
    * <p>The JWKS endpoint is served via HTTP. If you need HTTPS, use {@link
-   * KeycloakVerificationMock#KeycloakVerificationMock(int, String, boolean)} instead.
+   * KeycloakMock#KeycloakMock(int, String, boolean)} instead.
    *
    * @param port the port of the mock to run (e.g. 8000)
    * @param realm the realm for which to provide tokens
    * @throws IllegalStateException when the built-in keystore could not be read
    */
-  public KeycloakVerificationMock(final int port, @Nonnull final String realm) {
+  public KeycloakMock(final int port, @Nonnull final String realm) {
     this(port, realm, false);
   }
 
@@ -89,7 +103,7 @@ public class KeycloakVerificationMock {
    * @param tls whether to use HTTPS instead of HTTP
    * @throws IllegalStateException when the built-in keystore could not be read
    */
-  public KeycloakVerificationMock(final int port, @Nonnull final String realm, final boolean tls) {
+  public KeycloakMock(final int port, @Nonnull final String realm, final boolean tls) {
     this.port = port;
     this.realm = Objects.requireNonNull(realm);
     this.tls = tls;
