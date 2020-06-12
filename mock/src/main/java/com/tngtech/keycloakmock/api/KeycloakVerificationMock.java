@@ -203,6 +203,7 @@ public class KeycloakVerificationMock {
         future.get();
       } catch (InterruptedException | ExecutionException e) {
         e.printStackTrace();
+        Thread.currentThread().interrupt();
         throw new RuntimeException(e);
       }
     }
