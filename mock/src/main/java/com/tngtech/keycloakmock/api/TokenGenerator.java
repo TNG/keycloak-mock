@@ -54,7 +54,7 @@ final class TokenGenerator {
         | UnrecoverableKeyException
         | KeyStoreException e) {
       e.printStackTrace();
-      throw new RuntimeException(e);
+      throw new IllegalStateException(e);
     }
   }
 

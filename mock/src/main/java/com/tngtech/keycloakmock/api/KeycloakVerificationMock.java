@@ -70,6 +70,7 @@ public class KeycloakVerificationMock {
    *
    * @param port the port of the mock to run (e.g. 8000)
    * @param realm the realm for which to provide tokens
+   * @throws IllegalStateException when the built-in keystore could not be read
    */
   public KeycloakVerificationMock(final int port, @Nonnull final String realm) {
     this(port, realm, false);
@@ -83,17 +84,14 @@ public class KeycloakVerificationMock {
    * @param port the port of the mock to run (e.g. 8000)
    * @param realm the realm for which to provide tokens
    * @param tls whether to use HTTPS instead of HTTP
+   * @throws IllegalStateException when the built-in keystore could not be read
    */
   public KeycloakVerificationMock(final int port, @Nonnull final String realm, final boolean tls) {
     this.port = port;
     this.realm = Objects.requireNonNull(realm);
     this.tls = tls;
     this.hostname = tls ? HTTPS : HTTP + "://localhost:" + port;
-    try {
-      this.tokenGenerator = new TokenGenerator();
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
+    this.tokenGenerator = new TokenGenerator();
   }
 
   /**
@@ -114,7 +112,12 @@ public class KeycloakVerificationMock {
     return tokenGenerator.getToken(tokenConfig, getIssuer(realm));
   }
 
-  /** Start the server (blocking). */
+  /**
+   * Start the server (blocking).
+   *
+   * @throws MockServerException when the server could not be started properly
+   * @throws IllegalStateException when the built-in keystore could not be read for TLS mode
+   */
   public void start() {
     HttpServerOptions options = new HttpServerOptions().setPort(port);
     if (tls) {
@@ -142,7 +145,11 @@ public class KeycloakVerificationMock {
     return router;
   }
 
-  /** Stop the server (blocking). */
+  /**
+   * Stop the server (blocking).
+   *
+   * @throws MockServerException when the server could not be stopped properly
+   */
   public void stop() {
     ResultHandler<Void> stopHandler = new ResultHandler<>();
     server.close(stopHandler);
@@ -161,7 +168,7 @@ public class KeycloakVerificationMock {
       return Buffer.buffer(outputStream.toByteArray());
     } catch (IOException e) {
       e.printStackTrace();
-      throw new RuntimeException(e);
+      throw new IllegalStateException(e);
     }
   }
 
@@ -204,7 +211,7 @@ public class KeycloakVerificationMock {
       } catch (InterruptedException | ExecutionException e) {
         e.printStackTrace();
         Thread.currentThread().interrupt();
-        throw new RuntimeException(e);
+        throw new MockServerException(e);
       }
     }
   }
