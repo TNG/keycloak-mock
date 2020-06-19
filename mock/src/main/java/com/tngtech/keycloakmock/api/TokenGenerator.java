@@ -70,7 +70,7 @@ final class TokenGenerator {
             // one (see https://github.com/jwtk/jjwt/issues/77), use a workaround here
             .claim("aud", tokenConfig.getAudience())
             .setIssuedAt(new Date(tokenConfig.getIssuedAt().toEpochMilli()))
-            .claim("auth_time", new Date((tokenConfig.getAuthenticationTime().toEpochMilli())))
+            .claim("auth_time", tokenConfig.getAuthenticationTime().getEpochSecond())
             .setExpiration(new Date(tokenConfig.getExpiration().toEpochMilli()))
             .setIssuer(Objects.requireNonNull(issuer))
             .setSubject(tokenConfig.getSubject())
