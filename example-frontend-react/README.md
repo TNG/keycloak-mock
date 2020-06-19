@@ -9,7 +9,7 @@ For this, you can either start a real Keycloak server with the provided configur
 ```bash
 docker run -p 8000:8080 -e KEYCLOAK_USER=admin -e KEYCLOAK_PASSWORD=admin \
     -e KEYCLOAK_IMPORT=/tmp/realm.json -v $(pwd)/realm.json:/tmp/realm.json \
-    jboss/keycloak:9.0.0
+    jboss/keycloak:10.0.2
 ```
 
 Or you can start our standalone server with no need for additional configuration:
