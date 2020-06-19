@@ -185,8 +185,7 @@ public class KeycloakMock {
       }
       return Buffer.buffer(outputStream.toByteArray());
     } catch (IOException e) {
-      LOG.error("Error while loading keystore for TLS key configuration", e);
-      throw new IllegalStateException(e);
+      throw new IllegalStateException("Error while loading keystore for TLS key configuration", e);
     }
   }
 
@@ -227,9 +226,8 @@ public class KeycloakMock {
       try {
         future.get();
       } catch (InterruptedException | ExecutionException e) {
-        LOG.error("Error while starting/stopping mock server", e);
         Thread.currentThread().interrupt();
-        throw new MockServerException(e);
+        throw new MockServerException("Error while starting/stopping mock server", e);
       }
     }
   }
