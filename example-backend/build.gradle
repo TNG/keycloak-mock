@@ -21,7 +21,7 @@ ext['junit-jupiter.version'] = junit5_version
 ext['groovy.version'] = '3.0.2'
 
 dependencies {
-    def keycloak_version = '9.0.2'
+    def keycloak_version = '10.0.2'
 
     implementation "org.springframework.boot:spring-boot-starter-web:$springBootVersion"
     implementation "org.springframework.boot:spring-boot-starter-security:$springBootVersion"
