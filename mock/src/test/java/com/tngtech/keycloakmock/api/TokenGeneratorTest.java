@@ -78,7 +78,7 @@ class TokenGeneratorTest {
     assertThat(claims.getExpiration()).isInTheFuture();
     assertThat(claims.getNotBefore()).isNull();
     assertThat(claims.getIssuedAt()).isInThePast();
-    assertThat(claims.get("auth_time", Date.class)).isInThePast();
+    assertThat(claims.get("auth_time", Long.class)).isLessThanOrEqualTo(Instant.now().getEpochSecond());
     assertThat(claims.getIssuer()).isEqualTo("http://localhost:8000/auth/realms/master");
     assertThat(claims.getSubject()).isEqualTo("user");
   }
