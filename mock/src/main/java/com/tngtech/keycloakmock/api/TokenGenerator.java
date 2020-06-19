@@ -47,9 +47,9 @@ final class TokenGenerator {
       }
       privateKey = keyStore.getKey(KEY, new char[] {});
       RSAPublicKey publicKey = (RSAPublicKey) keyStore.getCertificate(KEY).getPublicKey();
-      String base = Base64.getEncoder().encodeToString(publicKey.getModulus().toByteArray());
+      String base = Base64.getUrlEncoder().encodeToString(publicKey.getModulus().toByteArray());
       String exponent =
-          Base64.getEncoder().encodeToString(publicKey.getPublicExponent().toByteArray());
+          Base64.getUrlEncoder().encodeToString(publicKey.getPublicExponent().toByteArray());
       jwksResponse = String.format(JWKS_TEMPLATE, KEY_ID, base, exponent);
     } catch (IOException
         | CertificateException
