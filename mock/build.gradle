@@ -5,6 +5,7 @@ dependencies {
     implementation "io.jsonwebtoken:jjwt-jackson:$jjwt_version"
     implementation "io.vertx:vertx-web:$vertx_version"
     implementation "org.slf4j:slf4j-api:$slf4j_version"
+    testImplementation 'io.fusionauth:fusionauth-jwt:3.4.0'
     testImplementation "io.rest-assured:rest-assured:$restassured_version"
     testImplementation "org.assertj:assertj-core:$assertj_version"
     testImplementation "org.junit.jupiter:junit-jupiter-api:$junit5_version"

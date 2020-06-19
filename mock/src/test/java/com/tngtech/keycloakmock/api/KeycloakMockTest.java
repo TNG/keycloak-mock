@@ -21,6 +21,15 @@ class KeycloakMockTest {
     assertServerMockRunnning(false);
   }
 
+  private void assertServerMockRunnning(boolean running) {
+    try {
+      RestAssured.when().get("http://localhost:8000").then().statusCode(404);
+      assertThat(running).as("Exception should occur if server is not running").isTrue();
+    } catch (Throwable e) {
+      assertThat(running).as("Exception should occur if server is not running").isFalse();
+    }
+  }
+
   @ParameterizedTest
   @MethodSource("serverConfig")
   void mock_server_endpoint_is_correctly_configured(int port, boolean tls) {
@@ -37,14 +46,5 @@ class KeycloakMockTest {
 
   private static Stream<Arguments> serverConfig() {
     return Stream.of(Arguments.of(8000, false), Arguments.of(8001, true));
-  }
-
-  private void assertServerMockRunnning(boolean running) {
-    try {
-      RestAssured.when().get("http://localhost:8000").then().statusCode(404);
-      assertThat(running).as("Exception should occur if server is not running").isTrue();
-    } catch (Throwable e) {
-      assertThat(running).as("Exception should occur if server is not running").isFalse();
-    }
   }
 }
