@@ -44,7 +44,11 @@ class KeycloakMockTest {
     RestAssured.given()
         .relaxedHTTPSValidation()
         .when()
-        .get((tls ? "https" : "http") + "://localhost:" + port + "/auth/realms/master/protocol/openid-connect/certs")
+        .get(
+            (tls ? "https" : "http")
+                + "://localhost:"
+                + port
+                + "/auth/realms/master/protocol/openid-connect/certs")
         .then()
         .statusCode(200)
         .and()

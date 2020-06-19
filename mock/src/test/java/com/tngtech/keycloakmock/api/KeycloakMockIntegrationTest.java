@@ -24,19 +24,25 @@ class KeycloakMockIntegrationTest {
     keycloakMock.start();
     String accessToken = keycloakMock.getAccessToken(TokenConfig.aTokenConfig().build());
 
-    List<JSONWebKey> jsonWebKeys = JSONWebKeySetHelper.retrieveKeysFromWellKnownConfiguration(
-        "http://localhost:8000/auth/realms/master/.well-known/openid-configuration");
-    Map<String, Verifier> verifierMap = jsonWebKeys.stream()
-        .collect(Collectors.toMap(k -> k.kid, k -> {
-          PublicKey key = JSONWebKey.parse(k);
-          if (key instanceof RSAPublicKey) {
-            return RSAVerifier.newVerifier((RSAPublicKey) key);
-          } else if (key instanceof ECPublicKey) {
-            return ECVerifier.newVerifier((ECPublicKey) key);
-          } else {
-            return null;
-          }
-        }));
+    List<JSONWebKey> jsonWebKeys =
+        JSONWebKeySetHelper.retrieveKeysFromWellKnownConfiguration(
+            "http://localhost:8000/auth/realms/master/.well-known/openid-configuration");
+    Map<String, Verifier> verifierMap =
+        jsonWebKeys
+            .stream()
+            .collect(
+                Collectors.toMap(
+                    k -> k.kid,
+                    k -> {
+                      PublicKey key = JSONWebKey.parse(k);
+                      if (key instanceof RSAPublicKey) {
+                        return RSAVerifier.newVerifier((RSAPublicKey) key);
+                      } else if (key instanceof ECPublicKey) {
+                        return ECVerifier.newVerifier((ECPublicKey) key);
+                      } else {
+                        return null;
+                      }
+                    }));
 
     JWT result = JWT.getDecoder().decode(accessToken, verifierMap);
 

@@ -21,7 +21,7 @@ import org.junit.jupiter.api.extension.ExtensionContext;
  * </code></pre>
  *
  * @deprecated use {@code com.tngtech.keycloakmock.junit.KeycloakMock} from module mock-junit
- * instead
+ *     instead
  */
 @Deprecated
 public class KeycloakMock implements BeforeAllCallback, AfterAllCallback {
