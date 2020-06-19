@@ -27,14 +27,14 @@ You can create and start the mock directly from the `mock` artifact using Maven
     <groupId>com.tngtech.keycloakmock</groupId>
     <artifactId>mock</artifactId>
     <scope>test</scope>
-    <version>0.3.0</version>
+    <version>0.4.0</version>
 </dependency>
 ```
 
 or Gradle
 
 ```gradle
-testImplementation 'com.tngtech.keycloakmock:mock:0.3.0'
+testImplementation 'com.tngtech.keycloakmock:mock:0.4.0'
 ```
 
 like this:
@@ -44,7 +44,7 @@ import com.tngtech.keycloakmock.api.KeycloakMock;
 
 class Test {
 
-  KeycloakVerificationMock mock = new KeycloakVerificationMock(8000, "master");
+  KeycloakMock mock = new KeycloakMock(8000, "master");
 
   static {
     mock.start();
@@ -53,10 +53,10 @@ class Test {
 }
 ```
 
-Or you can use use the JUnit4 test rule from the `mock-junit` artifact
+Or you can use use the `mock-junit` artifact both with JUnit4
 
 ```java
-import com.tngtech.keycloakmock.api.junit.KeycloakMock;
+import com.tngtech.keycloakmock.junit.KeycloakMock;
 
 public class Test {
   @ClassRule
@@ -67,10 +67,10 @@ public class Test {
 }
 ```
 
-or the JUnit5 extension from the `mock-junit5` module
+and with JUnit5
 
 ```java
-import com.tngtech.keycloakmock.api.junit5.KeycloakMock;
+import com.tngtech.keycloakmock.junit.KeycloakMock;
 
 class Test {
   @RegisterExtension
