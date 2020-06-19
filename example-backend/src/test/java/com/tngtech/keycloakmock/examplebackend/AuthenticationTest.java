@@ -3,7 +3,7 @@ package com.tngtech.keycloakmock.examplebackend;
 import static com.tngtech.keycloakmock.api.TokenConfig.aTokenConfig;
 import static org.hamcrest.Matchers.equalTo;
 
-import com.tngtech.keycloakmock.junit5.KeycloakMock;
+import com.tngtech.keycloakmock.junit.KeycloakMock;
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

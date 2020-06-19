@@ -3,6 +3,7 @@ package com.tngtech.keycloakmock.api;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.restassured.RestAssured;
+import io.restassured.http.ContentType;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -23,7 +24,12 @@ class KeycloakMockTest {
 
   private void assertServerMockRunnning(boolean running) {
     try {
-      RestAssured.when().get("http://localhost:8000").then().statusCode(404);
+      RestAssured.when()
+          .get("http://localhost:8000/auth/realms/master/protocol/openid-connect/certs")
+          .then()
+          .statusCode(200)
+          .and()
+          .contentType(ContentType.JSON);
       assertThat(running).as("Exception should occur if server is not running").isTrue();
     } catch (Throwable e) {
       assertThat(running).as("Exception should occur if server is not running").isFalse();
@@ -38,9 +44,11 @@ class KeycloakMockTest {
     RestAssured.given()
         .relaxedHTTPSValidation()
         .when()
-        .get((tls ? "https" : "http") + "://localhost:" + port)
+        .get((tls ? "https" : "http") + "://localhost:" + port + "/auth/realms/master/protocol/openid-connect/certs")
         .then()
-        .statusCode(404);
+        .statusCode(200)
+        .and()
+        .contentType(ContentType.JSON);
     keycloakMock.stop();
   }
 
