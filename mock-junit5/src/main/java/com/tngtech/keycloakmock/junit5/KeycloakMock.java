@@ -19,7 +19,11 @@ import org.junit.jupiter.api.extension.ExtensionContext;
  *    String token = mock.getAccessToken(aTokenConfig().build());
  *  }
  * </code></pre>
+ *
+ * @deprecated use {@code com.tngtech.keycloakmock.junit.KeycloakMock} from module mock-junit
+ * instead
  */
+@Deprecated
 public class KeycloakMock implements BeforeAllCallback, AfterAllCallback {
 
   private final com.tngtech.keycloakmock.api.KeycloakMock mock;
