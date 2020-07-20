@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 class KeycloakMockJunit5Test {
-  @RegisterExtension private final KeycloakMock keycloakMock = new KeycloakMock();
+  @RegisterExtension static final KeycloakMock keycloakMock = new KeycloakMock();
 
   @BeforeEach
   void setup() {
