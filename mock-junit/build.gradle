@@ -6,9 +6,12 @@ dependencies {
     implementation "org.junit.jupiter:junit-jupiter-migrationsupport:$junit5_version"
     testImplementation "io.rest-assured:rest-assured:$restassured_version"
     testImplementation "org.assertj:assertj-core:$assertj_version"
+    testRuntime "org.junit.jupiter:junit-jupiter-engine:$junit5_version"
+    testRuntime "org.junit.vintage:junit-vintage-engine:$junit5_version"
 }
 
 test {
+    useJUnitPlatform()
     testLogging {
         events "passed", "skipped", "failed"
     }
@@ -16,4 +19,3 @@ test {
         logger.lifecycle("Running test: ${descriptor}")
     }
 }
-
