@@ -60,7 +60,7 @@ import com.tngtech.keycloakmock.junit.KeycloakMock;
 
 public class Test {
   @ClassRule
-  public static KeyCloakMock mock = new KeycloakMock();
+  public static KeycloakMock mock = new KeycloakMock();
 
   // ...
     
@@ -74,7 +74,7 @@ import com.tngtech.keycloakmock.junit.KeycloakMock;
 
 class Test {
   @RegisterExtension
-  static KeyCloakMock mock = new KeyCloakMock();
+  static KeycloakMock mock = new KeycloakMock();
 
   // ...
     
