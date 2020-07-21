@@ -7,7 +7,7 @@ import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.rules.ExternalResource;
 
 /**
- * A JUnit4 resource to be used as class rule to automatically start and stop the keycloak mock.
+ * A JUnit helper to automatically start and stop the keycloak mock.
  *
  * <p>Example JUnit4 use:
  *
