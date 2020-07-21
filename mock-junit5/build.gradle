@@ -1,4 +1,4 @@
-description = 'JUnit5 variant of keycloak-mock'
+description = 'JUnit5 helper for keycloak-mock (deprecated)'
 
 dependencies {
     api project(':mock')
