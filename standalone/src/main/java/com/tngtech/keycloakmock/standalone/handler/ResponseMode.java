@@ -1,4 +1,4 @@
-package com.tngtech.keycloakmock.standalone;
+package com.tngtech.keycloakmock.standalone.handler;
 
 import java.util.Locale;
 import javax.annotation.Nullable;
