@@ -204,6 +204,7 @@ public class TokenConfig {
      * @return builder
      */
     @Nonnull
+    @SuppressWarnings("unchecked")
     public Builder withSourceToken(@Nonnull final String originalToken) {
       int i = originalToken.lastIndexOf('.');
       String untrustedJwtString = originalToken.substring(0, i + 1);
@@ -221,7 +222,6 @@ public class TokenConfig {
             if (aud instanceof String) {
               withAudience((String) aud);
             } else if (aud instanceof Collection) {
-              //noinspection unchecked
               withAudiences((Collection<String>) aud);
             }
             break;
@@ -247,12 +247,10 @@ public class TokenConfig {
             withPreferredUsername(getTypedValue(entry, String.class));
             break;
           case "realm_access":
-            //noinspection unchecked
             Map<String, List<String>> sourceRealmAccess = getTypedValue(entry, Map.class);
             withRealmRoles(sourceRealmAccess.get("roles"));
             break;
           case "resource_access":
-            //noinspection unchecked
             Map<String, Map<String, List<String>>> sourceResourceAccess =
                 getTypedValue(entry, Map.class);
             sourceResourceAccess.forEach(
@@ -281,6 +279,7 @@ public class TokenConfig {
       return this;
     }
 
+    @SuppressWarnings("unchecked")
     private <T> T getTypedValue(Map.Entry<String, Object> entry, Class<T> clazz) {
       if (clazz.isInstance(entry.getValue())) {
         return (T) entry.getValue();
@@ -317,7 +316,7 @@ public class TokenConfig {
      */
     @Nonnull
     public Builder withAudiences(@Nonnull final Collection<String> audiences) {
-      this.audience.addAll(Objects.requireNonNull(audience));
+      this.audience.addAll(Objects.requireNonNull(audiences));
       return this;
     }
 
