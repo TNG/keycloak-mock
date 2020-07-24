@@ -29,7 +29,8 @@ class TokenConfigTest {
     assertThat(config.getAuthorizedParty()).isEqualTo("client");
     assertThat(config.getClaims()).isEmpty();
     assertThat(config.getEmail()).isNull();
-    assertThat(config.getExpiration()).isCloseTo(now.plus(10, ChronoUnit.HOURS), within(1, ChronoUnit.SECONDS));
+    assertThat(config.getExpiration())
+        .isCloseTo(now.plus(10, ChronoUnit.HOURS), within(1, ChronoUnit.SECONDS));
     assertThat(config.getFamilyName()).isNull();
     assertThat(config.getGivenName()).isNull();
     assertThat(config.getIssuedAt()).isBetween(now.minusSeconds(1), now);
@@ -44,41 +45,41 @@ class TokenConfigTest {
 
   @Test
   void audience_is_set_correctly() {
-    TokenConfig config = aTokenConfig()
-        .withAudience("audience1")
-        .withAudiences(Collections.singleton("audience2"))
-        .withAudience("audience3")
-        .build();
+    TokenConfig config =
+        aTokenConfig()
+            .withAudience("audience1")
+            .withAudiences(Collections.singleton("audience2"))
+            .withAudience("audience3")
+            .build();
 
-    assertThat(config.getAudience()).containsExactlyInAnyOrder("audience1", "audience2", "audience3");
+    assertThat(config.getAudience())
+        .containsExactlyInAnyOrder("audience1", "audience2", "audience3");
   }
 
   @Test
   void authenticationTime_is_set_correctly() {
     Instant authenticationTime = Instant.now().minusSeconds(5);
-    TokenConfig config = aTokenConfig()
-        .withAuthenticationTime(authenticationTime)
-        .build();
+    TokenConfig config = aTokenConfig().withAuthenticationTime(authenticationTime).build();
 
-    assertThat(config.getAuthenticationTime()).isCloseTo(authenticationTime, within(1, ChronoUnit.MILLIS));
+    assertThat(config.getAuthenticationTime())
+        .isCloseTo(authenticationTime, within(1, ChronoUnit.MILLIS));
   }
 
   @Test
   void authorizedParty_is_set_correctly() {
-    TokenConfig config = aTokenConfig()
-        .withAuthorizedParty("authorized")
-        .build();
+    TokenConfig config = aTokenConfig().withAuthorizedParty("authorized").build();
 
     assertThat(config.getAuthorizedParty()).isEqualTo("authorized");
   }
 
   @Test
   void custom_claims_are_set_correctly() {
-    TokenConfig config = aTokenConfig()
-        .withClaim("claim1", 1)
-        .withClaims(Maps.<String, Object>of("claim2", "2").build())
-        .withClaim("claim3", true)
-        .build();
+    TokenConfig config =
+        aTokenConfig()
+            .withClaim("claim1", 1)
+            .withClaims(Maps.<String, Object>of("claim2", "2").build())
+            .withClaim("claim3", true)
+            .build();
 
     assertThat(config.getClaims())
         .containsOnly(entry("claim1", 1), entry("claim2", "2"), entry("claim3", true));
@@ -86,21 +87,19 @@ class TokenConfigTest {
 
   @Test
   void last_claim_version_wins() {
-    TokenConfig config = aTokenConfig()
-        .withClaim("claim", 1)
-        .withClaims(Maps.<String, Object>of("claim", "2").build())
-        .withClaim("claim", true)
-        .build();
+    TokenConfig config =
+        aTokenConfig()
+            .withClaim("claim", 1)
+            .withClaims(Maps.<String, Object>of("claim", "2").build())
+            .withClaim("claim", true)
+            .build();
 
-    assertThat(config.getClaims())
-        .containsOnly(entry("claim", true));
+    assertThat(config.getClaims()).containsOnly(entry("claim", true));
   }
 
   @Test
   void email_is_set_correctly() {
-    TokenConfig config = aTokenConfig()
-        .withEmail("email")
-        .build();
+    TokenConfig config = aTokenConfig().withEmail("email").build();
 
     assertThat(config.getEmail()).isEqualTo("email");
   }
@@ -108,20 +107,15 @@ class TokenConfigTest {
   @Test
   void expiration_is_set_correctly() {
     Instant expiration = Instant.now().plusSeconds(5);
-    TokenConfig config = aTokenConfig()
-        .withExpiration(expiration)
-        .build();
+    TokenConfig config = aTokenConfig().withExpiration(expiration).build();
 
     assertThat(config.getExpiration()).isCloseTo(expiration, within(1, ChronoUnit.MILLIS));
   }
 
   @Test
   void names_are_set_correctly() {
-    TokenConfig config = aTokenConfig()
-        .withFamilyName("family")
-        .withGivenName("given")
-        .withName("name")
-        .build();
+    TokenConfig config =
+        aTokenConfig().withFamilyName("family").withGivenName("given").withName("name").build();
 
     assertThat(config.getFamilyName()).isEqualTo("family");
     assertThat(config.getGivenName()).isEqualTo("given");
@@ -130,11 +124,10 @@ class TokenConfigTest {
 
   @ParameterizedTest
   @MethodSource("givenName_familyName_and_expected_name")
-  void name_is_filled_from_given_and_family_name_if_not_set(String givenName, String familyName, String expectedName) {
-    TokenConfig config = TokenConfig.aTokenConfig()
-        .withGivenName(givenName)
-        .withFamilyName(familyName)
-        .build();
+  void name_is_filled_from_given_and_family_name_if_not_set(
+      String givenName, String familyName, String expectedName) {
+    TokenConfig config =
+        TokenConfig.aTokenConfig().withGivenName(givenName).withFamilyName(familyName).build();
 
     assertThat(config.getName()).isEqualTo(expectedName);
   }
@@ -144,16 +137,13 @@ class TokenConfigTest {
         Arguments.of("given", "family", "given family"),
         Arguments.of(null, "family", "family"),
         Arguments.of("given", null, "given"),
-        Arguments.of(null, null, null)
-    );
+        Arguments.of(null, null, null));
   }
 
   @Test
   void issuedAt_is_set_correctly() {
     Instant issuedAt = Instant.now().plusSeconds(5);
-    TokenConfig config = aTokenConfig()
-        .withIssuedAt(issuedAt)
-        .build();
+    TokenConfig config = aTokenConfig().withIssuedAt(issuedAt).build();
 
     assertThat(config.getIssuedAt()).isCloseTo(issuedAt, within(1, ChronoUnit.MILLIS));
   }
@@ -161,29 +151,26 @@ class TokenConfigTest {
   @Test
   void notBefore_is_set_correctly() {
     Instant notBefore = Instant.now().plusSeconds(5);
-    TokenConfig config = aTokenConfig()
-        .withNotBefore(notBefore)
-        .build();
+    TokenConfig config = aTokenConfig().withNotBefore(notBefore).build();
 
     assertThat(config.getNotBefore()).isCloseTo(notBefore, within(1, ChronoUnit.MILLIS));
   }
 
   @Test
   void preferredUsername_is_set_correctly() {
-    TokenConfig config = aTokenConfig()
-        .withPreferredUsername("preferred")
-        .build();
+    TokenConfig config = aTokenConfig().withPreferredUsername("preferred").build();
 
     assertThat(config.getPreferredUsername()).isEqualTo("preferred");
   }
 
   @Test
   void realmAccess_is_set_correctly() {
-    TokenConfig config = aTokenConfig()
-        .withRealmRole("role1")
-        .withRealmRoles(Collections.singleton("role2"))
-        .withRealmRole("role3")
-        .build();
+    TokenConfig config =
+        aTokenConfig()
+            .withRealmRole("role1")
+            .withRealmRoles(Collections.singleton("role2"))
+            .withRealmRole("role3")
+            .build();
 
     assertThat(config.getRealmAccess().getRoles())
         .containsExactlyInAnyOrder("role1", "role2", "role3");
@@ -191,15 +178,15 @@ class TokenConfigTest {
 
   @Test
   void resourceAccess_is_set_correctly() {
-    TokenConfig config = aTokenConfig()
-        .withResourceRole("resource1", "role1_1")
-        .withResourceRole("resource2", "role1_2")
-        .withResourceRoles("resource1", Collections.singleton("role2_1"))
-        .withResourceRole("resource1", "role3_1")
-        .build();
+    TokenConfig config =
+        aTokenConfig()
+            .withResourceRole("resource1", "role1_1")
+            .withResourceRole("resource2", "role1_2")
+            .withResourceRoles("resource1", Collections.singleton("role2_1"))
+            .withResourceRole("resource1", "role3_1")
+            .build();
 
-    assertThat(config.getResourceAccess())
-        .containsOnlyKeys("resource1", "resource2");
+    assertThat(config.getResourceAccess()).containsOnlyKeys("resource1", "resource2");
     assertThat(config.getResourceAccess().get("resource1").getRoles())
         .containsExactlyInAnyOrder("role1_1", "role2_1", "role3_1");
     assertThat(config.getResourceAccess().get("resource2").getRoles())
@@ -208,25 +195,22 @@ class TokenConfigTest {
 
   @Test
   void scope_is_set_correctly() {
-    TokenConfig config = aTokenConfig()
-        .withScope("scope1")
-        .withScopes(Collections.singletonList("scope2"))
-        .withScope("scope3")
-        .build();
+    TokenConfig config =
+        aTokenConfig()
+            .withScope("scope1")
+            .withScopes(Collections.singletonList("scope2"))
+            .withScope("scope3")
+            .build();
 
-    assertThat(config.getScope().split(" "))
-        .containsOnly("openid", "scope1", "scope2", "scope3");
+    assertThat(config.getScope().split(" ")).containsOnly("openid", "scope1", "scope2", "scope3");
   }
 
   @Test
   void subject_is_set_correctly() {
-    TokenConfig config = aTokenConfig()
-        .withSubject("subject")
-        .build();
+    TokenConfig config = aTokenConfig().withSubject("subject").build();
 
     assertThat(config.getSubject()).isEqualTo("subject");
   }
-
 
   @Test
   void config_is_set_correctly_from_original_token() {
@@ -238,21 +222,23 @@ class TokenConfigTest {
     assertThat(config.getAuthorizedParty()).isEqualTo("client");
     assertThat(config.getClaims())
         .containsOnly(
-        entry("jti", "9cfe2b60-1db9-4a12-b9dc-dcabfd16e945"),
-        entry("nonce", "aef8cf1b-127d-4650-8081-0db24af2d0e7"),
-        entry("session_state", "05270907-d7e2-4b75-8341-5bdd94eab763"),
-        entry("acr", "1"),
-        entry("allowed-origins", Collections.singletonList("http://localhost:3000")),
-        entry("email_verified", false));
+            entry("jti", "9cfe2b60-1db9-4a12-b9dc-dcabfd16e945"),
+            entry("nonce", "aef8cf1b-127d-4650-8081-0db24af2d0e7"),
+            entry("session_state", "05270907-d7e2-4b75-8341-5bdd94eab763"),
+            entry("acr", "1"),
+            entry("allowed-origins", Collections.singletonList("http://localhost:3000")),
+            entry("email_verified", false));
     assertThat(config.getEmail()).isEqualTo("user@keycloak");
-    assertThat(config.getExpiration()).isCloseTo(now.plus(10, ChronoUnit.HOURS), within(1, ChronoUnit.SECONDS));
+    assertThat(config.getExpiration())
+        .isCloseTo(now.plus(10, ChronoUnit.HOURS), within(1, ChronoUnit.SECONDS));
     assertThat(config.getFamilyName()).isEqualTo("User");
     assertThat(config.getGivenName()).isEqualTo("Peter");
     assertThat(config.getIssuedAt()).isBetween(now.minusSeconds(1), now);
     assertThat(config.getName()).isEqualTo("Peter User");
     assertThat(config.getNotBefore()).isNull();
     assertThat(config.getPreferredUsername()).isEqualTo("user");
-    assertThat(config.getRealmAccess().getRoles()).containsExactlyInAnyOrder("offline_access", "uma_authorization");
+    assertThat(config.getRealmAccess().getRoles())
+        .containsExactlyInAnyOrder("offline_access", "uma_authorization");
     assertThat(config.getResourceAccess()).containsOnlyKeys("account");
     assertThat(config.getResourceAccess().get("account").getRoles())
         .containsExactlyInAnyOrder("manage-account", "manage-account-links", "view-profile");

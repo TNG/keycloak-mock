@@ -80,12 +80,13 @@ class KeycloakMockTest {
 
     assertThat(jwt.getBody().getIssuer()).isEqualTo("http://localhost:123/auth/realms/realm123");
 
-    token = keycloakMock
-        .getAccessTokenForRealm(TokenConfig.aTokenConfig().build(), "another_realm");
+    token =
+        keycloakMock.getAccessTokenForRealm(TokenConfig.aTokenConfig().build(), "another_realm");
 
     jwt = jwtParser.parse(token);
 
-    assertThat(jwt.getBody().getIssuer()).isEqualTo("http://localhost:123/auth/realms/another_realm");
+    assertThat(jwt.getBody().getIssuer())
+        .isEqualTo("http://localhost:123/auth/realms/another_realm");
   }
 
   private RSAPublicKey loadKey() throws Exception {
