@@ -2,8 +2,16 @@ package com.tngtech.keycloakmock.api;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Header;
+import io.jsonwebtoken.Jwt;
+import io.jsonwebtoken.JwtParser;
+import io.jsonwebtoken.Jwts;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
+import java.io.InputStream;
+import java.security.KeyStore;
+import java.security.interfaces.RSAPublicKey;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -58,5 +66,34 @@ class KeycloakMockTest {
 
   private static Stream<Arguments> serverConfig() {
     return Stream.of(Arguments.of(8000, false), Arguments.of(8001, true));
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  void generated_token_uses_correct_issuer() throws Exception {
+    JwtParser jwtParser = Jwts.parserBuilder().setSigningKey(loadKey()).build();
+    KeycloakMock keycloakMock = new KeycloakMock(123, "realm123");
+
+    String token = keycloakMock.getAccessToken(TokenConfig.aTokenConfig().build());
+
+    Jwt<Header<?>, Claims> jwt = jwtParser.parse(token);
+
+    assertThat(jwt.getBody().getIssuer()).isEqualTo("http://localhost:123/auth/realms/realm123");
+
+    token = keycloakMock
+        .getAccessTokenForRealm(TokenConfig.aTokenConfig().build(), "another_realm");
+
+    jwt = jwtParser.parse(token);
+
+    assertThat(jwt.getBody().getIssuer()).isEqualTo("http://localhost:123/auth/realms/another_realm");
+  }
+
+  private RSAPublicKey loadKey() throws Exception {
+    KeyStore keyStore = KeyStore.getInstance("JKS");
+    try (InputStream keystoreStream =
+        TokenGeneratorTest.class.getResourceAsStream("/keystore.jks")) {
+      keyStore.load(keystoreStream, null);
+      return (RSAPublicKey) keyStore.getCertificate("rsa").getPublicKey();
+    }
   }
 }
