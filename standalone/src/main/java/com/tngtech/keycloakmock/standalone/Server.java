@@ -55,7 +55,7 @@ class Server extends KeycloakMock {
                           LOG.info(
                               "{}: {} {}",
                               routingContext.response().getStatusCode(),
-                              routingContext.request().rawMethod(),
+                              routingContext.request().method().name(),
                               routingContext.request().uri()))
                   .putHeader(
                       "Access-Control-Allow-Origin",
