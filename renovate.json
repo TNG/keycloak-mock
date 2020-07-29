@@ -1,0 +1,16 @@
+{
+  "extends": [
+    "config:base",
+    ":gitSignOff"
+  ],
+  "dependencyDashboard": true,
+  "labels": [
+    "dependencies",
+    "bot"
+  ],
+  "vulnerabilityAlerts": {
+    "labels": [
+      "security"
+    ]
+  }
+}
