@@ -1,6 +1,6 @@
 buildscript {
     ext {
-        springBootVersion = '2.3.1.RELEASE'
+        springBootVersion = '2.3.2.RELEASE'
     }
     repositories {
         mavenCentral()
@@ -31,7 +31,7 @@ dependencies {
     testImplementation "io.rest-assured:xml-path:$restassured_version"
     testImplementation "org.junit.jupiter:junit-jupiter-api:$junit5_version"
     testImplementation "org.assertj:assertj-core:$assertj_version"
-    testRuntime "org.junit.jupiter:junit-jupiter-engine:$junit5_version"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junit5_version"
 }
 
 test {
