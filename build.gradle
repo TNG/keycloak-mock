@@ -7,15 +7,16 @@ buildscript {
 }
 
 plugins {
-    id 'com.github.ben-manes.versions' version '0.28.0'
-    id 'com.github.jk1.dependency-license-report' version '1.13' apply false
+    id 'com.github.ben-manes.versions' version '0.29.0'
+    id 'com.github.jk1.dependency-license-report' version '1.14' apply false
+    // keeping it on 0.8 for now, as 0.9+ need java 11+ to run
     id 'com.github.sherter.google-java-format' version '0.8' apply false
     id 'org.sonarqube' version '3.0'
     id 'pl.allegro.tech.build.axion-release' version '1.12.0'
 }
 
 wrapper {
-    gradleVersion = '6.5.1'
+    gradleVersion = '6.6'
     distributionType = Wrapper.DistributionType.ALL
 }
 
@@ -47,7 +48,7 @@ ext {
     jjwt_version = '0.11.2'
     junit4_version = '4.13'
     junit5_version = '5.6.2'
-    picocli_version = '4.4.0'
+    picocli_version = '4.5.0'
     restassured_version = '4.3.1'
     slf4j_version = '1.7.30'
     vertx_version = '4.0.0-milestone5'
@@ -71,7 +72,6 @@ subprojects {
         } else {
             apply plugin: 'java-library'
         }
-        apply plugin: 'maven'
         apply plugin: 'maven-publish'
         apply plugin: 'signing'
 
