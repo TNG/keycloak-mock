@@ -16,10 +16,11 @@ import picocli.CommandLine.Option;
 public class Main implements Callable<Void> {
   private static final Logger LOG = LoggerFactory.getLogger(Main.class);
 
+  @SuppressWarnings("FieldMayBeFinal")
   @Option(
       names = {"-p", "--port"},
       description = "The port on which to run (default: ${DEFAULT-VALUE}).")
-  private final int port = 8000;
+  private int port = 8000;
 
   @Option(
       names = {"-s", "--https"},
