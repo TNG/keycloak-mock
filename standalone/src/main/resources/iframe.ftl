@@ -18,89 +18,109 @@
 <html>
 <body>
 <script>
-  var init;
+    var init;
 
-  function checkState(clientId, origin, sessionState, callback) {
-    var cookie = getCookie();
-    var checkCookie = function () {
-      if (clientId === init.clientId && origin === init.origin) {
-        var c = cookie.split('/');
-        if (sessionState === c[2]) {
-          callback('unchanged');
-        } else {
-          callback('changed');
-        }
-      } else {
-        callback('error');
-      }
-    };
-    if (!init) {
-      var req = new XMLHttpRequest();
-      var url = location.href.split("?")[0] + "/init";
-      url += "?client_id=" + encodeURIComponent(clientId);
-      url += "&origin=" + encodeURIComponent(origin);
-      req.open('GET', url, true);
-      req.onreadystatechange = function () {
-        if (req.readyState === 4) {
-          if (req.status === 204 || req.status === 1223) {
-            init = {
-              clientId: clientId,
-              origin: origin
-            };
-            if (!cookie) {
-              if (sessionState != '') {
-                callback('changed');
-              } else {
-                callback('unchanged');
-              }
+    function checkState(clientId, origin, sessionState, callback) {
+        var cookie = getCookie();
+
+        var checkCookie = function() {
+            if (clientId === init.clientId && origin === init.origin) {
+                var c = cookie.split('/');
+                if (sessionState === c[2]) {
+                    callback('unchanged');
+                } else {
+                    callback('changed');
+                }
             } else {
-              checkCookie();
+                callback('error');
             }
-          } else {
-            callback('error');
-          }
         }
-      };
-      req.send();
-    } else if (!cookie) {
-      if (sessionState != '') {
-        callback('changed');
-      } else {
-        callback('unchanged');
-      }
-    } else {
-      checkCookie();
-    }
-  }
 
-  function getCookie() {
-    var name = 'KEYCLOAK_SESSION=';
-    var ca = document.cookie.split(';');
-    for (var i = 0; i < ca.length; i++) {
-      var c = ca[i].trim();
-      if (c.indexOf(name) === 0) {
-        return c.substring(name.length, c.length);
-      }
-    }
-    return null;
-  }
+        if (!init) {
+            var req = new XMLHttpRequest();
 
-  function receiveMessage(event) {
-    if (typeof event.data !== 'string') {
-      return
+            var url = location.href.split("?")[0] + "/init";
+            url += "?client_id=" + encodeURIComponent(clientId);
+            url += "&origin=" + encodeURIComponent(origin);
+
+            req.open('GET', url, true);
+
+            req.onreadystatechange = function () {
+                if (req.readyState === 4) {
+                    if (req.status === 204 || req.status === 1223) {
+                        init = {
+                            clientId: clientId,
+                            origin: origin
+                        }
+                        if (!cookie) {
+                            if (sessionState != '') {
+                                callback('changed');
+                            } else {
+                                callback('unchanged');
+                            }
+                        } else {
+                            checkCookie();
+                        }
+                    } else {
+                        callback('error');
+                    }
+                }
+            };
+
+            req.send();
+        } else  if (!cookie) {
+            if (sessionState != '') {
+                callback('changed');
+            } else {
+                callback('unchanged');
+            }
+        } else {
+            checkCookie();
+        }
     }
-    var origin = event.origin;
-    var data = event.data.split(' ');
-    if (data.length != 2) {
-      return;
+
+    function getCookie()
+    {
+        var cookie = getCookieByName('KEYCLOAK_SESSION');
+        if (cookie === null) {
+            return getCookieByName('KEYCLOAK_SESSION_LEGACY');
+        }
+        return cookie;
     }
-    var clientId = data[0];
-    var sessionState = data[1];
-    checkState(clientId, event.origin, sessionState, function(result) {
-      event.source.postMessage(result, origin);
-    });
-  }
-  window.addEventListener("message", receiveMessage, false);
+
+    function getCookieByName(name)
+    {
+        name = name + '=';
+        var ca = document.cookie.split(';');
+        for(var i=0; i<ca.length; i++)
+        {
+            var c = ca[i].trim();
+            if (c.indexOf(name)===0) return c.substring(name.length,c.length);
+        }
+        return null;
+    }
+
+    function receiveMessage(event)
+    {
+        if (typeof event.data !== 'string') {
+            return
+        }
+
+        var origin = event.origin;
+        var data = event.data.split(' ');
+        if (data.length != 2) {
+            return;
+        }
+
+        var clientId = data[0];
+        var sessionState = data[1];
+
+        checkState(clientId, event.origin, sessionState, function(result) {
+            event.source.postMessage(result, origin);
+        });
+    }
+
+    window.addEventListener("message", receiveMessage, false);
 </script>
 </body>
 </html>
