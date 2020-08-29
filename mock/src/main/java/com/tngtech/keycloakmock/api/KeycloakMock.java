@@ -59,18 +59,13 @@ public class KeycloakMock {
           + "  \"end_session_endpoint\": \"%2$s/logout\"\n"
           + "}";
   private static final String ISSUER_TEMPLATE = "%s/auth/realms/%s";
-  @Nonnull
-  private final TokenGenerator tokenGenerator;
+  @Nonnull private final TokenGenerator tokenGenerator;
   private final int port;
-  @Nonnull
-  private final String realm;
+  @Nonnull private final String realm;
   private final boolean tls;
-  @Nonnull
-  private final String baseUrl;
-  @Nonnull
-  protected final Vertx vertx = Vertx.vertx();
-  @Nullable
-  private HttpServer server;
+  @Nonnull private final String baseUrl;
+  @Nonnull protected final Vertx vertx = Vertx.vertx();
+  @Nullable private HttpServer server;
 
   /**
    * Create a mock instance for realm "master".
@@ -229,8 +224,7 @@ public class KeycloakMock {
 
   private static class ResultHandler<E> implements Handler<AsyncResult<E>> {
 
-    @Nonnull
-    private final CompletableFuture<Void> future = new CompletableFuture<>();
+    @Nonnull private final CompletableFuture<Void> future = new CompletableFuture<>();
 
     @Override
     public void handle(@Nonnull final AsyncResult<E> result) {

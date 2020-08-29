@@ -2,20 +2,16 @@ package com.tngtech.keycloakmock.api;
 
 import javax.annotation.Nonnull;
 
-/**
- * Server configuration to use.
- */
+/** Server configuration to use. */
 public final class ServerConfig {
 
   private static final String DEFAULT_HOSTNAME = "localhost";
   private static final int DEFAULT_PORT = 8000;
   private static final String DEFAULT_REALM = "master";
 
-  @Nonnull
-  private final String hostname;
+  @Nonnull private final String hostname;
   private final int port;
-  @Nonnull
-  private final String realm;
+  @Nonnull private final String realm;
   private final boolean tls;
 
   private ServerConfig(@Nonnull final Builder builder) {
@@ -55,20 +51,17 @@ public final class ServerConfig {
 
   public static final class Builder {
 
-    @Nonnull
-    private String hostname = DEFAULT_HOSTNAME;
+    @Nonnull private String hostname = DEFAULT_HOSTNAME;
     private int port = DEFAULT_PORT;
-    @Nonnull
-    private String realm = DEFAULT_REALM;
+    @Nonnull private String realm = DEFAULT_REALM;
     private boolean tls;
 
-    private Builder() {
-    }
+    private Builder() {}
 
     /**
      * Set hostname.
-     * <p>
-     * The hostname that is used as token issuer. Default value is 'localhost'.
+     *
+     * <p>The hostname that is used as token issuer. Default value is 'localhost'.
      *
      * @param hostname the hostname to use
      * @return builder
@@ -81,8 +74,8 @@ public final class ServerConfig {
 
     /**
      * Set port.
-     * <p>
-     * The port that the server is started on. Default value is 8000.
+     *
+     * <p>The port that the server is started on. Default value is 8000.
      *
      * @param port the port to use
      * @return builder
@@ -95,8 +88,8 @@ public final class ServerConfig {
 
     /**
      * Set realm.
-     * <p>
-     * The realm that is used in issued tokens. Default value is 'master'.
+     *
+     * <p>The realm that is used in issued tokens. Default value is 'master'.
      *
      * @param realm the realm to use
      * @return builder
@@ -109,8 +102,8 @@ public final class ServerConfig {
 
     /**
      * Set TLS flag.
-     * <p>
-     * If set to true, start the server with TLS. Default value is false.
+     *
+     * <p>If set to true, start the server with TLS. Default value is false.
      *
      * @param tls the flag to use
      * @return builder
