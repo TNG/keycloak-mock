@@ -58,3 +58,7 @@ task copyYarn(type: Copy) {
 
 yarnSetup.finalizedBy(copyYarn)
 nodeSetup.finalizedBy(copyNode)
+
+task build {
+    dependsOn yarn_build
+}
