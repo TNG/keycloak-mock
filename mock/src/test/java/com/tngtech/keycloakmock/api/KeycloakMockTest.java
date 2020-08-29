@@ -1,5 +1,6 @@
 package com.tngtech.keycloakmock.api;
 
+import static com.tngtech.keycloakmock.api.ServerConfig.aServerConfig;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.jsonwebtoken.Claims;
@@ -47,7 +48,8 @@ class KeycloakMockTest {
   @ParameterizedTest
   @MethodSource("serverConfig")
   void mock_server_endpoint_is_correctly_configured(int port, boolean tls) {
-    KeycloakMock keycloakMock = new KeycloakMock(port, "master", tls);
+    KeycloakMock keycloakMock = new KeycloakMock(
+        aServerConfig().withPort(port).withTls(tls).build());
     keycloakMock.start();
     RestAssured.given()
         .relaxedHTTPSValidation()
@@ -72,13 +74,14 @@ class KeycloakMockTest {
   @SuppressWarnings("unchecked")
   void generated_token_uses_correct_issuer() throws Exception {
     JwtParser jwtParser = Jwts.parserBuilder().setSigningKey(loadKey()).build();
-    KeycloakMock keycloakMock = new KeycloakMock(123, "realm123");
+    KeycloakMock keycloakMock = new KeycloakMock(
+        aServerConfig().withPort(123).withRealm("realm123").withHostname("somehost").build());
 
     String token = keycloakMock.getAccessToken(TokenConfig.aTokenConfig().build());
 
     Jwt<Header<?>, Claims> jwt = jwtParser.parse(token);
 
-    assertThat(jwt.getBody().getIssuer()).isEqualTo("http://localhost:123/auth/realms/realm123");
+    assertThat(jwt.getBody().getIssuer()).isEqualTo("http://somehost:123/auth/realms/realm123");
 
     token =
         keycloakMock.getAccessTokenForHostnameAndRealm(

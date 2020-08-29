@@ -1,5 +1,7 @@
 package com.tngtech.keycloakmock.standalone;
 
+import static com.tngtech.keycloakmock.api.ServerConfig.aServerConfig;
+
 import com.tngtech.keycloakmock.api.KeycloakMock;
 import com.tngtech.keycloakmock.api.TokenConfig;
 import com.tngtech.keycloakmock.standalone.handler.AuthenticationRoute;
@@ -42,7 +44,7 @@ class Server extends KeycloakMock implements TokenFactory {
   @Nonnull private final LogoutRoute logoutRoute = new LogoutRoute();
 
   Server(final int port, final boolean tls) {
-    super(port, "master", tls);
+    super(aServerConfig().withPort(port).withTls(tls).build());
     start();
   }
 
@@ -75,8 +77,8 @@ class Server extends KeycloakMock implements TokenFactory {
   @Override
   public String getToken(
       @Nonnull final TokenConfig config,
-      @Nonnull final String hostname,
+      @Nonnull final String baseUrl,
       @Nonnull final String realm) {
-    return getAccessTokenForHostnameAndRealm(config, hostname, realm);
+    return getAccessTokenForHostnameAndRealm(config, baseUrl, realm);
   }
 }

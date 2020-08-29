@@ -16,7 +16,7 @@ import org.springframework.boot.web.server.LocalServerPort;
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class AuthenticationTest {
   @RegisterExtension
-  static KeycloakMock keycloakVerificationMock = new KeycloakMock(8000, "master");
+  static KeycloakMock keycloakVerificationMock = new KeycloakMock();
 
   @LocalServerPort private int port;
 
