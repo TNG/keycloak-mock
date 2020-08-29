@@ -8,6 +8,7 @@ import com.tngtech.keycloakmock.standalone.handler.AuthenticationRoute;
 import com.tngtech.keycloakmock.standalone.handler.CommonHandler;
 import com.tngtech.keycloakmock.standalone.handler.FailureHandler;
 import com.tngtech.keycloakmock.standalone.handler.IframeRoute;
+import com.tngtech.keycloakmock.standalone.handler.KeycloakJsRoute;
 import com.tngtech.keycloakmock.standalone.handler.LoginRoute;
 import com.tngtech.keycloakmock.standalone.handler.LogoutRoute;
 import com.tngtech.keycloakmock.standalone.handler.ThirdPartyCookiesRoute;
@@ -41,6 +42,7 @@ class Server extends KeycloakMock implements TokenFactory {
   private final ThirdPartyCookiesRoute thirdPartyCookiesRoute =
       new ThirdPartyCookiesRoute(renderHelper);
 
+  @Nonnull private final KeycloakJsRoute keycloakJsRoute = new KeycloakJsRoute(renderHelper);
   @Nonnull private final LogoutRoute logoutRoute = new LogoutRoute();
 
   Server(final int port, final boolean tls) {
@@ -70,6 +72,7 @@ class Server extends KeycloakMock implements TokenFactory {
         .get("/auth/realms/:realm/protocol/openid-connect/3p-cookies/*")
         .handler(thirdPartyCookiesRoute);
     router.get("/auth/realms/:realm/protocol/openid-connect/logout").handler(logoutRoute);
+    router.route("/auth/js/keycloak.js").handler(keycloakJsRoute);
     return router;
   }
 
