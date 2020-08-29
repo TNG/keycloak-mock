@@ -203,5 +203,6 @@ sonarqube {
         property "sonar.host.url", "https://sonarcloud.io"
         property "sonar.organization", "tng"
         property "sonar.projectKey", "TNG_keycloak-mock"
+        property "sonar.cpd.exclusions", "mock-junit/**"
     }
 }
