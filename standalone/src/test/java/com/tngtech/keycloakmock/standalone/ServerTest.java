@@ -45,18 +45,19 @@ class ServerTest {
   void mock_server_uses_host_header_as_server_host() {
     String hostname = "server";
     Server server = new Server(8001, false);
-    String issuer = RestAssured.given()
-        .relaxedHTTPSValidation()
-        .when()
-        .header("Host", hostname)
-        .get(
-            "http://localhost:8001/auth/realms/test/.well-known/openid-configuration")
-        .then()
-        .assertThat()
-        .statusCode(200)
-        .and()
-        .extract().jsonPath()
-        .get("issuer");
+    String issuer =
+        RestAssured.given()
+            .relaxedHTTPSValidation()
+            .when()
+            .header("Host", hostname)
+            .get("http://localhost:8001/auth/realms/test/.well-known/openid-configuration")
+            .then()
+            .assertThat()
+            .statusCode(200)
+            .and()
+            .extract()
+            .jsonPath()
+            .get("issuer");
 
     assertThat(issuer).isEqualTo("http://%s/auth/realms/test", hostname);
     server.stop();
