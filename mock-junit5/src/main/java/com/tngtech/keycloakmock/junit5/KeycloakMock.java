@@ -65,12 +65,12 @@ public class KeycloakMock implements BeforeAllCallback, AfterAllCallback {
   }
 
   @Override
-  public void beforeAll(@Nonnull final ExtensionContext context) {
+  public void beforeAll(@Nullable final ExtensionContext context) {
     mock.start();
   }
 
   @Override
-  public void afterAll(@Nonnull final ExtensionContext context) {
+  public void afterAll(@Nullable final ExtensionContext context) {
     mock.stop();
   }
 }
