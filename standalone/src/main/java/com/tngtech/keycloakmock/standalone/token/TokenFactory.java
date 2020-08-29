@@ -5,5 +5,5 @@ import javax.annotation.Nonnull;
 
 public interface TokenFactory {
   @Nonnull
-  String getToken(TokenConfig config, String realm);
+  String getToken(TokenConfig config, String hostname, String realm);
 }

@@ -13,6 +13,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import javax.annotation.Nonnull;
@@ -33,8 +34,9 @@ public class KeycloakMock {
 
   public static final int DEFAULT_PORT = 8000;
   public static final String DEFAULT_REALM = "master";
-  private static final String HTTP = "http";
-  private static final String HTTPS = "https";
+  public static final String CTX_HOSTNAME = "hostname";
+  private static final String HTTP = "http://";
+  private static final String HTTPS = "https://";
   private static final String OPEN_ID_CONFIG_TEMPLATE =
       "{\n"
           + "  \"issuer\": \"%1$s\",\n"
@@ -106,7 +108,7 @@ public class KeycloakMock {
     this.port = port;
     this.realm = Objects.requireNonNull(realm);
     this.tls = tls;
-    this.hostname = tls ? HTTPS : HTTP + "://localhost:" + port;
+    this.hostname = tls ? HTTPS : HTTP + "localhost:" + port;
     this.tokenGenerator = new TokenGenerator();
   }
 
@@ -119,13 +121,13 @@ public class KeycloakMock {
    */
   @Nonnull
   public String getAccessToken(@Nonnull final TokenConfig tokenConfig) {
-    return tokenGenerator.getToken(tokenConfig, getIssuer(realm));
+    return tokenGenerator.getToken(tokenConfig, getIssuer(hostname, realm));
   }
 
   @Nonnull
-  protected String getAccessTokenForRealm(
-      @Nonnull final TokenConfig tokenConfig, @Nonnull final String realm) {
-    return tokenGenerator.getToken(tokenConfig, getIssuer(realm));
+  protected String getAccessTokenForHostnameAndRealm(
+      @Nonnull final TokenConfig tokenConfig, @Nonnull final String requestHostname, @Nonnull final String requestRealm) {
+    return tokenGenerator.getToken(tokenConfig, getIssuer(requestHostname, requestRealm));
   }
 
   /**
@@ -155,6 +157,8 @@ public class KeycloakMock {
 
   protected Router configureRouter() {
     Router router = Router.router(vertx);
+    router.route()
+        .handler(this::setHostname);
     router.get("/auth/realms/:realm/protocol/openid-connect/certs").handler(this::getJwksResponse);
     router
         .get("/auth/realms/:realm/.well-known/openid-configuration")
@@ -197,15 +201,24 @@ public class KeycloakMock {
 
   private void getOpenIdConfig(final RoutingContext routingContext) {
     final String requestRealm = routingContext.pathParam("realm");
+    String requestHostname = routingContext.get(CTX_HOSTNAME);
     routingContext
         .response()
         .putHeader("content-type", "application/json")
-        .end(String.format(OPEN_ID_CONFIG_TEMPLATE, getIssuer(requestRealm), hostname));
+        .end(String.format(OPEN_ID_CONFIG_TEMPLATE, getIssuer(requestHostname, requestRealm), requestHostname));
   }
 
   @Nonnull
-  private String getIssuer(@Nonnull final String realm) {
-    return String.format(ISSUER_TEMPLATE, hostname, realm);
+  private String getIssuer(@Nonnull final String requestHostname, @Nonnull final String requestRealm) {
+    return String.format(ISSUER_TEMPLATE, requestHostname, requestRealm);
+  }
+
+  private void setHostname(@Nonnull final RoutingContext routingContext) {
+    String requestHostname = Optional.ofNullable(routingContext.request().getHeader("Host"))
+        .map(h -> routingContext.request().isSSL() ? HTTPS + h : HTTP + h)
+        .orElse(hostname);
+    routingContext.put(CTX_HOSTNAME, requestHostname);
+    routingContext.next();
   }
 
   private static class ResultHandler<E> implements Handler<AsyncResult<E>> {
