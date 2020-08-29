@@ -280,7 +280,9 @@ public class TokenConfig {
     }
 
     @SuppressWarnings("unchecked")
-    private <T> T getTypedValue(Map.Entry<String, Object> entry, Class<T> clazz) {
+    @Nonnull
+    private <T> T getTypedValue(
+        @Nonnull final Map.Entry<String, Object> entry, @Nonnull final Class<T> clazz) {
       if (clazz.isInstance(entry.getValue())) {
         return (T) entry.getValue();
       }

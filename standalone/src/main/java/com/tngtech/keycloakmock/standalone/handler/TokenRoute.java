@@ -4,6 +4,7 @@ import com.tngtech.keycloakmock.standalone.render.RenderHelper;
 import com.tngtech.keycloakmock.standalone.token.TokenRepository;
 import io.vertx.core.Handler;
 import io.vertx.ext.web.RoutingContext;
+import javax.annotation.Nonnull;
 
 public class TokenRoute implements Handler<RoutingContext> {
 
@@ -11,16 +12,17 @@ public class TokenRoute implements Handler<RoutingContext> {
   private static final String CODE = "code";
   private static final String SESSION_STATE = "session_state";
 
-  private final TokenRepository tokenRepository;
-  private final RenderHelper renderHelper;
+  @Nonnull private final TokenRepository tokenRepository;
+  @Nonnull private final RenderHelper renderHelper;
 
-  public TokenRoute(TokenRepository tokenRepository, RenderHelper renderHelper) {
+  public TokenRoute(
+      @Nonnull final TokenRepository tokenRepository, @Nonnull final RenderHelper renderHelper) {
     this.tokenRepository = tokenRepository;
     this.renderHelper = renderHelper;
   }
 
   @Override
-  public void handle(RoutingContext routingContext) {
+  public void handle(@Nonnull final RoutingContext routingContext) {
     if (!"authorization_code".equals(routingContext.request().getFormAttribute(GRANT_TYPE))) {
       routingContext.fail(400);
       return;

@@ -1,6 +1,7 @@
 package com.tngtech.keycloakmock.standalone.handler;
 
 import java.util.Locale;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
@@ -13,12 +14,13 @@ public enum ResponseMode {
   FRAGMENT("#"),
   QUERY("?");
 
-  private final String sign;
+  @Nonnull private final String sign;
 
-  ResponseMode(String sign) {
+  ResponseMode(@Nonnull final String sign) {
     this.sign = sign;
   }
 
+  @Nonnull
   String getSign() {
     return sign;
   }

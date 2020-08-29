@@ -4,20 +4,23 @@ import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.common.template.TemplateEngine;
+import javax.annotation.Nonnull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class RenderHelper {
   private static final Logger LOG = LoggerFactory.getLogger(RenderHelper.class);
 
-  private final TemplateEngine engine;
+  @Nonnull private final TemplateEngine engine;
 
-  public RenderHelper(TemplateEngine engine) {
+  public RenderHelper(@Nonnull final TemplateEngine engine) {
     this.engine = engine;
   }
 
   public void renderTemplate(
-      final RoutingContext routingContext, final String name, final String contentType) {
+      @Nonnull final RoutingContext routingContext,
+      @Nonnull final String name,
+      @Nonnull final String contentType) {
     engine.render(
         new JsonObject(routingContext.data()),
         name,

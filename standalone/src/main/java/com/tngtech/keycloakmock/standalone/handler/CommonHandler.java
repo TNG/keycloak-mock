@@ -2,6 +2,7 @@ package com.tngtech.keycloakmock.standalone.handler;
 
 import io.vertx.core.Handler;
 import io.vertx.ext.web.RoutingContext;
+import javax.annotation.Nonnull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -9,7 +10,7 @@ public class CommonHandler implements Handler<RoutingContext> {
   private static final Logger LOG = LoggerFactory.getLogger(CommonHandler.class);
 
   @Override
-  public void handle(RoutingContext routingContext) {
+  public void handle(@Nonnull final RoutingContext routingContext) {
     routingContext
         .response()
         .bodyEndHandler(

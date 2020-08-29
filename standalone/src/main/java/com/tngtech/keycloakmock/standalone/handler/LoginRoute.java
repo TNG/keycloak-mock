@@ -4,6 +4,7 @@ import com.tngtech.keycloakmock.standalone.render.RenderHelper;
 import io.vertx.core.Handler;
 import io.vertx.ext.web.RoutingContext;
 import java.util.UUID;
+import javax.annotation.Nonnull;
 
 public class LoginRoute implements Handler<RoutingContext> {
   private static final String CLIENT_ID = "client_id";
@@ -14,14 +15,14 @@ public class LoginRoute implements Handler<RoutingContext> {
   private static final String SESSION_ID = "session_id";
   private static final String RESPONSE_TYPE = "response_type";
   private static final String RESPONSE_MODE = "response_mode";
-  private final RenderHelper renderHelper;
+  @Nonnull private final RenderHelper renderHelper;
 
-  public LoginRoute(RenderHelper renderHelper) {
+  public LoginRoute(@Nonnull RenderHelper renderHelper) {
     this.renderHelper = renderHelper;
   }
 
   @Override
-  public void handle(RoutingContext routingContext) {
+  public void handle(@Nonnull final RoutingContext routingContext) {
     String sessionId = UUID.randomUUID().toString();
     routingContext.put(CLIENT_ID, routingContext.queryParams().get(CLIENT_ID));
     routingContext.put(STATE, routingContext.queryParams().get(STATE));

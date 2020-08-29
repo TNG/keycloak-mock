@@ -102,7 +102,7 @@ final class TokenGenerator {
   private void setClaimIfPresent(
       @Nonnull final JwtBuilder builder, @Nonnull final String claim, @Nullable Instant value) {
     if (value != null) {
-      Objects.requireNonNull(builder).claim(claim, new Date(value.toEpochMilli()));
+      Objects.requireNonNull(builder).claim(claim, value.getEpochSecond());
     }
   }
 }

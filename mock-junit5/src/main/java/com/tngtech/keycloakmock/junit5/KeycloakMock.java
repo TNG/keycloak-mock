@@ -1,6 +1,7 @@
 package com.tngtech.keycloakmock.junit5;
 
 import com.tngtech.keycloakmock.api.TokenConfig;
+import javax.annotation.Nonnull;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
@@ -26,7 +27,7 @@ import org.junit.jupiter.api.extension.ExtensionContext;
 @Deprecated
 public class KeycloakMock implements BeforeAllCallback, AfterAllCallback {
 
-  private final com.tngtech.keycloakmock.api.KeycloakMock mock;
+  @Nonnull private final com.tngtech.keycloakmock.api.KeycloakMock mock;
 
   /**
    * Create a mock instance for a given realm.
@@ -53,7 +54,7 @@ public class KeycloakMock implements BeforeAllCallback, AfterAllCallback {
    * @param port the port of the mock to run (e.g. 8000)
    * @param realm the realm for which to provide tokens
    */
-  public KeycloakMock(final int port, final String realm) {
+  public KeycloakMock(final int port, @Nonnull final String realm) {
     this(port, realm, false);
   }
 
@@ -66,7 +67,7 @@ public class KeycloakMock implements BeforeAllCallback, AfterAllCallback {
    * @param realm the realm for which to provide tokens
    * @param tls whether to use HTTPS instead of HTTP
    */
-  public KeycloakMock(final int port, final String realm, final boolean tls) {
+  public KeycloakMock(final int port, final @Nonnull String realm, final boolean tls) {
     this.mock = new com.tngtech.keycloakmock.api.KeycloakMock(port, realm, tls);
   }
 
@@ -77,17 +78,18 @@ public class KeycloakMock implements BeforeAllCallback, AfterAllCallback {
    * @return an access token in compact JWT form
    * @see TokenConfig.Builder
    */
-  public String getAccessToken(final TokenConfig tokenConfig) {
+  @Nonnull
+  public String getAccessToken(@Nonnull final TokenConfig tokenConfig) {
     return mock.getAccessToken(tokenConfig);
   }
 
   @Override
-  public void beforeAll(final ExtensionContext context) {
+  public void beforeAll(@Nonnull final ExtensionContext context) {
     mock.start();
   }
 
   @Override
-  public void afterAll(final ExtensionContext context) {
+  public void afterAll(@Nonnull final ExtensionContext context) {
     mock.stop();
   }
 }

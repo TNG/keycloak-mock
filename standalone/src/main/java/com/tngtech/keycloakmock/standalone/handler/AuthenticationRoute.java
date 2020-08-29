@@ -10,6 +10,7 @@ import io.vertx.core.http.Cookie;
 import io.vertx.ext.web.RoutingContext;
 import java.time.Instant;
 import java.util.Arrays;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,16 +33,17 @@ public class AuthenticationRoute implements Handler<RoutingContext> {
   private static final String ACCESS_TOKEN = "access_token";
   private static final String TOKEN_TYPE = "token_type";
 
-  private final TokenFactory tokenFactory;
-  private final TokenRepository tokenRepository;
+  @Nonnull private final TokenFactory tokenFactory;
+  @Nonnull private final TokenRepository tokenRepository;
 
-  public AuthenticationRoute(TokenFactory tokenFactory, TokenRepository tokenRepository) {
+  public AuthenticationRoute(
+      @Nonnull final TokenFactory tokenFactory, @Nonnull final TokenRepository tokenRepository) {
     this.tokenFactory = tokenFactory;
     this.tokenRepository = tokenRepository;
   }
 
   @Override
-  public void handle(RoutingContext routingContext) {
+  public void handle(@Nonnull final RoutingContext routingContext) {
     ResponseType responseType =
         ResponseType.fromValueOrNull(routingContext.queryParams().get(RESPONSE_TYPE));
     if (responseType == null) {
@@ -105,7 +107,9 @@ public class AuthenticationRoute implements Handler<RoutingContext> {
   }
 
   private String getResponseParameter(
-      @Nullable final ResponseMode responseMode, final String name, final String value) {
+      @Nullable final ResponseMode responseMode,
+      @Nonnull final String name,
+      @Nonnull final String value) {
     return (responseMode != null ? responseMode.getSign() : "&") + name + "=" + value;
   }
 }

@@ -21,19 +21,25 @@ import io.vertx.ext.web.templ.freemarker.FreeMarkerTemplateEngine;
 import javax.annotation.Nonnull;
 
 class Server extends KeycloakMock implements TokenFactory {
-  private final TemplateEngine engine = FreeMarkerTemplateEngine.create(vertx);
-  private final RenderHelper renderHelper = new RenderHelper(engine);
-  private final CommonHandler commonHandler = new CommonHandler();
-  private final FailureHandler failureHandler = new FailureHandler();
-  private final LoginRoute loginRoute = new LoginRoute(renderHelper);
-  private final TokenRepository tokenRepository = new TokenRepository();
+  @Nonnull private final TemplateEngine engine = FreeMarkerTemplateEngine.create(vertx);
+  @Nonnull private final RenderHelper renderHelper = new RenderHelper(engine);
+  @Nonnull private final CommonHandler commonHandler = new CommonHandler();
+  @Nonnull private final FailureHandler failureHandler = new FailureHandler();
+  @Nonnull private final LoginRoute loginRoute = new LoginRoute(renderHelper);
+  @Nonnull private final TokenRepository tokenRepository = new TokenRepository();
+
+  @Nonnull
   private final AuthenticationRoute authenticationRoute =
       new AuthenticationRoute(this, tokenRepository);
-  private final TokenRoute tokenRoute = new TokenRoute(tokenRepository, renderHelper);
-  private final IframeRoute iframeRoute = new IframeRoute(renderHelper);
+
+  @Nonnull private final TokenRoute tokenRoute = new TokenRoute(tokenRepository, renderHelper);
+  @Nonnull private final IframeRoute iframeRoute = new IframeRoute(renderHelper);
+
+  @Nonnull
   private final ThirdPartyCookiesRoute thirdPartyCookiesRoute =
       new ThirdPartyCookiesRoute(renderHelper);
-  private final LogoutRoute logoutRoute = new LogoutRoute();
+
+  @Nonnull private final LogoutRoute logoutRoute = new LogoutRoute();
 
   Server(final int port, final boolean tls) {
     super(port, "master", tls);
@@ -41,6 +47,7 @@ class Server extends KeycloakMock implements TokenFactory {
   }
 
   @Override
+  @Nonnull
   protected Router configureRouter() {
     Router router = super.configureRouter();
     router
@@ -66,7 +73,10 @@ class Server extends KeycloakMock implements TokenFactory {
 
   @Nonnull
   @Override
-  public String getToken(TokenConfig config, String hostname, String realm) {
+  public String getToken(
+      @Nonnull final TokenConfig config,
+      @Nonnull final String hostname,
+      @Nonnull final String realm) {
     return getAccessTokenForHostnameAndRealm(config, hostname, realm);
   }
 }

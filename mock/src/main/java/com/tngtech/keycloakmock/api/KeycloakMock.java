@@ -17,6 +17,7 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,8 +66,8 @@ public class KeycloakMock {
   @Nonnull private final String realm;
   private final boolean tls;
   @Nonnull private final String hostname;
-  protected final Vertx vertx = Vertx.vertx();
-  private HttpServer server;
+  @Nonnull protected final Vertx vertx = Vertx.vertx();
+  @Nullable private HttpServer server;
 
   /**
    * Create a mock instance for realm "master".
@@ -126,7 +127,9 @@ public class KeycloakMock {
 
   @Nonnull
   protected String getAccessTokenForHostnameAndRealm(
-      @Nonnull final TokenConfig tokenConfig, @Nonnull final String requestHostname, @Nonnull final String requestRealm) {
+      @Nonnull final TokenConfig tokenConfig,
+      @Nonnull final String requestHostname,
+      @Nonnull final String requestRealm) {
     return tokenGenerator.getToken(tokenConfig, getIssuer(requestHostname, requestRealm));
   }
 
@@ -155,10 +158,10 @@ public class KeycloakMock {
     startHandler.await();
   }
 
+  @Nonnull
   protected Router configureRouter() {
     Router router = Router.router(vertx);
-    router.route()
-        .handler(this::setHostname);
+    router.route().handler(this::setHostname);
     router.get("/auth/realms/:realm/protocol/openid-connect/certs").handler(this::getJwksResponse);
     router
         .get("/auth/realms/:realm/.well-known/openid-configuration")
@@ -172,11 +175,15 @@ public class KeycloakMock {
    * @throws MockServerException when the server could not be stopped properly
    */
   public void stop() {
-    ResultHandler<Void> stopHandler = new ResultHandler<>();
-    server.close(stopHandler);
-    stopHandler.await();
+    if (server != null) {
+      ResultHandler<Void> stopHandler = new ResultHandler<>();
+      server.close(stopHandler);
+      stopHandler.await();
+      server = null;
+    }
   }
 
+  @Nonnull
   private Buffer getKeystore() {
     try {
       InputStream inputStream = this.getClass().getResourceAsStream("/keystore.jks");
@@ -192,41 +199,47 @@ public class KeycloakMock {
     }
   }
 
-  private void getJwksResponse(final RoutingContext routingContext) {
+  private void getJwksResponse(@Nonnull final RoutingContext routingContext) {
     routingContext
         .response()
         .putHeader("content-type", "application/json")
         .end(tokenGenerator.getJwksResponse());
   }
 
-  private void getOpenIdConfig(final RoutingContext routingContext) {
+  private void getOpenIdConfig(@Nonnull final RoutingContext routingContext) {
     final String requestRealm = routingContext.pathParam("realm");
     String requestHostname = routingContext.get(CTX_HOSTNAME);
     routingContext
         .response()
         .putHeader("content-type", "application/json")
-        .end(String.format(OPEN_ID_CONFIG_TEMPLATE, getIssuer(requestHostname, requestRealm), requestHostname));
+        .end(
+            String.format(
+                OPEN_ID_CONFIG_TEMPLATE,
+                getIssuer(requestHostname, requestRealm),
+                requestHostname));
   }
 
   @Nonnull
-  private String getIssuer(@Nonnull final String requestHostname, @Nonnull final String requestRealm) {
+  private String getIssuer(
+      @Nonnull final String requestHostname, @Nonnull final String requestRealm) {
     return String.format(ISSUER_TEMPLATE, requestHostname, requestRealm);
   }
 
   private void setHostname(@Nonnull final RoutingContext routingContext) {
-    String requestHostname = Optional.ofNullable(routingContext.request().getHeader("Host"))
-        .map(h -> routingContext.request().isSSL() ? HTTPS + h : HTTP + h)
-        .orElse(hostname);
+    String requestHostname =
+        Optional.ofNullable(routingContext.request().getHeader("Host"))
+            .map(h -> routingContext.request().isSSL() ? HTTPS + h : HTTP + h)
+            .orElse(hostname);
     routingContext.put(CTX_HOSTNAME, requestHostname);
     routingContext.next();
   }
 
   private static class ResultHandler<E> implements Handler<AsyncResult<E>> {
 
-    private final CompletableFuture<Void> future = new CompletableFuture<>();
+    @Nonnull private final CompletableFuture<Void> future = new CompletableFuture<>();
 
     @Override
-    public void handle(AsyncResult<E> result) {
+    public void handle(@Nonnull final AsyncResult<E> result) {
       if (result.succeeded()) {
         future.complete(null);
       } else {

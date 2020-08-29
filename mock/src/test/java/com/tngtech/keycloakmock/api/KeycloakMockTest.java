@@ -81,7 +81,8 @@ class KeycloakMockTest {
     assertThat(jwt.getBody().getIssuer()).isEqualTo("http://localhost:123/auth/realms/realm123");
 
     token =
-        keycloakMock.getAccessTokenForHostnameAndRealm(TokenConfig.aTokenConfig().build(), "https://remotehost:321", "another_realm");
+        keycloakMock.getAccessTokenForHostnameAndRealm(
+            TokenConfig.aTokenConfig().build(), "https://remotehost:321", "another_realm");
 
     jwt = jwtParser.parse(token);
 
