@@ -55,13 +55,16 @@ public class AuthenticationRoute implements Handler<RoutingContext> {
     String realm = routingContext.queryParams().get(REALM);
     String sessionId = routingContext.queryParams().get(SESSION_ID);
     String requestBaseUrl = routingContext.get(CTX_BASE_URL);
+    String username = routingContext.queryParams().get(USER);
     // for simplicity, the access token is the same as the ID token
     String token =
         tokenFactory.getToken(
             aTokenConfig()
                 .withAudience(routingContext.queryParams().get(CLIENT_ID))
                 .withIssuedAt(Instant.now())
-                .withSubject(routingContext.queryParams().get(USER))
+                .withSubject(username)
+                .withPreferredUsername(username)
+                .withFamilyName(username)
                 .withRealmRoles(
                     Arrays.asList(routingContext.queryParams().get(ROLES).trim().split(",")))
                 .withClaim(NONCE, routingContext.queryParams().get(NONCE))
