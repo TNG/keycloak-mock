@@ -1,6 +1,7 @@
 package com.tngtech.keycloakmock.standalone;
 
 import java.util.concurrent.Callable;
+import javax.annotation.Nonnull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
@@ -18,14 +19,14 @@ public class Main implements Callable<Void> {
   @Option(
       names = {"-p", "--port"},
       description = "The port on which to run (default: ${DEFAULT-VALUE}).")
-  private int port = 8000;
+  private final int port = 8000;
 
   @Option(
       names = {"-s", "--https"},
       description = "Whether to use HTTPS instead of HTTP.")
   private boolean tls;
 
-  public static void main(String[] args) {
+  public static void main(@Nonnull final String[] args) {
     if (System.getProperty("org.slf4j.simpleLogger.logFile") == null) {
       System.setProperty("org.slf4j.simpleLogger.logFile", "System.out");
     }

@@ -19,14 +19,15 @@ public enum ResponseType {
   /** The response must not contain any secrets, but should contain the server's state. */
   NONE(ResponseMode.QUERY, true);
 
-  private final ResponseMode defaultMode;
+  @Nonnull private final ResponseMode defaultMode;
   private final boolean differentModeAllowed;
 
-  ResponseType(ResponseMode defaultMode, boolean differentModeAllowed) {
+  ResponseType(@Nonnull final ResponseMode defaultMode, boolean differentModeAllowed) {
     this.defaultMode = defaultMode;
     this.differentModeAllowed = differentModeAllowed;
   }
 
+  @Nonnull
   ResponseMode getValidResponseMode(@Nullable final String responseMode) {
     if (!differentModeAllowed) {
       return defaultMode;

@@ -3,13 +3,14 @@ package com.tngtech.keycloakmock.standalone.handler;
 import io.vertx.core.Handler;
 import io.vertx.core.http.Cookie;
 import io.vertx.ext.web.RoutingContext;
+import javax.annotation.Nonnull;
 
 public class LogoutRoute implements Handler<RoutingContext> {
   private static final String REDIRECT_URI = "redirect_uri";
   private static final String REALM = "realm";
 
   @Override
-  public void handle(RoutingContext routingContext) {
+  public void handle(@Nonnull final RoutingContext routingContext) {
     String redirectUri = routingContext.queryParams().get(REDIRECT_URI);
     String realm = routingContext.pathParam(REALM);
     routingContext
