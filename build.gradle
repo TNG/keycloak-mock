@@ -16,7 +16,7 @@ plugins {
 }
 
 wrapper {
-    gradleVersion = '6.6'
+    gradleVersion = '6.6.1'
     distributionType = Wrapper.DistributionType.ALL
 }
 
@@ -44,11 +44,11 @@ allprojects {
 }
 
 ext {
-    assertj_version = '3.16.1'
+    assertj_version = '3.17.0'
     jjwt_version = '0.11.2'
     junit4_version = '4.13'
     junit5_version = '5.6.2'
-    picocli_version = '4.5.0'
+    picocli_version = '4.5.1'
     restassured_version = '4.3.1'
     slf4j_version = '1.7.30'
     vertx_version = '4.0.0-milestone5'
