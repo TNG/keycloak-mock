@@ -1,5 +1,7 @@
 package com.tngtech.keycloakmock.junit5;
 
+import static com.tngtech.keycloakmock.api.ServerConfig.aServerConfig;
+
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import org.junit.jupiter.api.AfterEach;
@@ -37,7 +39,7 @@ class KeycloakMockJunit5Test {
 
   @Test
   void https_is_working() {
-    keyCloakMock = new KeycloakMock(8000, "master", true);
+    keyCloakMock = new KeycloakMock(aServerConfig().withTls(true).build());
     keyCloakMock.beforeAll(null);
 
     RestAssured.given()

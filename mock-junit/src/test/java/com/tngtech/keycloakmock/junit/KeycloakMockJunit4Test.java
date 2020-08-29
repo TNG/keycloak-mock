@@ -7,7 +7,9 @@ import org.junit.Rule;
 import org.junit.Test;
 
 public class KeycloakMockJunit4Test {
-  @Rule public KeycloakMock keycloakMock = new KeycloakMock(8000, "master");
+
+  @Rule
+  public KeycloakMock keycloakMock = new KeycloakMock();
 
   @Before
   public void setup() {

@@ -7,6 +7,6 @@ public interface TokenFactory {
   @Nonnull
   String getToken(
       @Nonnull final TokenConfig config,
-      @Nonnull final String hostname,
+      @Nonnull final String baseUrl,
       @Nonnull final String realm);
 }

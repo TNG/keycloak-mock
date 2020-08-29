@@ -1,6 +1,6 @@
 package com.tngtech.keycloakmock.standalone.handler;
 
-import static com.tngtech.keycloakmock.api.KeycloakMock.CTX_HOSTNAME;
+import static com.tngtech.keycloakmock.api.KeycloakMock.CTX_BASE_URL;
 import static com.tngtech.keycloakmock.api.TokenConfig.aTokenConfig;
 
 import com.tngtech.keycloakmock.standalone.token.TokenFactory;
@@ -54,7 +54,7 @@ public class AuthenticationRoute implements Handler<RoutingContext> {
     }
     String realm = routingContext.queryParams().get(REALM);
     String sessionId = routingContext.queryParams().get(SESSION_ID);
-    String requestHostname = routingContext.get(CTX_HOSTNAME);
+    String requestBaseUrl = routingContext.get(CTX_BASE_URL);
     // for simplicity, the access token is the same as the ID token
     String token =
         tokenFactory.getToken(
@@ -67,7 +67,7 @@ public class AuthenticationRoute implements Handler<RoutingContext> {
                 .withClaim(NONCE, routingContext.queryParams().get(NONCE))
                 .withClaim(SESSION_STATE, sessionId)
                 .build(),
-            requestHostname,
+            requestBaseUrl,
             realm);
     ResponseMode responseMode =
         responseType.getValidResponseMode(routingContext.queryParams().get(RESPONSE_MODE));

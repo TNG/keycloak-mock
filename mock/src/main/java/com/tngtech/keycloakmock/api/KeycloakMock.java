@@ -33,9 +33,7 @@ import org.slf4j.LoggerFactory;
 public class KeycloakMock {
   private static final Logger LOG = LoggerFactory.getLogger(KeycloakMock.class);
 
-  public static final int DEFAULT_PORT = 8000;
-  public static final String DEFAULT_REALM = "master";
-  public static final String CTX_HOSTNAME = "hostname";
+  public static final String CTX_BASE_URL = "baseUrl";
   private static final String HTTP = "http://";
   private static final String HTTPS = "https://";
   private static final String OPEN_ID_CONFIG_TEMPLATE =
@@ -61,38 +59,29 @@ public class KeycloakMock {
           + "  \"end_session_endpoint\": \"%2$s/logout\"\n"
           + "}";
   private static final String ISSUER_TEMPLATE = "%s/auth/realms/%s";
-  @Nonnull private final TokenGenerator tokenGenerator;
+  @Nonnull
+  private final TokenGenerator tokenGenerator;
   private final int port;
-  @Nonnull private final String realm;
+  @Nonnull
+  private final String realm;
   private final boolean tls;
-  @Nonnull private final String hostname;
-  @Nonnull protected final Vertx vertx = Vertx.vertx();
-  @Nullable private HttpServer server;
+  @Nonnull
+  private final String baseUrl;
+  @Nonnull
+  protected final Vertx vertx = Vertx.vertx();
+  @Nullable
+  private HttpServer server;
 
   /**
    * Create a mock instance for realm "master".
    *
-   * <p>The JWKS endpoint is served via HTTP on port 8000. If you need HTTPS or a different realm or
-   * port use {@link KeycloakMock#KeycloakMock(int, String, boolean)} instead.
+   * <p>The JWKS endpoint is served via HTTP on port 8000.
    *
    * @throws IllegalStateException when the built-in keystore could not be read
+   * @see KeycloakMock#KeycloakMock(ServerConfig)
    */
   public KeycloakMock() {
-    this(DEFAULT_PORT, DEFAULT_REALM);
-  }
-
-  /**
-   * Create a mock instance for a given realm.
-   *
-   * <p>The JWKS endpoint is served via HTTP. If you need HTTPS, use {@link
-   * KeycloakMock#KeycloakMock(int, String, boolean)} instead.
-   *
-   * @param port the port of the mock to run (e.g. 8000)
-   * @param realm the realm for which to provide tokens
-   * @throws IllegalStateException when the built-in keystore could not be read
-   */
-  public KeycloakMock(final int port, @Nonnull final String realm) {
-    this(port, realm, false);
+    this(ServerConfig.aServerConfig().build());
   }
 
   /**
@@ -100,16 +89,16 @@ public class KeycloakMock {
    *
    * <p>Depending on the tls parameter, the JWKS endpoint is served via HTTP or HTTPS.
    *
-   * @param port the port of the mock to run (e.g. 8000)
-   * @param realm the realm for which to provide tokens
-   * @param tls whether to use HTTPS instead of HTTP
+   * @param serverConfig the server configuration to use
    * @throws IllegalStateException when the built-in keystore could not be read
+   * @see KeycloakMock#KeycloakMock()
    */
-  public KeycloakMock(final int port, @Nonnull final String realm, final boolean tls) {
-    this.port = port;
-    this.realm = Objects.requireNonNull(realm);
-    this.tls = tls;
-    this.hostname = tls ? HTTPS : HTTP + "localhost:" + port;
+  public KeycloakMock(@Nonnull final ServerConfig serverConfig) {
+    this.port = serverConfig.getPort();
+    this.realm = Objects.requireNonNull(serverConfig.getRealm());
+    this.tls = serverConfig.isTls();
+    this.baseUrl =
+        (tls ? HTTPS : HTTP) + Objects.requireNonNull(serverConfig.getHostname()) + ":" + port;
     this.tokenGenerator = new TokenGenerator();
   }
 
@@ -122,15 +111,15 @@ public class KeycloakMock {
    */
   @Nonnull
   public String getAccessToken(@Nonnull final TokenConfig tokenConfig) {
-    return tokenGenerator.getToken(tokenConfig, getIssuer(hostname, realm));
+    return tokenGenerator.getToken(tokenConfig, getIssuer(baseUrl, realm));
   }
 
   @Nonnull
   protected String getAccessTokenForHostnameAndRealm(
       @Nonnull final TokenConfig tokenConfig,
-      @Nonnull final String requestHostname,
+      @Nonnull final String requestBaseUrl,
       @Nonnull final String requestRealm) {
-    return tokenGenerator.getToken(tokenConfig, getIssuer(requestHostname, requestRealm));
+    return tokenGenerator.getToken(tokenConfig, getIssuer(requestBaseUrl, requestRealm));
   }
 
   /**
@@ -165,7 +154,7 @@ public class KeycloakMock {
   @Nonnull
   protected Router configureRouter() {
     Router router = Router.router(vertx);
-    router.route().handler(this::setHostname);
+    router.route().handler(this::setBaseUrl);
     router.get("/auth/realms/:realm/protocol/openid-connect/certs").handler(this::getJwksResponse);
     router
         .get("/auth/realms/:realm/.well-known/openid-configuration")
@@ -212,7 +201,7 @@ public class KeycloakMock {
 
   private void getOpenIdConfig(@Nonnull final RoutingContext routingContext) {
     final String requestRealm = routingContext.pathParam("realm");
-    String requestHostname = routingContext.get(CTX_HOSTNAME);
+    String requestHostname = routingContext.get(CTX_BASE_URL);
     routingContext
         .response()
         .putHeader("content-type", "application/json")
@@ -225,22 +214,23 @@ public class KeycloakMock {
 
   @Nonnull
   private String getIssuer(
-      @Nonnull final String requestHostname, @Nonnull final String requestRealm) {
-    return String.format(ISSUER_TEMPLATE, requestHostname, requestRealm);
+      @Nonnull final String requestBaseUrl, @Nonnull final String requestRealm) {
+    return String.format(ISSUER_TEMPLATE, requestBaseUrl, requestRealm);
   }
 
-  private void setHostname(@Nonnull final RoutingContext routingContext) {
-    String requestHostname =
+  private void setBaseUrl(@Nonnull final RoutingContext routingContext) {
+    String requestBaseUrl =
         Optional.ofNullable(routingContext.request().getHeader("Host"))
-            .map(h -> routingContext.request().isSSL() ? HTTPS + h : HTTP + h)
-            .orElse(hostname);
-    routingContext.put(CTX_HOSTNAME, requestHostname);
+            .map(host -> routingContext.request().isSSL() ? HTTPS + host : HTTP + host)
+            .orElse(baseUrl);
+    routingContext.put(CTX_BASE_URL, requestBaseUrl);
     routingContext.next();
   }
 
   private static class ResultHandler<E> implements Handler<AsyncResult<E>> {
 
-    @Nonnull private final CompletableFuture<Void> future = new CompletableFuture<>();
+    @Nonnull
+    private final CompletableFuture<Void> future = new CompletableFuture<>();
 
     @Override
     public void handle(@Nonnull final AsyncResult<E> result) {
