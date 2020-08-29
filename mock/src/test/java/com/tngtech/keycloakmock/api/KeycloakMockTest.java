@@ -48,8 +48,8 @@ class KeycloakMockTest {
   @ParameterizedTest
   @MethodSource("serverConfig")
   void mock_server_endpoint_is_correctly_configured(int port, boolean tls) {
-    KeycloakMock keycloakMock = new KeycloakMock(
-        aServerConfig().withPort(port).withTls(tls).build());
+    KeycloakMock keycloakMock =
+        new KeycloakMock(aServerConfig().withPort(port).withTls(tls).build());
     keycloakMock.start();
     RestAssured.given()
         .relaxedHTTPSValidation()
@@ -74,8 +74,9 @@ class KeycloakMockTest {
   @SuppressWarnings("unchecked")
   void generated_token_uses_correct_issuer() throws Exception {
     JwtParser jwtParser = Jwts.parserBuilder().setSigningKey(loadKey()).build();
-    KeycloakMock keycloakMock = new KeycloakMock(
-        aServerConfig().withPort(123).withRealm("realm123").withHostname("somehost").build());
+    KeycloakMock keycloakMock =
+        new KeycloakMock(
+            aServerConfig().withPort(123).withRealm("realm123").withHostname("somehost").build());
 
     String token = keycloakMock.getAccessToken(TokenConfig.aTokenConfig().build());
 
