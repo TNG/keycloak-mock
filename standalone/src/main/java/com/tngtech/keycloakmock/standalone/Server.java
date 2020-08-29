@@ -66,7 +66,7 @@ class Server extends KeycloakMock implements TokenFactory {
 
   @Nonnull
   @Override
-  public String getToken(TokenConfig config, String realm) {
-    return getAccessTokenForRealm(config, realm);
+  public String getToken(TokenConfig config, String hostname, String realm) {
+    return getAccessTokenForHostnameAndRealm(config, hostname, realm);
   }
 }
