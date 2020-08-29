@@ -140,6 +140,10 @@ public class KeycloakMock {
    * @throws IllegalStateException when the built-in keystore could not be read for TLS mode
    */
   public void start() {
+    if (server != null) {
+      LOG.warn("Start request ignored as server is already running");
+      return;
+    }
     HttpServerOptions options = new HttpServerOptions().setPort(port);
     if (tls) {
       options
