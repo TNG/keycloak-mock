@@ -2,15 +2,12 @@ package com.tngtech.keycloakmock.junit;
 
 import com.tngtech.keycloakmock.api.TokenConfig;
 import javax.annotation.Nonnull;
-import org.junit.jupiter.api.extension.AfterAllCallback;
-import org.junit.jupiter.api.extension.BeforeAllCallback;
-import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.rules.ExternalResource;
 
 /**
- * A JUnit helper to automatically start and stop the keycloak mock.
+ * A JUnit4 rule to automatically start and stop the keycloak mock.
  *
- * <p>Example JUnit4 use:
+ * <p>Example use:
  *
  * <pre><code>
  * {@literal @}ClassRule
@@ -21,20 +18,8 @@ import org.junit.rules.ExternalResource;
  *    String token = mock.getAccessToken(aTokenConfig().build());
  *  }
  * </code></pre>
- *
- * <p>Example JUnit5 use:
- *
- * <pre><code>
- * {@literal @}RegisterExtension
- *  static KeycloakMock mock = new KeycloakMock();
- *
- * {@literal @}Test
- *  void testStuff() {
- *    String token = mock.getAccessToken(aTokenConfig().build());
- *  }
- * </code></pre>
  */
-public class KeycloakMock extends ExternalResource implements BeforeAllCallback, AfterAllCallback {
+public class KeycloakMock extends ExternalResource {
 
   @Nonnull private final com.tngtech.keycloakmock.api.KeycloakMock mock;
 
@@ -99,16 +84,6 @@ public class KeycloakMock extends ExternalResource implements BeforeAllCallback,
 
   @Override
   protected void after() {
-    mock.stop();
-  }
-
-  @Override
-  public void beforeAll(@Nonnull final ExtensionContext context) {
-    mock.start();
-  }
-
-  @Override
-  public void afterAll(@Nonnull final ExtensionContext context) {
     mock.stop();
   }
 }

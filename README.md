@@ -53,7 +53,7 @@ class Test {
 }
 ```
 
-Or you can use use the `mock-junit` artifact both with JUnit4
+Or you can use use the `mock-junit` artifact with JUnit4
 
 ```java
 import com.tngtech.keycloakmock.junit.KeycloakMock;
@@ -67,10 +67,10 @@ public class Test {
 }
 ```
 
-and with JUnit5
+or the `mock-junit5` artifact with JUnit5
 
 ```java
-import com.tngtech.keycloakmock.junit.KeycloakMock;
+import com.tngtech.keycloakmock.junit5.KeycloakMock;
 
 class Test {
   @RegisterExtension

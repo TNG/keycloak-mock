@@ -24,7 +24,7 @@ dependencies {
     implementation "org.springframework.boot:spring-boot-starter-security:$springBootVersion"
     implementation "org.springframework.boot:spring-boot-configuration-processor:$springBootVersion"
     implementation "org.keycloak:keycloak-spring-boot-starter:$keycloak_version"
-    testImplementation project(':mock-junit')
+    testImplementation project(':mock-junit5')
     testImplementation "org.springframework.boot:spring-boot-starter-test:$springBootVersion"
     testImplementation "io.rest-assured:rest-assured:$restassured_version"
     testImplementation "io.rest-assured:json-path:$restassured_version"
