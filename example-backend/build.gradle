@@ -1,6 +1,6 @@
 buildscript {
     ext {
-        springBootVersion = '2.3.2.RELEASE'
+        springBootVersion = '2.3.3.RELEASE'
     }
     repositories {
         mavenCentral()
@@ -18,7 +18,7 @@ apply plugin: 'io.spring.dependency-management'
 ext['groovy.version'] = '3.0.2'
 
 dependencies {
-    def keycloak_version = '11.0.0'
+    def keycloak_version = '11.0.1'
 
     implementation "org.springframework.boot:spring-boot-starter-web:$springBootVersion"
     implementation "org.springframework.boot:spring-boot-starter-security:$springBootVersion"
