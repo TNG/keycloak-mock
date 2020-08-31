@@ -15,7 +15,7 @@ import org.springframework.boot.web.server.LocalServerPort;
     classes = ExampleBackendApplication.class,
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class AuthenticationTest {
-  @RegisterExtension static KeycloakMockExtension keycloakVerificationMock = new KeycloakMockExtension();
+  @RegisterExtension static KeycloakMockExtension mock = new KeycloakMockExtension();
 
   @LocalServerPort private int port;
 
@@ -35,8 +35,7 @@ class AuthenticationTest {
     RestAssured.given()
         .auth()
         .preemptive()
-        .oauth2(
-            keycloakVerificationMock.getAccessToken(aTokenConfig().withSubject("Awesome").build()))
+        .oauth2(mock.getAccessToken(aTokenConfig().withSubject("Awesome").build()))
         .when()
         .get("/hello")
         .then()
@@ -50,7 +49,7 @@ class AuthenticationTest {
     RestAssured.given()
         .auth()
         .preemptive()
-        .oauth2(keycloakVerificationMock.getAccessToken(aTokenConfig().build()))
+        .oauth2(mock.getAccessToken(aTokenConfig().build()))
         .when()
         .get("/vip")
         .then()
@@ -62,8 +61,7 @@ class AuthenticationTest {
     RestAssured.given()
         .auth()
         .preemptive()
-        .oauth2(
-            keycloakVerificationMock.getAccessToken(aTokenConfig().withRealmRole("vip").build()))
+        .oauth2(mock.getAccessToken(aTokenConfig().withRealmRole("vip").build()))
         .when()
         .get("/vip")
         .then()
