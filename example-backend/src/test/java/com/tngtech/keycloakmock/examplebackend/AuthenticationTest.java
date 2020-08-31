@@ -3,7 +3,7 @@ package com.tngtech.keycloakmock.examplebackend;
 import static com.tngtech.keycloakmock.api.TokenConfig.aTokenConfig;
 import static org.hamcrest.Matchers.equalTo;
 
-import com.tngtech.keycloakmock.junit5.KeycloakMock;
+import com.tngtech.keycloakmock.junit5.KeycloakMockExtension;
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,7 +15,7 @@ import org.springframework.boot.web.server.LocalServerPort;
     classes = ExampleBackendApplication.class,
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class AuthenticationTest {
-  @RegisterExtension static KeycloakMock keycloakVerificationMock = new KeycloakMock();
+  @RegisterExtension static KeycloakMockExtension keycloakVerificationMock = new KeycloakMockExtension();
 
   @LocalServerPort private int port;
 

@@ -6,9 +6,9 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
-public class KeycloakMockJunit4Test {
+public class KeycloakMockRuleJunit4Test {
 
-  @Rule public KeycloakMock keycloakMock = new KeycloakMock();
+  @Rule public KeycloakMockRule keycloakMockRule = new KeycloakMockRule();
 
   @Before
   public void setup() {

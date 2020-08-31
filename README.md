@@ -56,11 +56,11 @@ class Test {
 Or you can use use the `mock-junit` artifact with JUnit4
 
 ```java
-import com.tngtech.keycloakmock.junit.KeycloakMock;
+import com.tngtech.keycloakmock.junit.KeycloakMockRule;
 
 public class Test {
   @ClassRule
-  public static KeycloakMock mock = new KeycloakMock();
+  public static KeycloakMockRule mock = new KeycloakMockRule();
 
   // ...
     
@@ -70,11 +70,11 @@ public class Test {
 or the `mock-junit5` artifact with JUnit5
 
 ```java
-import com.tngtech.keycloakmock.junit5.KeycloakMock;
+import com.tngtech.keycloakmock.junit5.KeycloakMockExtension;
 
 class Test {
   @RegisterExtension
-  static KeycloakMock mock = new KeycloakMock();
+  static KeycloakMockExtension mock = new KeycloakMockExtension();
 
   // ...
     
