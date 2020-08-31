@@ -8,8 +8,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class KeycloakMockJunit5Test {
-  private KeycloakMock keyCloakMock;
+class KeycloakMockExtensionJunit5Test {
+  private KeycloakMockExtension keyCloakMockExtension;
 
   @BeforeEach
   void setup() {
@@ -19,15 +19,15 @@ class KeycloakMockJunit5Test {
 
   @AfterEach
   void stopMock() {
-    if (keyCloakMock != null) {
-      keyCloakMock.afterAll(null);
+    if (keyCloakMockExtension != null) {
+      keyCloakMockExtension.afterAll(null);
     }
   }
 
   @Test
   void mock_is_running() {
-    keyCloakMock = new KeycloakMock();
-    keyCloakMock.beforeAll(null);
+    keyCloakMockExtension = new KeycloakMockExtension();
+    keyCloakMockExtension.beforeAll(null);
 
     RestAssured.when()
         .get("/auth/realms/master/protocol/openid-connect/certs")
@@ -39,8 +39,8 @@ class KeycloakMockJunit5Test {
 
   @Test
   void https_is_working() {
-    keyCloakMock = new KeycloakMock(aServerConfig().withTls(true).build());
-    keyCloakMock.beforeAll(null);
+    keyCloakMockExtension = new KeycloakMockExtension(aServerConfig().withTls(true).build());
+    keyCloakMockExtension.beforeAll(null);
 
     RestAssured.given()
         .relaxedHTTPSValidation()

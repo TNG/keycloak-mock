@@ -1,31 +1,29 @@
-package com.tngtech.keycloakmock.junit5;
+package com.tngtech.keycloakmock.junit;
 
+import com.tngtech.keycloakmock.api.KeycloakMock;
 import com.tngtech.keycloakmock.api.ServerConfig;
 import com.tngtech.keycloakmock.api.TokenConfig;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import org.junit.jupiter.api.extension.AfterAllCallback;
-import org.junit.jupiter.api.extension.BeforeAllCallback;
-import org.junit.jupiter.api.extension.ExtensionContext;
+import org.junit.rules.ExternalResource;
 
 /**
- * A JUnit5 extension to be used to automatically start and stop the keycloak mock.
+ * A JUnit4 rule to automatically start and stop the keycloak mock.
  *
  * <p>Example use:
  *
  * <pre><code>
- * {@literal @}RegisterExtension
- *  static KeycloakMock mock = new KeycloakMock();
+ * {@literal @}ClassRule
+ *  public static KeycloakMockRule mock = new KeycloakMockRule();
  *
  * {@literal @}Test
- *  void testStuff() {
+ *  public void testStuff() {
  *    String token = mock.getAccessToken(aTokenConfig().build());
  *  }
  * </code></pre>
  */
-public class KeycloakMock implements BeforeAllCallback, AfterAllCallback {
+public class KeycloakMockRule extends ExternalResource {
 
-  @Nonnull private final com.tngtech.keycloakmock.api.KeycloakMock mock;
+  @Nonnull private final KeycloakMock mock;
 
   /**
    * Create a mock instance with default configuration.
@@ -36,20 +34,20 @@ public class KeycloakMock implements BeforeAllCallback, AfterAllCallback {
    *
    * <p>The JWKS endpoint is served via HTTP.
    *
-   * @see KeycloakMock#KeycloakMock(ServerConfig)
+   * @see KeycloakMockRule#KeycloakMockRule(ServerConfig)
    */
-  public KeycloakMock() {
-    mock = new com.tngtech.keycloakmock.api.KeycloakMock();
+  public KeycloakMockRule() {
+    mock = new KeycloakMock();
   }
 
   /**
    * Create a mock instance for a given server configuration.
    *
    * @param serverConfig the port of the mock to run
-   * @see KeycloakMock#KeycloakMock()
+   * @see KeycloakMockRule#KeycloakMockRule()
    */
-  public KeycloakMock(@Nonnull final ServerConfig serverConfig) {
-    mock = new com.tngtech.keycloakmock.api.KeycloakMock(serverConfig);
+  public KeycloakMockRule(@Nonnull final ServerConfig serverConfig) {
+    mock = new KeycloakMock(serverConfig);
   }
 
   /**
@@ -65,12 +63,12 @@ public class KeycloakMock implements BeforeAllCallback, AfterAllCallback {
   }
 
   @Override
-  public void beforeAll(@Nullable final ExtensionContext context) {
+  protected void before() {
     mock.start();
   }
 
   @Override
-  public void afterAll(@Nullable final ExtensionContext context) {
+  protected void after() {
     mock.stop();
   }
 }

@@ -1,28 +1,32 @@
-package com.tngtech.keycloakmock.junit;
+package com.tngtech.keycloakmock.junit5;
 
+import com.tngtech.keycloakmock.api.KeycloakMock;
 import com.tngtech.keycloakmock.api.ServerConfig;
 import com.tngtech.keycloakmock.api.TokenConfig;
 import javax.annotation.Nonnull;
-import org.junit.rules.ExternalResource;
+import javax.annotation.Nullable;
+import org.junit.jupiter.api.extension.AfterAllCallback;
+import org.junit.jupiter.api.extension.BeforeAllCallback;
+import org.junit.jupiter.api.extension.ExtensionContext;
 
 /**
- * A JUnit4 rule to automatically start and stop the keycloak mock.
+ * A JUnit5 extension to be used to automatically start and stop the keycloak mock.
  *
  * <p>Example use:
  *
  * <pre><code>
- * {@literal @}ClassRule
- *  public static KeycloakMock mock = new KeycloakMock();
+ * {@literal @}RegisterExtension
+ *  static KeycloakMockExtension mock = new KeycloakMockExtension();
  *
  * {@literal @}Test
- *  public void testStuff() {
+ *  void testStuff() {
  *    String token = mock.getAccessToken(aTokenConfig().build());
  *  }
  * </code></pre>
  */
-public class KeycloakMock extends ExternalResource {
+public class KeycloakMockExtension implements BeforeAllCallback, AfterAllCallback {
 
-  @Nonnull private final com.tngtech.keycloakmock.api.KeycloakMock mock;
+  @Nonnull private final KeycloakMock mock;
 
   /**
    * Create a mock instance with default configuration.
@@ -33,20 +37,20 @@ public class KeycloakMock extends ExternalResource {
    *
    * <p>The JWKS endpoint is served via HTTP.
    *
-   * @see KeycloakMock#KeycloakMock(ServerConfig)
+   * @see KeycloakMockExtension#KeycloakMockExtension(ServerConfig)
    */
-  public KeycloakMock() {
-    mock = new com.tngtech.keycloakmock.api.KeycloakMock();
+  public KeycloakMockExtension() {
+    mock = new KeycloakMock();
   }
 
   /**
    * Create a mock instance for a given server configuration.
    *
    * @param serverConfig the port of the mock to run
-   * @see KeycloakMock#KeycloakMock()
+   * @see KeycloakMockExtension#KeycloakMockExtension()
    */
-  public KeycloakMock(@Nonnull final ServerConfig serverConfig) {
-    mock = new com.tngtech.keycloakmock.api.KeycloakMock(serverConfig);
+  public KeycloakMockExtension(@Nonnull final ServerConfig serverConfig) {
+    mock = new KeycloakMock(serverConfig);
   }
 
   /**
@@ -62,12 +66,12 @@ public class KeycloakMock extends ExternalResource {
   }
 
   @Override
-  protected void before() {
+  public void beforeAll(@Nullable final ExtensionContext context) {
     mock.start();
   }
 
   @Override
-  protected void after() {
+  public void afterAll(@Nullable final ExtensionContext context) {
     mock.stop();
   }
 }
