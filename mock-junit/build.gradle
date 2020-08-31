@@ -1,15 +1,13 @@
-description = 'JUnit helper for keycloak-mock'
+description = 'JUnit4 helper for keycloak-mock'
 
 dependencies {
     api project(':mock')
     implementation "junit:junit:$junit4_version"
     testImplementation "io.rest-assured:rest-assured:$restassured_version"
     testImplementation "org.assertj:assertj-core:$assertj_version"
-    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junit5_version"
 }
 
 test {
-    useJUnitPlatform()
     testLogging {
         events "passed", "skipped", "failed"
     }
