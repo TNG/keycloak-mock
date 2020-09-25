@@ -238,9 +238,12 @@ public class KeycloakMock {
     void await() {
       try {
         future.get();
-      } catch (InterruptedException | ExecutionException e) {
+      } catch (InterruptedException e) {
         Thread.currentThread().interrupt();
-        throw new MockServerException("Error while starting/stopping mock server", e);
+        throw new MockServerException("Interrupted while starting/stopping mock server", e);
+      } catch (ExecutionException e) {
+        throw new MockServerException(
+            "Error while starting/stopping mock server: " + e.getMessage(), e);
       }
     }
   }

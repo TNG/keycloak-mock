@@ -2,6 +2,7 @@ package com.tngtech.keycloakmock.api;
 
 import static com.tngtech.keycloakmock.api.ServerConfig.aServerConfig;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Header;
@@ -29,6 +30,15 @@ class KeycloakMockTest {
     assertServerMockRunnning(true);
     keycloakMock.stop();
     assertServerMockRunnning(false);
+  }
+
+  @Test
+  void mock_server_fails_when_port_is_claimed() {
+    KeycloakMock keycloakMock = new KeycloakMock();
+    keycloakMock.start();
+    KeycloakMock secondMock = new KeycloakMock();
+    assertThatThrownBy(secondMock::start).isInstanceOf(MockServerException.class);
+    keycloakMock.stop();
   }
 
   private void assertServerMockRunnning(boolean running) {
