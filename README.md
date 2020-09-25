@@ -10,6 +10,10 @@
 [Open ID connect](https://openid.net/connect/) standard. However, it does not deliver any
 test support. This library is intended to fill that gap.
 
+## Recent changes
+
+Have a look at our [release notes](https://github.com/TNG/keycloak-mock/releases) for recent releases and changes.
+
 ## Usage
 
 All artifacts are available on [Maven Central Repository](https://search.maven.org/) under the
@@ -27,24 +31,26 @@ You can create and start the mock directly from the `mock` artifact using Maven
     <groupId>com.tngtech.keycloakmock</groupId>
     <artifactId>mock</artifactId>
     <scope>test</scope>
-    <version>0.5.0</version>
+    <version>0.6.0</version>
 </dependency>
 ```
 
 or Gradle
 
 ```gradle
-testImplementation 'com.tngtech.keycloakmock:mock:0.5.0'
+testImplementation 'com.tngtech.keycloakmock:mock:0.6.0'
 ```
 
 like this:
 
 ```java
+import static com.tngtech.keycloakmock.api.ServerConfig.aServerConfig;
+
 import com.tngtech.keycloakmock.api.KeycloakMock;
 
 class Test {
 
-  KeycloakMock mock = new KeycloakMock(8000, "master");
+  KeycloakMock mock = new KeycloakMock(aServerConfig().withPort(8000).withRealm("master").build());
 
   static {
     mock.start();
