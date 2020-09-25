@@ -48,7 +48,7 @@ ext {
     jjwt_version = '0.11.2'
     junit4_version = '4.13'
     junit5_version = '5.6.2'
-    keycloak_version = '11.0.1'
+    keycloak_version = '11.0.2'
     picocli_version = '4.5.1'
     restassured_version = '4.3.1'
     slf4j_version = '1.7.30'

@@ -12,5 +12,6 @@ public class FailureHandler implements Handler<RoutingContext> {
   @Override
   public void handle(@Nonnull final RoutingContext routingContext) {
     LOG.error("Error while accessing route", routingContext.failure());
+    routingContext.next();
   }
 }

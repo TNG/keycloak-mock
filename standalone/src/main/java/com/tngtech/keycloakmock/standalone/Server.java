@@ -7,11 +7,10 @@ import com.tngtech.keycloakmock.api.TokenConfig;
 import com.tngtech.keycloakmock.standalone.handler.AuthenticationRoute;
 import com.tngtech.keycloakmock.standalone.handler.CommonHandler;
 import com.tngtech.keycloakmock.standalone.handler.FailureHandler;
-import com.tngtech.keycloakmock.standalone.handler.IframeRoute;
-import com.tngtech.keycloakmock.standalone.handler.KeycloakJsRoute;
+import com.tngtech.keycloakmock.standalone.handler.IFrameRoute;
 import com.tngtech.keycloakmock.standalone.handler.LoginRoute;
 import com.tngtech.keycloakmock.standalone.handler.LogoutRoute;
-import com.tngtech.keycloakmock.standalone.handler.ThirdPartyCookiesRoute;
+import com.tngtech.keycloakmock.standalone.handler.ResourceFileHandler;
 import com.tngtech.keycloakmock.standalone.handler.TokenRoute;
 import com.tngtech.keycloakmock.standalone.render.RenderHelper;
 import com.tngtech.keycloakmock.standalone.token.TokenFactory;
@@ -36,14 +35,19 @@ class Server extends KeycloakMock implements TokenFactory {
       new AuthenticationRoute(this, tokenRepository);
 
   @Nonnull private final TokenRoute tokenRoute = new TokenRoute(tokenRepository, renderHelper);
-  @Nonnull private final IframeRoute iframeRoute = new IframeRoute(renderHelper);
+  @Nonnull private final LogoutRoute logoutRoute = new LogoutRoute();
+  @Nonnull private final IFrameRoute iframeRoute = new IFrameRoute();
 
   @Nonnull
-  private final ThirdPartyCookiesRoute thirdPartyCookiesRoute =
-      new ThirdPartyCookiesRoute(renderHelper);
+  private final ResourceFileHandler thirdPartyCookies1Route =
+      new ResourceFileHandler("/3p-cookies-step1.html");
 
-  @Nonnull private final KeycloakJsRoute keycloakJsRoute = new KeycloakJsRoute(renderHelper);
-  @Nonnull private final LogoutRoute logoutRoute = new LogoutRoute();
+  @Nonnull
+  private final ResourceFileHandler thirdPartyCookies2Route =
+      new ResourceFileHandler("/3p-cookies-step2.html");
+
+  @Nonnull
+  private final ResourceFileHandler keycloakJsRoute = new ResourceFileHandler("/keycloak.js");
 
   Server(final int port, final boolean tls) {
     super(aServerConfig().withPort(port).withTls(tls).build());
@@ -69,8 +73,11 @@ class Server extends KeycloakMock implements TokenFactory {
         .get("/auth/realms/:realm/protocol/openid-connect/login-status-iframe.html*")
         .handler(iframeRoute);
     router
-        .get("/auth/realms/:realm/protocol/openid-connect/3p-cookies/*")
-        .handler(thirdPartyCookiesRoute);
+        .get("/auth/realms/:realm/protocol/openid-connect/3p-cookies/step1.html")
+        .handler(thirdPartyCookies1Route);
+    router
+        .get("/auth/realms/:realm/protocol/openid-connect/3p-cookies/step2.html")
+        .handler(thirdPartyCookies2Route);
     router.get("/auth/realms/:realm/protocol/openid-connect/logout").handler(logoutRoute);
     router.route("/auth/js/keycloak.js").handler(keycloakJsRoute);
     return router;
