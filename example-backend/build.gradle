@@ -1,6 +1,6 @@
 buildscript {
     ext {
-        springBootVersion = '2.3.3.RELEASE'
+        springBootVersion = '2.3.4.RELEASE'
     }
     repositories {
         mavenCentral()
@@ -14,6 +14,9 @@ apply plugin: 'java'
 apply plugin: 'org.springframework.boot'
 apply plugin: 'io.spring.dependency-management'
 
+// spring boot's bill of materials pulls in junit5 in an outdated version, so we need to update it
+// see https://stackoverflow.com/questions/54598484/gradle-5-junit-bom-and-spring-boot-incorrect-versions
+ext['junit-jupiter.version'] = junit5_version
 // spring boot's bill of materials pulls in groovy v2, but rest assured needs groovy v3
 ext['groovy.version'] = '3.0.2'
 

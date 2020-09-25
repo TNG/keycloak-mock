@@ -6264,9 +6264,9 @@ jsx-ast-utils@^2.2.1, jsx-ast-utils@^2.2.3:
     object.assign "^4.1.0"
 
 keycloak-js@^11.0.0:
-  version "11.0.1"
-  resolved "https://registry.yarnpkg.com/keycloak-js/-/keycloak-js-11.0.1.tgz#321de6e02ec88ff17ca8537ac0baed0946ab81ca"
-  integrity sha512-45lQ8Rkk02clh42z7fppT64SCRNhm0oL43Q1NjkqA3mC8E/0Np+en0Sl0MRUU43ny+oBppaNWEeDT8rAFeLo+w==
+  version "11.0.2"
+  resolved "https://registry.yarnpkg.com/keycloak-js/-/keycloak-js-11.0.2.tgz#e981c5270e72066e38b2a1bd98f1138d6cd560c1"
+  integrity sha512-dnvzgTetovu3eTjJtvBQQhxRN4jqvd/DaA2wFaE4aWIFXhwRcoPpZT8ZJ7MwlICDPdCgzbCsOsBjpL8CbYOZsg==
   dependencies:
     base64-js "1.3.1"
     js-sha256 "0.9.0"
