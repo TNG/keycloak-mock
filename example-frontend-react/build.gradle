@@ -6,7 +6,7 @@ plugins {
 
 node {
     // Version of node to use.
-    version = '12.18.3'
+    version = '12.18.4'
 
     // Version of Yarn to use.
     yarnVersion = '1.22.5'

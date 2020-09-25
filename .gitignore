@@ -19,3 +19,6 @@ build
 *.iml
 *.ipr
 **/out/
+
+# direnv
+.envrc

@@ -28,8 +28,7 @@ class KeycloakMockIntegrationTest {
         JSONWebKeySetHelper.retrieveKeysFromWellKnownConfiguration(
             "http://localhost:8000/auth/realms/master/.well-known/openid-configuration");
     Map<String, Verifier> verifierMap =
-        jsonWebKeys
-            .stream()
+        jsonWebKeys.stream()
             .collect(
                 Collectors.toMap(
                     k -> k.kid,

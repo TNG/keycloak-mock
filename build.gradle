@@ -7,10 +7,9 @@ buildscript {
 }
 
 plugins {
-    id 'com.github.ben-manes.versions' version '0.29.0'
+    id 'com.github.ben-manes.versions' version '0.33.0'
     id 'com.github.jk1.dependency-license-report' version '1.14' apply false
-    // keeping it on 0.8 for now, as 0.9+ need java 11+ to run
-    id 'com.github.sherter.google-java-format' version '0.8' apply false
+    id 'com.github.sherter.google-java-format' version '0.9' apply false
     id 'org.sonarqube' version '3.0'
     id 'pl.allegro.tech.build.axion-release' version '1.12.0'
 }
@@ -41,13 +40,20 @@ allprojects {
 
     group = 'com.tngtech.keycloakmock'
     version = scmVersion.version
+
+    verifyGoogleJavaFormat.onlyIf {
+        JavaVersion.current().isJava11Compatible()
+    }
+    tasks.googleJavaFormat.onlyIf {
+        JavaVersion.current().isJava11Compatible()
+    }
 }
 
 ext {
-    assertj_version = '3.17.0'
+    assertj_version = '3.17.2'
     jjwt_version = '0.11.2'
     junit4_version = '4.13'
-    junit5_version = '5.6.2'
+    junit5_version = '5.7.0'
     keycloak_version = '11.0.2'
     picocli_version = '4.5.1'
     restassured_version = '4.3.1'
