@@ -1,5 +1,6 @@
 package com.tngtech.keycloakmock.api;
 
+import com.tngtech.keycloakmock.api.handler.JwksRoute;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
@@ -59,12 +60,13 @@ public class KeycloakMock {
           + "  \"end_session_endpoint\": \"%2$s/logout\"\n"
           + "}";
   private static final String ISSUER_TEMPLATE = "%s/auth/realms/%s";
-  @Nonnull private final TokenGenerator tokenGenerator;
-  private final int port;
-  @Nonnull private final String realm;
-  private final boolean tls;
-  @Nonnull private final String baseUrl;
   @Nonnull protected final Vertx vertx = Vertx.vertx();
+  private final int port;
+  @Nonnull private final TokenGenerator tokenGenerator;
+  private final boolean tls;
+  @Nonnull private final String realm;
+  @Nonnull private final String baseUrl;
+  @Nonnull private final JwksRoute jwksRoute;
   @Nullable private HttpServer server;
 
   /**
@@ -95,6 +97,11 @@ public class KeycloakMock {
     this.baseUrl =
         (tls ? HTTPS : HTTP) + Objects.requireNonNull(serverConfig.getHostname()) + ":" + port;
     this.tokenGenerator = new TokenGenerator();
+    this.jwksRoute =
+        new JwksRoute(
+            tokenGenerator.getKeyId(),
+            tokenGenerator.getAlgorithm(),
+            tokenGenerator.getPublicKey());
   }
 
   /**
@@ -150,7 +157,7 @@ public class KeycloakMock {
   protected Router configureRouter() {
     Router router = Router.router(vertx);
     router.route().handler(this::setBaseUrl);
-    router.get("/auth/realms/:realm/protocol/openid-connect/certs").handler(this::getJwksResponse);
+    router.get("/auth/realms/:realm/protocol/openid-connect/certs").handler(jwksRoute);
     router
         .get("/auth/realms/:realm/.well-known/openid-configuration")
         .handler(this::getOpenIdConfig);
@@ -185,13 +192,6 @@ public class KeycloakMock {
     } catch (IOException e) {
       throw new IllegalStateException("Error while loading keystore for TLS key configuration", e);
     }
-  }
-
-  private void getJwksResponse(@Nonnull final RoutingContext routingContext) {
-    routingContext
-        .response()
-        .putHeader("content-type", "application/json")
-        .end(tokenGenerator.getJwksResponse());
   }
 
   private void getOpenIdConfig(@Nonnull final RoutingContext routingContext) {

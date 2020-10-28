@@ -9,11 +9,10 @@ import java.security.Key;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.security.PublicKey;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
-import java.security.interfaces.RSAPublicKey;
 import java.time.Instant;
-import java.util.Base64;
 import java.util.Date;
 import java.util.Objects;
 import javax.annotation.Nonnull;
@@ -21,20 +20,11 @@ import javax.annotation.Nullable;
 
 final class TokenGenerator {
   private static final String KEY_ID = "keyId";
+  private static final SignatureAlgorithm ALGORITHM = SignatureAlgorithm.RS256;
   private static final String KEY = "rsa";
-  private static final String JWKS_TEMPLATE =
-      "{\n"
-          + "    \"keys\": [{\n"
-          + "        \"kid\": \"%s\",\n"
-          + "        \"kty\": \"RSA\",\n"
-          + "        \"alg\": \"RS256\",\n"
-          + "        \"use\": \"sig\",\n"
-          + "        \"n\": \"%s\",\n"
-          + "        \"e\": \"%s\"\n"
-          + "    }]\n"
-          + "}";
+
   @Nonnull private final Key privateKey;
-  @Nonnull private final String jwksResponse;
+  @Nonnull private final PublicKey publicKey;
 
   TokenGenerator() {
     try {
@@ -43,11 +33,7 @@ final class TokenGenerator {
         keyStore.load(keystoreStream, null);
       }
       privateKey = keyStore.getKey(KEY, new char[] {});
-      RSAPublicKey publicKey = (RSAPublicKey) keyStore.getCertificate(KEY).getPublicKey();
-      String base = Base64.getUrlEncoder().encodeToString(publicKey.getModulus().toByteArray());
-      String exponent =
-          Base64.getUrlEncoder().encodeToString(publicKey.getPublicExponent().toByteArray());
-      jwksResponse = String.format(JWKS_TEMPLATE, KEY_ID, base, exponent);
+      publicKey = keyStore.getCertificate(KEY).getPublicKey();
     } catch (IOException
         | CertificateException
         | NoSuchAlgorithmException
@@ -83,13 +69,23 @@ final class TokenGenerator {
         .claim("realm_access", tokenConfig.getRealmAccess())
         .claim("resource_access", tokenConfig.getResourceAccess())
         .addClaims(tokenConfig.getClaims())
-        .signWith(privateKey, SignatureAlgorithm.RS256)
+        .signWith(privateKey, ALGORITHM)
         .compact();
   }
 
   @Nonnull
-  String getJwksResponse() {
-    return jwksResponse;
+  PublicKey getPublicKey() {
+    return publicKey;
+  }
+
+  @Nonnull
+  String getKeyId() {
+    return KEY_ID;
+  }
+
+  @Nonnull
+  String getAlgorithm() {
+    return ALGORITHM.getValue();
   }
 
   private void setClaimIfPresent(
