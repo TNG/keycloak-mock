@@ -6,7 +6,11 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 public class UrlConfiguration {
+  private static final String AUTHORIZATION_PATH = "/authenticate";
+  private static final String END_SESSION_PATH = "/logout";
   private static final String ISSUER_PATH = "/auth/realms/";
+  private static final String ISSUER_TOKEN_PATH = "/protocol/openid-connect/token";
+  private static final String ISSUER_JWKS_PATH = "/protocol/openid-connect/certs";
   @Nonnull private final Protocol protocol;
   private final int port;
   @Nonnull private final String defaultHost;
@@ -30,10 +34,32 @@ public class UrlConfiguration {
   }
 
   @Nonnull
+  public String getAuthorizationEndpoint(@Nullable final String requestHost) {
+    return getBaseUrl(requestHost) + AUTHORIZATION_PATH;
+  }
+
+  @Nonnull
+  public String getEndSessionEndpoint(@Nullable final String requestHost) {
+    return getBaseUrl(requestHost) + END_SESSION_PATH;
+  }
+
+  @Nonnull
   public String getIssuer(@Nullable final String requestHost, @Nullable final String requestRealm) {
     return getBaseUrl(requestHost)
         + ISSUER_PATH
         + (requestRealm != null ? requestRealm : defaultRealm);
+  }
+
+  @Nonnull
+  public String getTokenEndpoint(
+      @Nullable final String requestHost, @Nullable final String requestRealm) {
+    return getIssuer(requestHost, requestRealm) + ISSUER_TOKEN_PATH;
+  }
+
+  @Nonnull
+  public String getJwksUri(
+      @Nullable final String requestHost, @Nullable final String requestRealm) {
+    return getIssuer(requestHost, requestRealm) + ISSUER_JWKS_PATH;
   }
 
   @Nonnull

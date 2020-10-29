@@ -3,6 +3,7 @@ package com.tngtech.keycloakmock.api;
 import com.tngtech.keycloakmock.impl.TokenGenerator;
 import com.tngtech.keycloakmock.impl.UrlConfiguration;
 import com.tngtech.keycloakmock.impl.handler.JwksRoute;
+import com.tngtech.keycloakmock.impl.handler.WellKnownRoute;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
@@ -11,7 +12,6 @@ import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.net.JksOptions;
 import io.vertx.ext.web.Router;
-import io.vertx.ext.web.RoutingContext;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -34,32 +34,11 @@ import org.slf4j.LoggerFactory;
 public class KeycloakMock {
   private static final Logger LOG = LoggerFactory.getLogger(KeycloakMock.class);
 
-  private static final String OPEN_ID_CONFIG_TEMPLATE =
-      "{\n"
-          + "  \"issuer\": \"%1$s\",\n"
-          + "  \"authorization_endpoint\": \"%2$s/authenticate\",\n"
-          + "  \"token_endpoint\": \"%1$s/protocol/openid-connect/token\",\n"
-          + "  \"jwks_uri\": \"%1$s/protocol/openid-connect/certs\",\n"
-          + "  \"response_types_supported\": [\n"
-          + "    \"code\",\n"
-          + "    \"code id_token\",\n"
-          + "    \"id_token\",\n"
-          + "    \"token id_token\"\n"
-          + "  ],\n"
-          + "  \"subject_types_supported\": [\n"
-          + "    \"public\"\n"
-          + "  ],\n"
-          + "  \"id_token_signing_alg_values_supported\": [\n"
-          + "    \"RS256\",\n"
-          + "    \"ES256\",\n"
-          + "    \"HS256\"\n"
-          + "  ],"
-          + "  \"end_session_endpoint\": \"%2$s/logout\"\n"
-          + "}";
   @Nonnull protected final Vertx vertx = Vertx.vertx();
   @Nonnull protected final TokenGenerator tokenGenerator;
   @Nonnull private final UrlConfiguration urlConfiguration;
   @Nonnull private final JwksRoute jwksRoute;
+  @Nonnull private final WellKnownRoute wellKnownRoute;
   @Nullable private HttpServer server;
 
   /**
@@ -91,6 +70,7 @@ public class KeycloakMock {
             tokenGenerator.getKeyId(),
             tokenGenerator.getAlgorithm(),
             tokenGenerator.getPublicKey());
+    this.wellKnownRoute = new WellKnownRoute(urlConfiguration);
   }
 
   /**
@@ -138,9 +118,7 @@ public class KeycloakMock {
   protected Router configureRouter() {
     Router router = Router.router(vertx);
     router.get("/auth/realms/:realm/protocol/openid-connect/certs").handler(jwksRoute);
-    router
-        .get("/auth/realms/:realm/.well-known/openid-configuration")
-        .handler(this::getOpenIdConfig);
+    router.get("/auth/realms/:realm/.well-known/*").handler(wellKnownRoute);
     return router;
   }
 
@@ -172,19 +150,6 @@ public class KeycloakMock {
     } catch (IOException e) {
       throw new IllegalStateException("Error while loading keystore for TLS key configuration", e);
     }
-  }
-
-  private void getOpenIdConfig(@Nonnull final RoutingContext routingContext) {
-    final String requestRealm = routingContext.pathParam("realm");
-    String requestHostname = routingContext.request().getHeader("Host");
-    routingContext
-        .response()
-        .putHeader("content-type", "application/json")
-        .end(
-            String.format(
-                OPEN_ID_CONFIG_TEMPLATE,
-                urlConfiguration.getIssuer(requestHostname, requestRealm),
-                urlConfiguration.getBaseUrl(requestHostname)));
   }
 
   private static class ResultHandler<E> implements Handler<AsyncResult<E>> {

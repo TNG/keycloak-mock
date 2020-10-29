@@ -1,37 +1,17 @@
 package com.tngtech.keycloakmock.impl.handler;
 
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 
-import io.vertx.core.http.HttpServerResponse;
-import io.vertx.ext.web.RoutingContext;
 import java.security.KeyStore;
 import java.security.PublicKey;
 import javax.annotation.Nonnull;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class JwksRouteTest {
-
-  @Mock RoutingContext routingContext;
-
-  @Mock HttpServerResponse serverResponse;
-
-  @Captor ArgumentCaptor<String> captor;
-
-  @BeforeEach
-  void setup() {
-    doReturn(serverResponse).when(routingContext).response();
-    doReturn(serverResponse).when(serverResponse).putHeader(anyString(), anyString());
-  }
+class JwksRouteTest extends HandlerTestBase {
 
   @Test
   void rsaKeyIsCorrectlyExported() throws Exception {
