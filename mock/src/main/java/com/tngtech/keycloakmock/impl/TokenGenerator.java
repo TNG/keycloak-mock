@@ -19,7 +19,7 @@ import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public final class TokenGenerator {
+public class TokenGenerator {
   private static final String KEY_ID = "keyId";
   private static final SignatureAlgorithm ALGORITHM = SignatureAlgorithm.RS256;
   private static final String KEY = "rsa";

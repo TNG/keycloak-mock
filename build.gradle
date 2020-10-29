@@ -84,6 +84,7 @@ subprojects {
         apply plugin: 'signing'
 
         sourceCompatibility = '1.8'
+        targetCompatibility = '1.8'
 
         if (!'standalone'.equals(project.name)) {
             task javadocJar(type: Jar) {
