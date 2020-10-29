@@ -1,65 +1,94 @@
 package com.tngtech.keycloakmock.impl;
 
 import com.tngtech.keycloakmock.api.ServerConfig;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 public class UrlConfiguration {
-  private static final String AUTHORIZATION_PATH = "/authenticate";
-  private static final String END_SESSION_PATH = "/logout";
   private static final String ISSUER_PATH = "/auth/realms/";
-  private static final String ISSUER_TOKEN_PATH = "/protocol/openid-connect/token";
-  private static final String ISSUER_JWKS_PATH = "/protocol/openid-connect/certs";
+  private static final String ISSUER_OPEN_ID_PATH = "protocol/openid-connect/";
+  private static final String OPEN_ID_TOKEN_PATH = "token";
+  private static final String OPEN_ID_JWKS_PATH = "certs";
+  private static final String OPEN_ID_AUTHORIZATION_PATH = "auth";
+  private static final String OPEN_ID_END_SESSION_PATH = "logout";
   @Nonnull private final Protocol protocol;
   private final int port;
-  @Nonnull private final String defaultHost;
-  @Nonnull private final String defaultRealm;
+  @Nonnull private final String hostname;
+  @Nonnull private final String realm;
 
   public UrlConfiguration(@Nonnull final ServerConfig serverConfig) {
     this.protocol = Objects.requireNonNull(serverConfig.getProtocol());
     this.port = serverConfig.getPort();
     if (protocol.getDefaultPort() == serverConfig.getPort()
         || serverConfig.getHostname().contains(":")) {
-      this.defaultHost = serverConfig.getHostname();
+      this.hostname = serverConfig.getHostname();
     } else {
-      this.defaultHost = serverConfig.getHostname() + ":" + serverConfig.getPort();
+      this.hostname = serverConfig.getHostname() + ":" + serverConfig.getPort();
     }
-    this.defaultRealm = Objects.requireNonNull(serverConfig.getRealm());
+    this.realm = Objects.requireNonNull(serverConfig.getRealm());
+  }
+
+  private UrlConfiguration(
+      @Nonnull final UrlConfiguration baseConfiguration,
+      @Nullable final String requestHost,
+      @Nullable final String requestRealm) {
+    this.protocol = baseConfiguration.protocol;
+    this.port = baseConfiguration.port;
+    this.hostname = requestHost != null ? requestHost : baseConfiguration.hostname;
+    this.realm = requestRealm != null ? requestRealm : baseConfiguration.realm;
   }
 
   @Nonnull
-  public String getBaseUrl(@Nullable final String requestHost) {
-    return protocol.getValue() + (requestHost != null ? requestHost : defaultHost);
-  }
-
-  @Nonnull
-  public String getAuthorizationEndpoint(@Nullable final String requestHost) {
-    return getBaseUrl(requestHost) + AUTHORIZATION_PATH;
-  }
-
-  @Nonnull
-  public String getEndSessionEndpoint(@Nullable final String requestHost) {
-    return getBaseUrl(requestHost) + END_SESSION_PATH;
-  }
-
-  @Nonnull
-  public String getIssuer(@Nullable final String requestHost, @Nullable final String requestRealm) {
-    return getBaseUrl(requestHost)
-        + ISSUER_PATH
-        + (requestRealm != null ? requestRealm : defaultRealm);
-  }
-
-  @Nonnull
-  public String getTokenEndpoint(
+  public UrlConfiguration forRequestContext(
       @Nullable final String requestHost, @Nullable final String requestRealm) {
-    return getIssuer(requestHost, requestRealm) + ISSUER_TOKEN_PATH;
+    return new UrlConfiguration(this, requestHost, requestRealm);
   }
 
   @Nonnull
-  public String getJwksUri(
-      @Nullable final String requestHost, @Nullable final String requestRealm) {
-    return getIssuer(requestHost, requestRealm) + ISSUER_JWKS_PATH;
+  public URI getBaseUrl() {
+    try {
+      return new URI(protocol.getValue() + hostname);
+    } catch (URISyntaxException e) {
+      throw new IllegalStateException("Invalid URL encountered", e);
+    }
+  }
+
+  @Nonnull
+  public URI getIssuer() {
+    return getBaseUrl().resolve(ISSUER_PATH + realm);
+  }
+
+  @Nonnull
+  public URI getIssuerPath() {
+    return getBaseUrl().resolve(ISSUER_PATH + realm + "/");
+  }
+
+  @Nonnull
+  public URI getOpenIdPath(@Nonnull final String path) {
+    return getIssuerPath().resolve(ISSUER_OPEN_ID_PATH).resolve(path);
+  }
+
+  @Nonnull
+  public URI getAuthorizationEndpoint() {
+    return getOpenIdPath(OPEN_ID_AUTHORIZATION_PATH);
+  }
+
+  @Nonnull
+  public URI getEndSessionEndpoint() {
+    return getOpenIdPath(OPEN_ID_END_SESSION_PATH);
+  }
+
+  @Nonnull
+  public URI getTokenEndpoint() {
+    return getOpenIdPath(OPEN_ID_TOKEN_PATH);
+  }
+
+  @Nonnull
+  public URI getJwksUri() {
+    return getOpenIdPath(OPEN_ID_JWKS_PATH);
   }
 
   @Nonnull

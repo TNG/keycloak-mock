@@ -1,5 +1,7 @@
 package com.tngtech.keycloakmock.impl.handler;
 
+import static com.tngtech.keycloakmock.impl.handler.RequestUrlConfigurationHandler.CTX_REQUEST_CONFIGURATION;
+
 import com.tngtech.keycloakmock.impl.UrlConfiguration;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
@@ -7,35 +9,29 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Objects;
 import javax.annotation.Nonnull;
 
 public class WellKnownRoute implements Handler<RoutingContext> {
 
-  private final UrlConfiguration urlConfiguration;
-
-  public WellKnownRoute(@Nonnull final UrlConfiguration urlConfiguration) {
-    this.urlConfiguration = Objects.requireNonNull(urlConfiguration);
-  }
-
   @Override
   public void handle(@Nonnull final RoutingContext routingContext) {
-    final String requestRealm = routingContext.pathParam("realm");
-    String requestHostname = routingContext.request().getHeader("Host");
+    UrlConfiguration requestConfiguration = routingContext.get(CTX_REQUEST_CONFIGURATION);
     routingContext
         .response()
         .putHeader("content-type", "application/json")
-        .end(getConfiguration(requestHostname, requestRealm).encode());
+        .end(getConfiguration(requestConfiguration).encode());
   }
 
-  private JsonObject getConfiguration(String requestHostname, String requestRealm) {
+  private JsonObject getConfiguration(@Nonnull final UrlConfiguration requestConfiguration) {
     JsonObject result = new JsonObject();
     result
-        .put("issuer", urlConfiguration.getIssuer(requestHostname, requestRealm))
-        .put("authorization_endpoint", urlConfiguration.getAuthorizationEndpoint(requestHostname))
-        .put("token_endpoint", urlConfiguration.getTokenEndpoint(requestHostname, requestRealm))
-        .put("jwks_uri", urlConfiguration.getJwksUri(requestHostname, requestRealm))
-        .put("end_session_endpoint", urlConfiguration.getEndSessionEndpoint(requestHostname))
+        .put("issuer", requestConfiguration.getIssuer().toASCIIString())
+        .put(
+            "authorization_endpoint",
+            requestConfiguration.getAuthorizationEndpoint().toASCIIString())
+        .put("token_endpoint", requestConfiguration.getTokenEndpoint().toASCIIString())
+        .put("jwks_uri", requestConfiguration.getJwksUri().toASCIIString())
+        .put("end_session_endpoint", requestConfiguration.getEndSessionEndpoint().toASCIIString())
         .put(
             "response_types_supported",
             new JsonArray(Arrays.asList("code", "code id_token", "id_token", "token id_token")))
