@@ -26,10 +26,8 @@ public class TokenGenerator {
 
   @Nonnull private final Key privateKey;
   @Nonnull private final PublicKey publicKey;
-  @Nonnull private final UrlConfiguration urlConfiguration;
 
-  public TokenGenerator(@Nonnull UrlConfiguration urlConfiguration) {
-    this.urlConfiguration = Objects.requireNonNull(urlConfiguration);
+  public TokenGenerator() {
     try {
       KeyStore keyStore = KeyStore.getInstance("JKS");
       try (InputStream keystoreStream = this.getClass().getResourceAsStream("/keystore.jks")) {
@@ -48,9 +46,7 @@ public class TokenGenerator {
 
   @Nonnull
   public String getToken(
-      @Nonnull final TokenConfig tokenConfig,
-      @Nullable final String requestUrl,
-      @Nullable final String requestRealm) {
+      @Nonnull final TokenConfig tokenConfig, @Nonnull UrlConfiguration requestConfiguration) {
     JwtBuilder builder =
         Jwts.builder()
             .setHeaderParam("kid", KEY_ID)
@@ -60,7 +56,7 @@ public class TokenGenerator {
             .setIssuedAt(new Date(tokenConfig.getIssuedAt().toEpochMilli()))
             .claim("auth_time", tokenConfig.getAuthenticationTime().getEpochSecond())
             .setExpiration(new Date(tokenConfig.getExpiration().toEpochMilli()))
-            .setIssuer(urlConfiguration.getIssuer(requestUrl, requestRealm))
+            .setIssuer(requestConfiguration.getIssuer().toASCIIString())
             .setSubject(tokenConfig.getSubject())
             .claim("scope", tokenConfig.getScope())
             .claim("typ", "Bearer")

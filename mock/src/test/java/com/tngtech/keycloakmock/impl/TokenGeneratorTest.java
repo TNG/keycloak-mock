@@ -11,6 +11,8 @@ import io.jsonwebtoken.Header;
 import io.jsonwebtoken.Jwt;
 import io.jsonwebtoken.Jwts;
 import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.security.KeyStore;
 import java.security.interfaces.RSAPublicKey;
 import java.time.Instant;
@@ -48,8 +50,7 @@ class TokenGeneratorTest {
   private static final Instant NOT_BEFORE = Instant.now();
   private static final Instant EXPIRATION = Instant.now().plus(10, ChronoUnit.MINUTES);
   private static final String ISSUER = "issuer";
-  private static final String REQUEST_URL = "request_url";
-  private static final String REQUEST_REALM = "request_realm";
+
   private static RSAPublicKey key;
 
   @Mock private UrlConfiguration urlConfiguration;
@@ -67,9 +68,9 @@ class TokenGeneratorTest {
   }
 
   @BeforeEach
-  void setup() {
-    doReturn(ISSUER).when(urlConfiguration).getIssuer(REQUEST_URL, REQUEST_REALM);
-    generator = new TokenGenerator(urlConfiguration);
+  void setup() throws URISyntaxException {
+    doReturn(new URI(ISSUER)).when(urlConfiguration).getIssuer();
+    generator = new TokenGenerator();
   }
 
   @Test
@@ -97,10 +98,9 @@ class TokenGeneratorTest {
                 .withNotBefore(NOT_BEFORE)
                 .withExpiration(EXPIRATION)
                 .build(),
-            REQUEST_URL,
-            REQUEST_REALM);
+            urlConfiguration);
 
-    verify(urlConfiguration).getIssuer(REQUEST_URL, REQUEST_REALM);
+    verify(urlConfiguration).getIssuer();
     Jwt<Header<?>, Claims> jwt = Jwts.parserBuilder().setSigningKey(key).build().parse(token);
     assertThat(jwt.getHeader()).containsEntry("kid", "keyId");
     Claims claims = jwt.getBody();

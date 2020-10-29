@@ -3,6 +3,7 @@ package com.tngtech.keycloakmock.standalone;
 import static com.tngtech.keycloakmock.api.ServerConfig.aServerConfig;
 
 import com.tngtech.keycloakmock.api.KeycloakMock;
+import com.tngtech.keycloakmock.impl.UrlConfiguration;
 import com.tngtech.keycloakmock.standalone.handler.AuthenticationRoute;
 import com.tngtech.keycloakmock.standalone.handler.CommonHandler;
 import com.tngtech.keycloakmock.standalone.handler.FailureHandler;
@@ -56,27 +57,26 @@ class Server extends KeycloakMock {
   @Nonnull
   protected Router configureRouter() {
     Router router = super.configureRouter();
+    UrlConfiguration routing = urlConfiguration.forRequestContext(null, ":realm");
     router
         .route()
         .handler(commonHandler)
         .failureHandler(failureHandler)
         .failureHandler(ErrorHandler.create());
-    router.get("/auth/realms/:realm/protocol/openid-connect/auth").handler(loginRoute);
+    router.get(routing.getAuthorizationEndpoint().getPath()).handler(loginRoute);
     router.get("/authenticate").handler(authenticationRoute);
     router
-        .post("/auth/realms/:realm/protocol/openid-connect/token")
+        .post(routing.getTokenEndpoint().getPath())
         .handler(BodyHandler.create())
         .handler(tokenRoute);
+    router.get(routing.getOpenIdPath("login-status-iframe.html*").getPath()).handler(iframeRoute);
     router
-        .get("/auth/realms/:realm/protocol/openid-connect/login-status-iframe.html*")
-        .handler(iframeRoute);
-    router
-        .get("/auth/realms/:realm/protocol/openid-connect/3p-cookies/step1.html")
+        .get(routing.getOpenIdPath("3p-cookies/step1.html").getPath())
         .handler(thirdPartyCookies1Route);
     router
-        .get("/auth/realms/:realm/protocol/openid-connect/3p-cookies/step2.html")
+        .get(routing.getOpenIdPath("3p-cookies/step2.html").getPath())
         .handler(thirdPartyCookies2Route);
-    router.get("/auth/realms/:realm/protocol/openid-connect/logout").handler(logoutRoute);
+    router.get(routing.getEndSessionEndpoint().getPath()).handler(logoutRoute);
     router.route("/auth/js/keycloak.js").handler(keycloakJsRoute);
     return router;
   }

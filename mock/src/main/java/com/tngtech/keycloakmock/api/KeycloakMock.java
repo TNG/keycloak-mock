@@ -3,6 +3,7 @@ package com.tngtech.keycloakmock.api;
 import com.tngtech.keycloakmock.impl.TokenGenerator;
 import com.tngtech.keycloakmock.impl.UrlConfiguration;
 import com.tngtech.keycloakmock.impl.handler.JwksRoute;
+import com.tngtech.keycloakmock.impl.handler.RequestUrlConfigurationHandler;
 import com.tngtech.keycloakmock.impl.handler.WellKnownRoute;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
@@ -36,7 +37,8 @@ public class KeycloakMock {
 
   @Nonnull protected final Vertx vertx = Vertx.vertx();
   @Nonnull protected final TokenGenerator tokenGenerator;
-  @Nonnull private final UrlConfiguration urlConfiguration;
+  @Nonnull protected final UrlConfiguration urlConfiguration;
+  @Nonnull private final RequestUrlConfigurationHandler requestUrlConfigurationHandler;
   @Nonnull private final JwksRoute jwksRoute;
   @Nonnull private final WellKnownRoute wellKnownRoute;
   @Nullable private HttpServer server;
@@ -64,13 +66,14 @@ public class KeycloakMock {
    */
   public KeycloakMock(@Nonnull final ServerConfig serverConfig) {
     this.urlConfiguration = new UrlConfiguration(serverConfig);
-    this.tokenGenerator = new TokenGenerator(urlConfiguration);
+    this.tokenGenerator = new TokenGenerator();
+    this.requestUrlConfigurationHandler = new RequestUrlConfigurationHandler(urlConfiguration);
     this.jwksRoute =
         new JwksRoute(
             tokenGenerator.getKeyId(),
             tokenGenerator.getAlgorithm(),
             tokenGenerator.getPublicKey());
-    this.wellKnownRoute = new WellKnownRoute(urlConfiguration);
+    this.wellKnownRoute = new WellKnownRoute();
   }
 
   /**
@@ -82,7 +85,7 @@ public class KeycloakMock {
    */
   @Nonnull
   public String getAccessToken(@Nonnull final TokenConfig tokenConfig) {
-    return tokenGenerator.getToken(tokenConfig, null, null);
+    return tokenGenerator.getToken(tokenConfig, urlConfiguration);
   }
 
   /**
@@ -116,9 +119,11 @@ public class KeycloakMock {
 
   @Nonnull
   protected Router configureRouter() {
+    UrlConfiguration routing = urlConfiguration.forRequestContext(null, ":realm");
     Router router = Router.router(vertx);
-    router.get("/auth/realms/:realm/protocol/openid-connect/certs").handler(jwksRoute);
-    router.get("/auth/realms/:realm/.well-known/*").handler(wellKnownRoute);
+    router.route().handler(requestUrlConfigurationHandler);
+    router.get(routing.getJwksUri().getPath()).handler(jwksRoute);
+    router.get(routing.getIssuerPath().resolve(".well-known/*").getPath()).handler(wellKnownRoute);
     return router;
   }
 

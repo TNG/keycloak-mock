@@ -1,8 +1,10 @@
 package com.tngtech.keycloakmock.standalone.handler;
 
 import static com.tngtech.keycloakmock.api.TokenConfig.aTokenConfig;
+import static com.tngtech.keycloakmock.impl.handler.RequestUrlConfigurationHandler.CTX_REQUEST_CONFIGURATION;
 
 import com.tngtech.keycloakmock.impl.TokenGenerator;
+import com.tngtech.keycloakmock.impl.UrlConfiguration;
 import com.tngtech.keycloakmock.standalone.token.TokenRepository;
 import io.vertx.core.Handler;
 import io.vertx.core.http.Cookie;
@@ -54,8 +56,8 @@ public class AuthenticationRoute implements Handler<RoutingContext> {
     }
     String requestRealm = routingContext.queryParams().get(REALM);
     String sessionId = routingContext.queryParams().get(SESSION_ID);
-    String requestHostname = routingContext.request().getHeader("Host");
     String username = routingContext.queryParams().get(USER);
+    UrlConfiguration requestConfiguration = routingContext.get(CTX_REQUEST_CONFIGURATION);
     // for simplicity, the access token is the same as the ID token
     String token =
         tokenGenerator.getToken(
@@ -70,8 +72,7 @@ public class AuthenticationRoute implements Handler<RoutingContext> {
                 .withClaim(NONCE, routingContext.queryParams().get(NONCE))
                 .withClaim(SESSION_STATE, sessionId)
                 .build(),
-            requestHostname,
-            requestRealm);
+            requestConfiguration);
     ResponseMode responseMode =
         responseType.getValidResponseMode(routingContext.queryParams().get(RESPONSE_MODE));
     StringBuilder redirectUri = new StringBuilder(routingContext.queryParams().get(REDIRECT_URI));
@@ -100,7 +101,7 @@ public class AuthenticationRoute implements Handler<RoutingContext> {
     routingContext
         .addCookie(
             Cookie.cookie("KEYCLOAK_SESSION", requestRealm + "/no-idea-what-goes-here/" + sessionId)
-                .setPath("/auth/realms/" + requestRealm + "/")
+                .setPath(requestConfiguration.getIssuerPath().getPath())
                 .setMaxAge(36000)
                 .setSecure(false))
         .response()
