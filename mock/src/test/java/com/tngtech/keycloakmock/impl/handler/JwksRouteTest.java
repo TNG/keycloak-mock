@@ -1,4 +1,4 @@
-package com.tngtech.keycloakmock.api.handler;
+package com.tngtech.keycloakmock.impl.handler;
 
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 import static org.mockito.ArgumentMatchers.anyString;

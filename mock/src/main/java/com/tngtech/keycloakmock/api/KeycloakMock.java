@@ -1,6 +1,8 @@
 package com.tngtech.keycloakmock.api;
 
-import com.tngtech.keycloakmock.api.handler.JwksRoute;
+import com.tngtech.keycloakmock.impl.TokenGenerator;
+import com.tngtech.keycloakmock.impl.UrlConfiguration;
+import com.tngtech.keycloakmock.impl.handler.JwksRoute;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
@@ -13,8 +15,6 @@ import io.vertx.ext.web.RoutingContext;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import javax.annotation.Nonnull;
@@ -34,9 +34,6 @@ import org.slf4j.LoggerFactory;
 public class KeycloakMock {
   private static final Logger LOG = LoggerFactory.getLogger(KeycloakMock.class);
 
-  public static final String CTX_BASE_URL = "baseUrl";
-  private static final String HTTP = "http://";
-  private static final String HTTPS = "https://";
   private static final String OPEN_ID_CONFIG_TEMPLATE =
       "{\n"
           + "  \"issuer\": \"%1$s\",\n"
@@ -59,13 +56,9 @@ public class KeycloakMock {
           + "  ],"
           + "  \"end_session_endpoint\": \"%2$s/logout\"\n"
           + "}";
-  private static final String ISSUER_TEMPLATE = "%s/auth/realms/%s";
   @Nonnull protected final Vertx vertx = Vertx.vertx();
-  private final int port;
-  @Nonnull private final TokenGenerator tokenGenerator;
-  private final boolean tls;
-  @Nonnull private final String realm;
-  @Nonnull private final String baseUrl;
+  @Nonnull protected final TokenGenerator tokenGenerator;
+  @Nonnull private final UrlConfiguration urlConfiguration;
   @Nonnull private final JwksRoute jwksRoute;
   @Nullable private HttpServer server;
 
@@ -91,12 +84,8 @@ public class KeycloakMock {
    * @see KeycloakMock#KeycloakMock()
    */
   public KeycloakMock(@Nonnull final ServerConfig serverConfig) {
-    this.port = serverConfig.getPort();
-    this.realm = Objects.requireNonNull(serverConfig.getRealm());
-    this.tls = serverConfig.isTls();
-    this.baseUrl =
-        (tls ? HTTPS : HTTP) + Objects.requireNonNull(serverConfig.getHostname()) + ":" + port;
-    this.tokenGenerator = new TokenGenerator();
+    this.urlConfiguration = new UrlConfiguration(serverConfig);
+    this.tokenGenerator = new TokenGenerator(urlConfiguration);
     this.jwksRoute =
         new JwksRoute(
             tokenGenerator.getKeyId(),
@@ -113,15 +102,7 @@ public class KeycloakMock {
    */
   @Nonnull
   public String getAccessToken(@Nonnull final TokenConfig tokenConfig) {
-    return tokenGenerator.getToken(tokenConfig, getIssuer(baseUrl, realm));
-  }
-
-  @Nonnull
-  protected String getAccessTokenForHostnameAndRealm(
-      @Nonnull final TokenConfig tokenConfig,
-      @Nonnull final String requestBaseUrl,
-      @Nonnull final String requestRealm) {
-    return tokenGenerator.getToken(tokenConfig, getIssuer(requestBaseUrl, requestRealm));
+    return tokenGenerator.getToken(tokenConfig, null, null);
   }
 
   /**
@@ -135,8 +116,8 @@ public class KeycloakMock {
       LOG.warn("Start request ignored as server is already running");
       return;
     }
-    HttpServerOptions options = new HttpServerOptions().setPort(port);
-    if (tls) {
+    HttpServerOptions options = new HttpServerOptions().setPort(urlConfiguration.getPort());
+    if (urlConfiguration.getProtocol().isTls()) {
       options
           .setSsl(true)
           .setKeyStoreOptions(new JksOptions().setValue(getKeystore()).setPassword(""));
@@ -156,7 +137,6 @@ public class KeycloakMock {
   @Nonnull
   protected Router configureRouter() {
     Router router = Router.router(vertx);
-    router.route().handler(this::setBaseUrl);
     router.get("/auth/realms/:realm/protocol/openid-connect/certs").handler(jwksRoute);
     router
         .get("/auth/realms/:realm/.well-known/openid-configuration")
@@ -196,30 +176,15 @@ public class KeycloakMock {
 
   private void getOpenIdConfig(@Nonnull final RoutingContext routingContext) {
     final String requestRealm = routingContext.pathParam("realm");
-    String requestHostname = routingContext.get(CTX_BASE_URL);
+    String requestHostname = routingContext.request().getHeader("Host");
     routingContext
         .response()
         .putHeader("content-type", "application/json")
         .end(
             String.format(
                 OPEN_ID_CONFIG_TEMPLATE,
-                getIssuer(requestHostname, requestRealm),
-                requestHostname));
-  }
-
-  @Nonnull
-  private String getIssuer(
-      @Nonnull final String requestBaseUrl, @Nonnull final String requestRealm) {
-    return String.format(ISSUER_TEMPLATE, requestBaseUrl, requestRealm);
-  }
-
-  private void setBaseUrl(@Nonnull final RoutingContext routingContext) {
-    String requestBaseUrl =
-        Optional.ofNullable(routingContext.request().getHeader("Host"))
-            .map(host -> routingContext.request().isSSL() ? HTTPS + host : HTTP + host)
-            .orElse(baseUrl);
-    routingContext.put(CTX_BASE_URL, requestBaseUrl);
-    routingContext.next();
+                urlConfiguration.getIssuer(requestHostname, requestRealm),
+                urlConfiguration.getBaseUrl(requestHostname)));
   }
 
   private static class ResultHandler<E> implements Handler<AsyncResult<E>> {

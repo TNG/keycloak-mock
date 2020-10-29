@@ -3,7 +3,6 @@ package com.tngtech.keycloakmock.standalone;
 import static com.tngtech.keycloakmock.api.ServerConfig.aServerConfig;
 
 import com.tngtech.keycloakmock.api.KeycloakMock;
-import com.tngtech.keycloakmock.api.TokenConfig;
 import com.tngtech.keycloakmock.standalone.handler.AuthenticationRoute;
 import com.tngtech.keycloakmock.standalone.handler.CommonHandler;
 import com.tngtech.keycloakmock.standalone.handler.FailureHandler;
@@ -13,7 +12,6 @@ import com.tngtech.keycloakmock.standalone.handler.LogoutRoute;
 import com.tngtech.keycloakmock.standalone.handler.ResourceFileHandler;
 import com.tngtech.keycloakmock.standalone.handler.TokenRoute;
 import com.tngtech.keycloakmock.standalone.render.RenderHelper;
-import com.tngtech.keycloakmock.standalone.token.TokenFactory;
 import com.tngtech.keycloakmock.standalone.token.TokenRepository;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.common.template.TemplateEngine;
@@ -22,7 +20,7 @@ import io.vertx.ext.web.handler.ErrorHandler;
 import io.vertx.ext.web.templ.freemarker.FreeMarkerTemplateEngine;
 import javax.annotation.Nonnull;
 
-class Server extends KeycloakMock implements TokenFactory {
+class Server extends KeycloakMock {
   @Nonnull private final TemplateEngine engine = FreeMarkerTemplateEngine.create(vertx);
   @Nonnull private final RenderHelper renderHelper = new RenderHelper(engine);
   @Nonnull private final CommonHandler commonHandler = new CommonHandler();
@@ -32,7 +30,7 @@ class Server extends KeycloakMock implements TokenFactory {
 
   @Nonnull
   private final AuthenticationRoute authenticationRoute =
-      new AuthenticationRoute(this, tokenRepository);
+      new AuthenticationRoute(tokenGenerator, tokenRepository);
 
   @Nonnull private final TokenRoute tokenRoute = new TokenRoute(tokenRepository, renderHelper);
   @Nonnull private final LogoutRoute logoutRoute = new LogoutRoute();
@@ -81,14 +79,5 @@ class Server extends KeycloakMock implements TokenFactory {
     router.get("/auth/realms/:realm/protocol/openid-connect/logout").handler(logoutRoute);
     router.route("/auth/js/keycloak.js").handler(keycloakJsRoute);
     return router;
-  }
-
-  @Nonnull
-  @Override
-  public String getToken(
-      @Nonnull final TokenConfig config,
-      @Nonnull final String baseUrl,
-      @Nonnull final String realm) {
-    return getAccessTokenForHostnameAndRealm(config, baseUrl, realm);
   }
 }

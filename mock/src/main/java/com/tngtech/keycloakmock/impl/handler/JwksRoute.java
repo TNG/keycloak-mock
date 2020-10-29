@@ -1,4 +1,4 @@
-package com.tngtech.keycloakmock.api.handler;
+package com.tngtech.keycloakmock.impl.handler;
 
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
