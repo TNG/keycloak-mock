@@ -1,8 +1,10 @@
-package com.tngtech.keycloakmock.api;
+package com.tngtech.keycloakmock.impl;
 
 import static com.tngtech.keycloakmock.api.TokenConfig.aTokenConfig;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.verify;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Header;
@@ -21,7 +23,11 @@ import java.util.Map;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+@ExtendWith(MockitoExtension.class)
 class TokenGeneratorTest {
   private static final String AUDIENCE = "audience";
   private static final String AUTHORIZED_PARTY = "authorized_party";
@@ -41,7 +47,12 @@ class TokenGeneratorTest {
   private static final Instant ISSUED_AT = Instant.now().minus(1, ChronoUnit.MINUTES);
   private static final Instant NOT_BEFORE = Instant.now();
   private static final Instant EXPIRATION = Instant.now().plus(10, ChronoUnit.MINUTES);
+  private static final String ISSUER = "issuer";
+  private static final String REQUEST_URL = "request_url";
+  private static final String REQUEST_REALM = "request_realm";
   private static RSAPublicKey key;
+
+  @Mock private UrlConfiguration urlConfiguration;
 
   private TokenGenerator generator;
 
@@ -57,7 +68,8 @@ class TokenGeneratorTest {
 
   @BeforeEach
   void setup() {
-    generator = new TokenGenerator();
+    doReturn(ISSUER).when(urlConfiguration).getIssuer(REQUEST_URL, REQUEST_REALM);
+    generator = new TokenGenerator(urlConfiguration);
   }
 
   @Test
@@ -85,8 +97,10 @@ class TokenGeneratorTest {
                 .withNotBefore(NOT_BEFORE)
                 .withExpiration(EXPIRATION)
                 .build(),
-            "http://localhost:1234/auth/realms/custom");
+            REQUEST_URL,
+            REQUEST_REALM);
 
+    verify(urlConfiguration).getIssuer(REQUEST_URL, REQUEST_REALM);
     Jwt<Header<?>, Claims> jwt = Jwts.parserBuilder().setSigningKey(key).build().parse(token);
     assertThat(jwt.getHeader()).containsEntry("kid", "keyId");
     Claims claims = jwt.getBody();
@@ -95,7 +109,7 @@ class TokenGeneratorTest {
     assertThat(claims.getNotBefore()).isInSameSecondWindowAs(new Date(NOT_BEFORE.toEpochMilli()));
     assertThat(claims.get("auth_time", Date.class))
         .isInSameSecondWindowAs(new Date(AUTHENTICATION_TIME.toEpochMilli()));
-    assertThat(claims.getIssuer()).isEqualTo("http://localhost:1234/auth/realms/custom");
+    assertThat(claims.getIssuer()).isEqualTo(ISSUER);
     assertThat(claims.getSubject()).isEqualTo(SUBJECT);
     assertThat(claims)
         .containsEntry("aud", Collections.singletonList(AUDIENCE))

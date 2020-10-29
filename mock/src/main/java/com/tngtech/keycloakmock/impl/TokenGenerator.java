@@ -1,5 +1,6 @@
-package com.tngtech.keycloakmock.api;
+package com.tngtech.keycloakmock.impl;
 
+import com.tngtech.keycloakmock.api.TokenConfig;
 import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -18,22 +19,24 @@ import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-final class TokenGenerator {
+public final class TokenGenerator {
   private static final String KEY_ID = "keyId";
   private static final SignatureAlgorithm ALGORITHM = SignatureAlgorithm.RS256;
   private static final String KEY = "rsa";
 
   @Nonnull private final Key privateKey;
   @Nonnull private final PublicKey publicKey;
+  @Nonnull private final UrlConfiguration urlConfiguration;
 
-  TokenGenerator() {
+  public TokenGenerator(@Nonnull UrlConfiguration urlConfiguration) {
+    this.urlConfiguration = Objects.requireNonNull(urlConfiguration);
     try {
       KeyStore keyStore = KeyStore.getInstance("JKS");
       try (InputStream keystoreStream = this.getClass().getResourceAsStream("/keystore.jks")) {
         keyStore.load(keystoreStream, null);
       }
-      privateKey = keyStore.getKey(KEY, new char[] {});
-      publicKey = keyStore.getCertificate(KEY).getPublicKey();
+      privateKey = Objects.requireNonNull(keyStore.getKey(KEY, new char[] {}));
+      publicKey = Objects.requireNonNull(keyStore.getCertificate(KEY).getPublicKey());
     } catch (IOException
         | CertificateException
         | NoSuchAlgorithmException
@@ -44,7 +47,10 @@ final class TokenGenerator {
   }
 
   @Nonnull
-  String getToken(@Nonnull final TokenConfig tokenConfig, @Nonnull final String issuer) {
+  public String getToken(
+      @Nonnull final TokenConfig tokenConfig,
+      @Nullable final String requestUrl,
+      @Nullable final String requestRealm) {
     JwtBuilder builder =
         Jwts.builder()
             .setHeaderParam("kid", KEY_ID)
@@ -54,7 +60,7 @@ final class TokenGenerator {
             .setIssuedAt(new Date(tokenConfig.getIssuedAt().toEpochMilli()))
             .claim("auth_time", tokenConfig.getAuthenticationTime().getEpochSecond())
             .setExpiration(new Date(tokenConfig.getExpiration().toEpochMilli()))
-            .setIssuer(Objects.requireNonNull(issuer))
+            .setIssuer(urlConfiguration.getIssuer(requestUrl, requestRealm))
             .setSubject(tokenConfig.getSubject())
             .claim("scope", tokenConfig.getScope())
             .claim("typ", "Bearer")
@@ -74,17 +80,17 @@ final class TokenGenerator {
   }
 
   @Nonnull
-  PublicKey getPublicKey() {
+  public PublicKey getPublicKey() {
     return publicKey;
   }
 
   @Nonnull
-  String getKeyId() {
+  public String getKeyId() {
     return KEY_ID;
   }
 
   @Nonnull
-  String getAlgorithm() {
+  public String getAlgorithm() {
     return ALGORITHM.getValue();
   }
 

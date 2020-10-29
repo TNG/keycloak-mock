@@ -1,9 +1,8 @@
 package com.tngtech.keycloakmock.standalone.handler;
 
-import static com.tngtech.keycloakmock.api.KeycloakMock.CTX_BASE_URL;
 import static com.tngtech.keycloakmock.api.TokenConfig.aTokenConfig;
 
-import com.tngtech.keycloakmock.standalone.token.TokenFactory;
+import com.tngtech.keycloakmock.impl.TokenGenerator;
 import com.tngtech.keycloakmock.standalone.token.TokenRepository;
 import io.vertx.core.Handler;
 import io.vertx.core.http.Cookie;
@@ -33,12 +32,13 @@ public class AuthenticationRoute implements Handler<RoutingContext> {
   private static final String ACCESS_TOKEN = "access_token";
   private static final String TOKEN_TYPE = "token_type";
 
-  @Nonnull private final TokenFactory tokenFactory;
+  @Nonnull private final TokenGenerator tokenGenerator;
   @Nonnull private final TokenRepository tokenRepository;
 
   public AuthenticationRoute(
-      @Nonnull final TokenFactory tokenFactory, @Nonnull final TokenRepository tokenRepository) {
-    this.tokenFactory = tokenFactory;
+      @Nonnull final TokenGenerator tokenGenerator,
+      @Nonnull final TokenRepository tokenRepository) {
+    this.tokenGenerator = tokenGenerator;
     this.tokenRepository = tokenRepository;
   }
 
@@ -52,13 +52,13 @@ public class AuthenticationRoute implements Handler<RoutingContext> {
       routingContext.fail(400);
       return;
     }
-    String realm = routingContext.queryParams().get(REALM);
+    String requestRealm = routingContext.queryParams().get(REALM);
     String sessionId = routingContext.queryParams().get(SESSION_ID);
-    String requestBaseUrl = routingContext.get(CTX_BASE_URL);
+    String requestHostname = routingContext.request().getHeader("Host");
     String username = routingContext.queryParams().get(USER);
     // for simplicity, the access token is the same as the ID token
     String token =
-        tokenFactory.getToken(
+        tokenGenerator.getToken(
             aTokenConfig()
                 .withAudience(routingContext.queryParams().get(CLIENT_ID))
                 .withIssuedAt(Instant.now())
@@ -70,8 +70,8 @@ public class AuthenticationRoute implements Handler<RoutingContext> {
                 .withClaim(NONCE, routingContext.queryParams().get(NONCE))
                 .withClaim(SESSION_STATE, sessionId)
                 .build(),
-            requestBaseUrl,
-            realm);
+            requestHostname,
+            requestRealm);
     ResponseMode responseMode =
         responseType.getValidResponseMode(routingContext.queryParams().get(RESPONSE_MODE));
     StringBuilder redirectUri = new StringBuilder(routingContext.queryParams().get(REDIRECT_URI));
@@ -99,8 +99,8 @@ public class AuthenticationRoute implements Handler<RoutingContext> {
     }
     routingContext
         .addCookie(
-            Cookie.cookie("KEYCLOAK_SESSION", realm + "/no-idea-what-goes-here/" + sessionId)
-                .setPath("/auth/realms/" + realm + "/")
+            Cookie.cookie("KEYCLOAK_SESSION", requestRealm + "/no-idea-what-goes-here/" + sessionId)
+                .setPath("/auth/realms/" + requestRealm + "/")
                 .setMaxAge(36000)
                 .setSecure(false))
         .response()

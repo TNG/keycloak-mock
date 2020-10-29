@@ -1,5 +1,6 @@
 package com.tngtech.keycloakmock.api;
 
+import com.tngtech.keycloakmock.impl.Protocol;
 import javax.annotation.Nonnull;
 
 /** Server configuration to use. */
@@ -12,13 +13,13 @@ public final class ServerConfig {
   @Nonnull private final String hostname;
   private final int port;
   @Nonnull private final String realm;
-  private final boolean tls;
+  private final Protocol protocol;
 
   private ServerConfig(@Nonnull final Builder builder) {
     this.hostname = builder.hostname;
     this.port = builder.port;
     this.realm = builder.realm;
-    this.tls = builder.tls;
+    this.protocol = builder.protocol;
   }
 
   /**
@@ -45,8 +46,8 @@ public final class ServerConfig {
     return realm;
   }
 
-  public boolean isTls() {
-    return tls;
+  public Protocol getProtocol() {
+    return protocol;
   }
 
   public static final class Builder {
@@ -54,7 +55,7 @@ public final class ServerConfig {
     @Nonnull private String hostname = DEFAULT_HOSTNAME;
     private int port = DEFAULT_PORT;
     @Nonnull private String realm = DEFAULT_REALM;
-    private boolean tls;
+    private Protocol protocol = Protocol.HTTP;
 
     private Builder() {}
 
@@ -110,7 +111,7 @@ public final class ServerConfig {
      */
     @Nonnull
     public Builder withTls(final boolean tls) {
-      this.tls = tls;
+      this.protocol = tls ? Protocol.HTTPS : Protocol.HTTP;
       return this;
     }
 

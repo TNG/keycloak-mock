@@ -93,21 +93,11 @@ class KeycloakMockTest {
     Jwt<Header<?>, Claims> jwt = jwtParser.parse(token);
 
     assertThat(jwt.getBody().getIssuer()).isEqualTo("http://somehost:123/auth/realms/realm123");
-
-    token =
-        keycloakMock.getAccessTokenForHostnameAndRealm(
-            TokenConfig.aTokenConfig().build(), "https://remotehost:321", "another_realm");
-
-    jwt = jwtParser.parse(token);
-
-    assertThat(jwt.getBody().getIssuer())
-        .isEqualTo("https://remotehost:321/auth/realms/another_realm");
   }
 
   private RSAPublicKey loadKey() throws Exception {
     KeyStore keyStore = KeyStore.getInstance("JKS");
-    try (InputStream keystoreStream =
-        TokenGeneratorTest.class.getResourceAsStream("/keystore.jks")) {
+    try (InputStream keystoreStream = getClass().getResourceAsStream("/keystore.jks")) {
       keyStore.load(keystoreStream, null);
       return (RSAPublicKey) keyStore.getCertificate("rsa").getPublicKey();
     }
