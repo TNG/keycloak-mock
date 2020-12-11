@@ -1,5 +1,6 @@
 package com.tngtech.keycloakmock.examplebackend;
 
+import static com.tngtech.keycloakmock.api.ServerConfig.aServerConfig;
 import static com.tngtech.keycloakmock.api.TokenConfig.aTokenConfig;
 import static org.hamcrest.Matchers.equalTo;
 
@@ -15,7 +16,10 @@ import org.springframework.boot.web.server.LocalServerPort;
     classes = ExampleBackendApplication.class,
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class AuthenticationTest {
-  @RegisterExtension static KeycloakMockExtension mock = new KeycloakMockExtension();
+
+  @RegisterExtension
+  static KeycloakMockExtension mock = new KeycloakMockExtension(
+      aServerConfig().withRealm("realm").build());
 
   @LocalServerPort private int port;
 
