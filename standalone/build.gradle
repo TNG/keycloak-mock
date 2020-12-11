@@ -2,7 +2,7 @@ import com.github.jengelman.gradle.plugins.shadow.transformers.ApacheNoticeResou
 
 plugins {
     id 'application'
-    id 'com.github.johnrengelman.shadow' version '6.0.0'
+    id 'com.github.johnrengelman.shadow' version '6.1.0'
     id 'com.github.gmazzo.buildconfig' version '2.0.2'
 }
 
@@ -82,6 +82,8 @@ processResources {
 }
 
 application {
+    mainClass.set('com.tngtech.keycloakmock.standalone.Main')
+    // still needed for shadow plugin (see https://github.com/johnrengelman/shadow/issues/609)
     mainClassName = 'com.tngtech.keycloakmock.standalone.Main'
 }
 
