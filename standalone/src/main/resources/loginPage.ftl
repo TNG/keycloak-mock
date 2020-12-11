@@ -7,9 +7,10 @@
 </head>
 <body>
 <h1>Keycloak Mock</h1>
-<p>This is a mocked login screen. Instead of providing a password, you can enter a comma-separated list of roles your user is supposed to
+<p>This is a mocked login screen. Instead of providing a password, you can enter a comma-separated
+  list of roles your user is supposed to
   have.</p>
-<form action="/authenticate" id="authenticate">
+<form action="../../authenticate" id="authenticate">
   <p>
     <label for="user">User</label>
     <br>
