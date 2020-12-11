@@ -7,7 +7,7 @@ import axios from 'axios';
 
 const kc = Keycloak('/keycloak.json');
 
-kc.init({onLoad: 'login-required', promiseType: 'native'})
+kc.init({onLoad: 'login-required', promiseType: 'native', enableLogging: true})
   .then(authenticated => {
     if (authenticated) {
       ReactDOM.render(<App logout={() => kc.logout()}/>, document.getElementById('root'));
