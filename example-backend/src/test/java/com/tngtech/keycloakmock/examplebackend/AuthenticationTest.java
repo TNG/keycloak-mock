@@ -18,8 +18,8 @@ import org.springframework.boot.web.server.LocalServerPort;
 class AuthenticationTest {
 
   @RegisterExtension
-  static KeycloakMockExtension mock = new KeycloakMockExtension(
-      aServerConfig().withRealm("realm").build());
+  static KeycloakMockExtension mock =
+      new KeycloakMockExtension(aServerConfig().withRealm("realm").build());
 
   @LocalServerPort private int port;
 
