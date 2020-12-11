@@ -64,7 +64,8 @@ class Server extends KeycloakMock {
         .failureHandler(failureHandler)
         .failureHandler(ErrorHandler.create(vertx));
     router.get(routing.getAuthorizationEndpoint().getPath()).handler(loginRoute);
-    router.get("/authenticate").handler(authenticationRoute);
+    router.get(routing.getIssuerPath().resolve("authenticate").getPath())
+        .handler(authenticationRoute);
     router
         .post(routing.getTokenEndpoint().getPath())
         .handler(BodyHandler.create())
