@@ -71,6 +71,9 @@ public class AuthenticationRoute implements Handler<RoutingContext> {
                     Arrays.asList(routingContext.queryParams().get(ROLES).trim().split(",")))
                 .withClaim(NONCE, routingContext.queryParams().get(NONCE))
                 .withClaim(SESSION_STATE, sessionId)
+                // we currently require the full authentication flow, so we should act as if we were
+                // compliant to ISO/IEC 29115 level 1
+                .withAuthenticationContextClassReference("1")
                 .build(),
             requestConfiguration);
     ResponseMode responseMode =
