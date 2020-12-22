@@ -27,22 +27,41 @@ import javax.annotation.Nullable;
  * }</pre>
  */
 public class TokenConfig {
-  @Nonnull private final Set<String> audience;
-  @Nonnull private final String authorizedParty;
-  @Nonnull private final String subject;
-  @Nonnull private final String scope;
-  @Nonnull private final Map<String, Object> claims;
-  @Nonnull private final Access realmAccess;
-  @Nonnull private final Map<String, Access> resourceAccess;
-  @Nonnull private final Instant issuedAt;
-  @Nonnull private final Instant authenticationTime;
-  @Nonnull private final Instant expiration;
-  @Nullable private final Instant notBefore;
-  @Nullable private final String name;
-  @Nullable private final String givenName;
-  @Nullable private final String familyName;
-  @Nullable private final String email;
-  @Nullable private final String preferredUsername;
+
+  @Nonnull
+  private final Set<String> audience;
+  @Nonnull
+  private final String authorizedParty;
+  @Nonnull
+  private final String subject;
+  @Nonnull
+  private final String scope;
+  @Nonnull
+  private final Map<String, Object> claims;
+  @Nonnull
+  private final Access realmAccess;
+  @Nonnull
+  private final Map<String, Access> resourceAccess;
+  @Nonnull
+  private final Instant issuedAt;
+  @Nonnull
+  private final Instant authenticationTime;
+  @Nonnull
+  private final Instant expiration;
+  @Nullable
+  private final Instant notBefore;
+  @Nullable
+  private final String name;
+  @Nullable
+  private final String givenName;
+  @Nullable
+  private final String familyName;
+  @Nullable
+  private final String email;
+  @Nullable
+  private final String preferredUsername;
+  @Nullable
+  private final String authenticationContextClassReference;
 
   private TokenConfig(@Nonnull final Builder builder) {
     if (builder.audience.isEmpty()) {
@@ -75,6 +94,7 @@ public class TokenConfig {
     }
     email = builder.email;
     preferredUsername = builder.preferredUsername;
+    authenticationContextClassReference = builder.authenticationContextClassReference;
   }
 
   /**
@@ -167,28 +187,52 @@ public class TokenConfig {
     return preferredUsername;
   }
 
+  @Nullable
+  public String getAuthenticationContextClassReference() {
+    return authenticationContextClassReference;
+  }
+
   /**
    * Builder for {@link TokenConfig}.
    *
    * <p>Use this to generate a token configuration to your needs.
    */
   public static final class Builder {
-    @Nonnull private final Set<String> audience = new HashSet<>();
-    @Nonnull private String authorizedParty = "client";
-    @Nonnull private String subject = "user";
-    @Nonnull private final Set<String> scope = new HashSet<>();
-    @Nonnull private final Map<String, Object> claims = new HashMap<>();
-    @Nonnull private final Access realmRoles = new Access();
-    @Nonnull private final Map<String, Access> resourceAccess = new HashMap<>();
-    @Nonnull private Instant issuedAt = Instant.now();
-    @Nonnull private Instant expiration = issuedAt.plus(10, ChronoUnit.HOURS);
-    @Nonnull private Instant authenticationTime = Instant.now();
-    @Nullable private Instant notBefore;
-    @Nullable private String givenName;
-    @Nullable private String familyName;
-    @Nullable private String name;
-    @Nullable private String email;
-    @Nullable private String preferredUsername;
+
+    @Nonnull
+    private final Set<String> audience = new HashSet<>();
+    @Nonnull
+    private String authorizedParty = "client";
+    @Nonnull
+    private String subject = "user";
+    @Nonnull
+    private final Set<String> scope = new HashSet<>();
+    @Nonnull
+    private final Map<String, Object> claims = new HashMap<>();
+    @Nonnull
+    private final Access realmRoles = new Access();
+    @Nonnull
+    private final Map<String, Access> resourceAccess = new HashMap<>();
+    @Nonnull
+    private Instant issuedAt = Instant.now();
+    @Nonnull
+    private Instant expiration = issuedAt.plus(10, ChronoUnit.HOURS);
+    @Nonnull
+    private Instant authenticationTime = Instant.now();
+    @Nullable
+    private Instant notBefore;
+    @Nullable
+    private String givenName;
+    @Nullable
+    private String familyName;
+    @Nullable
+    private String name;
+    @Nullable
+    private String email;
+    @Nullable
+    private String preferredUsername;
+    @Nullable
+    private String authenticationContextClassReference;
 
     private Builder() {
       scope.add("openid");
@@ -258,6 +302,9 @@ public class TokenConfig {
             break;
           case "scope":
             withScopes(Arrays.asList(getTypedValue(entry, String.class).split(" ")));
+            break;
+          case "acr":
+            withAuthenticationContextClassReference(getTypedValue(entry, String.class));
             break;
           case "typ":
             if (!"Bearer".equals(getTypedValue(entry, String.class))) {
@@ -613,6 +660,21 @@ public class TokenConfig {
     @Nonnull
     public Builder withPreferredUsername(@Nullable final String preferredUsername) {
       this.preferredUsername = preferredUsername;
+      return this;
+    }
+
+    /**
+     * Set authentication context class reference.
+     *
+     * @param authenticationContextClassReference the reference class of the authentication ("0" or
+     *                                            "1")
+     * @return builder
+     * @see <a href="https://openid.net/specs/openid-connect-core-1_0.html#IDToken">ID token</a>
+     */
+    @Nonnull
+    public Builder withAuthenticationContextClassReference(
+        @Nullable final String authenticationContextClassReference) {
+      this.authenticationContextClassReference = authenticationContextClassReference;
       return this;
     }
 

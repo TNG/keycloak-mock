@@ -41,6 +41,7 @@ class TokenConfigTest {
     assertThat(config.getResourceAccess()).isEmpty();
     assertThat(config.getScope()).isEqualTo("openid");
     assertThat(config.getSubject()).isEqualTo("user");
+    assertThat(config.getAuthenticationContextClassReference()).isNull();
   }
 
   @Test
@@ -213,6 +214,13 @@ class TokenConfigTest {
   }
 
   @Test
+  void authentication_context_class_reference_is_set_correctly() {
+    TokenConfig config = aTokenConfig().withAuthenticationContextClassReference("0").build();
+
+    assertThat(config.getAuthenticationContextClassReference()).isEqualTo("0");
+  }
+
+  @Test
   void config_is_set_correctly_from_original_token() {
     TokenConfig config = aTokenConfig().withSourceToken(SOURCE_TOKEN).build();
     Instant now = Instant.now();
@@ -225,7 +233,6 @@ class TokenConfigTest {
             entry("jti", "9cfe2b60-1db9-4a12-b9dc-dcabfd16e945"),
             entry("nonce", "aef8cf1b-127d-4650-8081-0db24af2d0e7"),
             entry("session_state", "05270907-d7e2-4b75-8341-5bdd94eab763"),
-            entry("acr", "1"),
             entry("allowed-origins", Collections.singletonList("http://localhost:3000")),
             entry("email_verified", false));
     assertThat(config.getEmail()).isEqualTo("user@keycloak");
@@ -237,6 +244,7 @@ class TokenConfigTest {
     assertThat(config.getName()).isEqualTo("Peter User");
     assertThat(config.getNotBefore()).isNull();
     assertThat(config.getPreferredUsername()).isEqualTo("user");
+    assertThat(config.getAuthenticationContextClassReference()).isEqualTo("1");
     assertThat(config.getRealmAccess().getRoles())
         .containsExactlyInAnyOrder("offline_access", "uma_authorization");
     assertThat(config.getResourceAccess()).containsOnlyKeys("account");

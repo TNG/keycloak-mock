@@ -50,6 +50,7 @@ class TokenGeneratorTest {
   private static final Instant NOT_BEFORE = Instant.now();
   private static final Instant EXPIRATION = Instant.now().plus(10, ChronoUnit.MINUTES);
   private static final String ISSUER = "issuer";
+  private static final String AUTHENTICATION_CONTEXT_CLASS_REFERENCE = "acc ref";
 
   private static RSAPublicKey key;
 
@@ -97,6 +98,7 @@ class TokenGeneratorTest {
                 .withIssuedAt(ISSUED_AT)
                 .withNotBefore(NOT_BEFORE)
                 .withExpiration(EXPIRATION)
+                .withAuthenticationContextClassReference(AUTHENTICATION_CONTEXT_CLASS_REFERENCE)
                 .build(),
             urlConfiguration);
 
@@ -121,6 +123,7 @@ class TokenGeneratorTest {
         .containsEntry("email", EMAIL)
         .containsEntry("preferred_username", USERNAME)
         .containsEntry(CLAIM_KEY, CLAIM_VALUE)
+        .containsEntry("acr", AUTHENTICATION_CONTEXT_CLASS_REFERENCE)
         .containsKey("realm_access")
         .containsKey("resource_access");
     assertThat((Map<String, List<String>>) claims.get("realm_access"))

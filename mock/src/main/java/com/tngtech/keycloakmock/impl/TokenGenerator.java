@@ -67,6 +67,7 @@ public class TokenGenerator {
     setClaimIfPresent(builder, "family_name", tokenConfig.getFamilyName());
     setClaimIfPresent(builder, "email", tokenConfig.getEmail());
     setClaimIfPresent(builder, "preferred_username", tokenConfig.getPreferredUsername());
+    setClaimIfPresent(builder, "acr", tokenConfig.getAuthenticationContextClassReference());
     return builder
         .claim("realm_access", tokenConfig.getRealmAccess())
         .claim("resource_access", tokenConfig.getResourceAccess())
