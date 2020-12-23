@@ -19,6 +19,7 @@ import io.vertx.ext.web.common.template.TemplateEngine;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.ErrorHandler;
 import io.vertx.ext.web.templ.freemarker.FreeMarkerTemplateEngine;
+import java.util.List;
 import javax.annotation.Nonnull;
 
 class Server extends KeycloakMock {
@@ -30,8 +31,7 @@ class Server extends KeycloakMock {
   @Nonnull private final TokenRepository tokenRepository = new TokenRepository();
 
   @Nonnull
-  private final AuthenticationRoute authenticationRoute =
-      new AuthenticationRoute(tokenGenerator, tokenRepository);
+  private final AuthenticationRoute authenticationRoute;
 
   @Nonnull private final TokenRoute tokenRoute = new TokenRoute(tokenRepository, renderHelper);
   @Nonnull private final LogoutRoute logoutRoute = new LogoutRoute();
@@ -48,8 +48,10 @@ class Server extends KeycloakMock {
   @Nonnull
   private final ResourceFileHandler keycloakJsRoute = new ResourceFileHandler("/keycloak.js");
 
-  Server(final int port, final boolean tls) {
+  Server(final int port, final boolean tls, @Nonnull final List<String> resourcesToMapRolesTo) {
     super(aServerConfig().withPort(port).withTls(tls).build());
+    authenticationRoute =
+        new AuthenticationRoute(tokenGenerator, tokenRepository, resourcesToMapRolesTo);
     start();
   }
 

@@ -684,8 +684,10 @@ public class TokenConfig {
     }
   }
 
-  static class Access {
-    @Nonnull private final Set<String> roles = new HashSet<>();
+  public static class Access {
+
+    @Nonnull
+    private final Set<String> roles = new HashSet<>();
 
     @Nonnull
     public Set<String> getRoles() {

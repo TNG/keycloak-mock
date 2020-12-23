@@ -66,6 +66,9 @@ dependencies {
     testImplementation "org.assertj:assertj-core:$assertj_version"
     testImplementation "org.junit.jupiter:junit-jupiter-api:$junit5_version"
     testImplementation "org.junit.jupiter:junit-jupiter-params:$junit5_version"
+    testImplementation "org.mockito:mockito-inline:$mockito_version"
+    testImplementation "org.mockito:mockito-junit-jupiter:$mockito_version"
+    testRuntimeOnly "io.vertx:vertx-codegen:$vertx_version"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junit5_version"
     testRuntimeOnly "org.slf4j:slf4j-simple:$slf4j_version"
 }

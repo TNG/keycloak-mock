@@ -23,14 +23,12 @@ public class LoginRoute implements Handler<RoutingContext> {
 
   @Override
   public void handle(@Nonnull final RoutingContext routingContext) {
-    String sessionId = UUID.randomUUID().toString();
     routingContext.put(CLIENT_ID, routingContext.queryParams().get(CLIENT_ID));
     routingContext.put(STATE, routingContext.queryParams().get(STATE));
     routingContext.put(NONCE, routingContext.queryParams().get(NONCE));
     routingContext.put(REDIRECT_URI, routingContext.queryParams().get(REDIRECT_URI));
-    String realm = routingContext.pathParam(REALM);
-    routingContext.put(REALM, realm);
-    routingContext.put(SESSION_ID, sessionId);
+    routingContext.put(REALM, routingContext.pathParam(REALM));
+    routingContext.put(SESSION_ID, UUID.randomUUID().toString());
     routingContext.put(RESPONSE_TYPE, routingContext.queryParams().get(RESPONSE_TYPE));
     // optional parameter
     routingContext.put(RESPONSE_MODE, routingContext.queryParams().get(RESPONSE_MODE));
