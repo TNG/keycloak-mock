@@ -40,7 +40,10 @@ public enum ResponseType {
   }
 
   @Nullable
-  static ResponseType fromValueOrNull(@Nonnull final String value) {
+  static ResponseType fromValueOrNull(@Nullable final String value) {
+    if (value == null) {
+      return null;
+    }
     switch (value) {
       case "id_token":
         return ID_TOKEN;
@@ -54,6 +57,22 @@ public enum ResponseType {
       default:
         // invalid combinations (e.g. hybrid case) are ignored
         return null;
+    }
+  }
+
+  @Override
+  public String toString() {
+    switch (this) {
+      case ID_TOKEN:
+        return "id_token";
+      case ID_TOKEN_PLUS_TOKEN:
+        return "id_token token";
+      case CODE:
+        return "code";
+      case NONE:
+        return "none";
+      default:
+        throw new IllegalStateException();
     }
   }
 }

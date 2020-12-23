@@ -9,6 +9,7 @@ import static org.junit.jupiter.params.provider.Arguments.of;
 
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
+import java.util.Collections;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -36,7 +37,7 @@ class ServerTest {
   @ParameterizedTest
   @MethodSource("serverConfig")
   void mock_server_endpoint_is_correctly_configured(int port, boolean tls) {
-    server = new Server(port, tls);
+    server = new Server(port, tls, Collections.emptyList());
     RestAssured.given()
         .relaxedHTTPSValidation()
         .when()
@@ -59,7 +60,7 @@ class ServerTest {
   @Test
   void mock_server_uses_host_header_as_server_host() {
     String hostname = "server";
-    server = new Server(8001, false);
+    server = new Server(8001, false, Collections.emptyList());
     String issuer =
         RestAssured.given()
             .when()
@@ -86,7 +87,7 @@ class ServerTest {
 
   @Test
   void mock_server_answers_204_on_iframe_init() {
-    server = new Server(8001, false);
+    server = new Server(8001, false, Collections.emptyList());
     RestAssured.given()
         .when()
         .get(
@@ -102,7 +103,7 @@ class ServerTest {
   @MethodSource("resourcesWithContent")
   void mock_server_properly_returns_resources(
       String resource, ContentType contentType, String content) {
-    server = new Server(8001, false);
+    server = new Server(8001, false, Collections.emptyList());
     String body =
         RestAssured.given()
             .when()
@@ -121,7 +122,7 @@ class ServerTest {
 
   @Test
   void mock_server_returns_404_on_nonexistent_resource() {
-    server = new Server(8001, false);
+    server = new Server(8001, false, Collections.emptyList());
     RestAssured.given()
         .when()
         .get("http://localhost:8001/i-do-not-exist")
