@@ -1,0 +1,20 @@
+version: '3'
+services:
+  keycloak:
+    image: keycloak-mock/standalone
+    ports:
+      - 8000:8000
+    # this is necessary so that the keycloak is visible on the same hostname both for frontend
+    # (on host) and backend (in docker)
+    networks:
+      default:
+        aliases:
+          - localhost
+  backend:
+    image: keycloak-mock/example-backend
+    ports:
+      - 8080:8080
+    # make sure localhost is not looped back into this container but can be used to access the
+    # keycloak container
+    volumes:
+      - ./hosts:/etc/hosts

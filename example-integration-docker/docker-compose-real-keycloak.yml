@@ -1,0 +1,27 @@
+version: '3'
+services:
+  keycloak:
+    image: jboss/keycloak
+    ports:
+      - 8000:8000
+    environment:
+      - KEYCLOAK_USER=admin
+      - KEYCLOAK_PASSWORD=admin
+      - KEYCLOAK_IMPORT=/tmp/realm.json
+      - JAVA_OPTS_APPEND="-Djboss.http.port=8000"
+    volumes:
+      - ./realm.json:/tmp/realm.json
+    # this is necessary so that the keycloak is visible on the same hostname both for frontend
+    # (on host) and backend (in docker)
+    networks:
+      default:
+        aliases:
+          - localhost
+  backend:
+    image: keycloak-mock/example-backend
+    ports:
+      - 8080:8080
+    # make sure localhost is not looped back into this container but can be used to access the
+    # keycloak container
+    volumes:
+      - ./hosts:/etc/hosts
