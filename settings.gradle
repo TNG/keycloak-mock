@@ -1,8 +1,10 @@
 rootProject.name = 'keycloak-mock'
-include ':mock'
-include ':example-backend'
-include ':example-frontend-react'
-include ':mock-junit'
-include ':mock-junit5'
+include 'mock'
+include 'mock-junit'
+include 'mock-junit5'
 include 'standalone'
+
+include 'example-backend'
+include 'example-frontend-react'
+include 'example-integration-docker'
 

@@ -3,20 +3,28 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 ## Prerequisites
 
 Before you can run this web app, you need a running Keycloak service.
-For this, you can either start a real Keycloak server with the provided configuration file
-`realm.json` (which will create a user `user` with password `user`), e.g. with:
+For this, you can either start a real Keycloak server:
 
 ```bash
-docker run -p 8000:8080 -e KEYCLOAK_USER=admin -e KEYCLOAK_PASSWORD=admin \
-    -e KEYCLOAK_IMPORT=/tmp/realm.json -v $(pwd)/realm.json:/tmp/realm.json \
-    jboss/keycloak:11.0.0
+./gradlew example-integration-docker:realKeycloakComposeUp
 ```
 
-Or you can start our standalone server with no need for additional configuration:
+Stopping the server can be done running:
 
 ```bash
-cd ..
-./gradlew standalone:run
+./gradlew example-integration-docker:realKeycloakComposeDown
+```
+
+Or you can start our standalone server:
+
+```bash
+./gradlew example-integration-docker:composeUp
+```
+
+Stopping:
+
+```bash
+./gradlew example-integration-docker:composeDown
 ```
 
 ## Run the application
