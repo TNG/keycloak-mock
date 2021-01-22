@@ -18,3 +18,10 @@ afterEvaluate {
     dependsOn ':example-backend:jibDockerBuild'
   }
 }
+
+task e2e {
+  dependsOn composeUp
+  dependsOn ':example-frontend-react:yarn_e2e'
+  finalizedBy composeDown
+}
+

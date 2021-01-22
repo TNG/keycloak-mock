@@ -62,3 +62,7 @@ nodeSetup.finalizedBy(copyNode)
 task build {
     dependsOn yarn_build
 }
+
+yarn_e2e {
+    mustRunAfter ':example-integration-docker:composeUp'
+}
