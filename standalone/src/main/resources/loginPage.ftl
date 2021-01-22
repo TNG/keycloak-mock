@@ -8,29 +8,19 @@
 <body>
 <h1>Keycloak Mock</h1>
 <p>This is a mocked login screen. Instead of providing a password, you can enter a comma-separated
-  list of roles your user is supposed to
-  have.</p>
-<form action="../../authenticate" id="authenticate">
+  list of roles your user is supposed to have.</p>
+<form action="${authentication_uri}" id="authenticate" method="post">
   <p>
-    <label for="user">User</label>
+    <label for="username">User</label>
     <br>
-    <input type="text" name="user" id="user">
+    <input type="text" name="username" id="username">
   </p>
 
   <p>
-    <label for="roles">Roles</label>
+    <label for="password">Roles</label>
     <br>
-    <input type="text" name="roles" id="roles">
+    <input type="text" name="password" id="password">
   </p>
-
-  <input type="hidden" name="realm" id="realm" value="${realm}">
-  <input type="hidden" name="state" id="state" value="${state}">
-  <input type="hidden" name="nonce" id="nonce" value="${nonce}">
-  <input type="hidden" name="session_id" id="session_id" value="${session_id}">
-  <input type="hidden" name="client_id" id="client_id" value="${client_id}">
-  <input type="hidden" name="redirect_uri" id="redirect_uri" value="${redirect_uri}">
-  <input type="hidden" name="response_type" id="response_type" value="${response_type}">
-  <input type="hidden" name="response_mode" id="response_type" value="${response_mode}">
 
   <button type="submit">Login</button>
 </form>

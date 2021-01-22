@@ -1,4 +1,4 @@
-package com.tngtech.keycloakmock.standalone.handler;
+package com.tngtech.keycloakmock.standalone.session;
 
 import java.util.Locale;
 import javax.annotation.Nonnull;
@@ -21,7 +21,7 @@ public enum ResponseMode {
   }
 
   @Nonnull
-  String getSign() {
+  public String getSign() {
     return sign;
   }
 

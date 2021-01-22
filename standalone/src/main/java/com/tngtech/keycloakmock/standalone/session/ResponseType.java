@@ -1,4 +1,4 @@
-package com.tngtech.keycloakmock.standalone.handler;
+package com.tngtech.keycloakmock.standalone.session;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -28,7 +28,7 @@ public enum ResponseType {
   }
 
   @Nonnull
-  ResponseMode getValidResponseMode(@Nullable final String responseMode) {
+  public ResponseMode getValidResponseMode(@Nullable final String responseMode) {
     if (!differentModeAllowed) {
       return defaultMode;
     }
@@ -40,7 +40,7 @@ public enum ResponseType {
   }
 
   @Nullable
-  static ResponseType fromValueOrNull(@Nullable final String value) {
+  public static ResponseType fromValueOrNull(@Nullable final String value) {
     if (value == null) {
       return null;
     }

@@ -64,6 +64,8 @@ dependencies {
     implementation "io.vertx:vertx-web:$vertx_version"
     implementation "io.vertx:vertx-web-templ-freemarker:$vertx_version"
     resourceJars "org.keycloak:keycloak-js-adapter:$keycloak_version"
+    testImplementation "io.jsonwebtoken:jjwt-impl:$jjwt_version"
+    testImplementation "io.jsonwebtoken:jjwt-jackson:$jjwt_version"
     testImplementation "io.rest-assured:rest-assured:$restassured_version"
     testImplementation "org.assertj:assertj-core:$assertj_version"
     testImplementation "org.junit.jupiter:junit-jupiter-api:$junit5_version"
