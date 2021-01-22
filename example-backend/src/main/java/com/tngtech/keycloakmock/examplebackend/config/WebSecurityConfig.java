@@ -18,8 +18,10 @@ public class WebSecurityConfig extends KeycloakWebSecurityConfigurerAdapter {
     http.authorizeRequests()
         .antMatchers(HttpMethod.OPTIONS, "/**")
         .permitAll()
+        .antMatchers("/api/**")
+        .authenticated()
         .antMatchers("/**")
-        .authenticated();
+        .permitAll();
   }
 
   @Override

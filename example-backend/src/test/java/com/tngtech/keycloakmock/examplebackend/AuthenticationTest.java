@@ -31,7 +31,7 @@ class AuthenticationTest {
 
   @Test
   void no_authentication_fails() {
-    RestAssured.given().when().get("/hello").then().statusCode(401);
+    RestAssured.given().when().get("/api/hello").then().statusCode(401);
   }
 
   @Test
@@ -41,7 +41,7 @@ class AuthenticationTest {
         .preemptive()
         .oauth2(mock.getAccessToken(aTokenConfig().withSubject("Awesome").build()))
         .when()
-        .get("/hello")
+        .get("/api/hello")
         .then()
         .statusCode(200)
         .and()
@@ -55,7 +55,7 @@ class AuthenticationTest {
         .preemptive()
         .oauth2(mock.getAccessToken(aTokenConfig().build()))
         .when()
-        .get("/vip")
+        .get("/api/vip")
         .then()
         .statusCode(403);
   }
@@ -67,7 +67,7 @@ class AuthenticationTest {
         .preemptive()
         .oauth2(mock.getAccessToken(aTokenConfig().withRealmRole("vip").build()))
         .when()
-        .get("/vip")
+        .get("/api/vip")
         .then()
         .statusCode(200)
         .and()
