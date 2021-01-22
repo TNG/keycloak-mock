@@ -33,8 +33,7 @@ public class Main implements Callable<Void> {
       names = {"-r", "--mapRolesToResources"},
       description = "If set, roles will be assigned to these resources instead of the realm.",
       paramLabel = "RESOURCE",
-      split = ","
-  )
+      split = ",")
   private final List<String> resourcesToMapRolesTo = Collections.emptyList();
 
   public static void main(@Nonnull final String[] args) {

@@ -12,8 +12,10 @@ import com.tngtech.keycloakmock.standalone.handler.LoginRoute;
 import com.tngtech.keycloakmock.standalone.handler.LogoutRoute;
 import com.tngtech.keycloakmock.standalone.handler.ResourceFileHandler;
 import com.tngtech.keycloakmock.standalone.handler.TokenRoute;
-import com.tngtech.keycloakmock.standalone.render.RenderHelper;
-import com.tngtech.keycloakmock.standalone.token.TokenRepository;
+import com.tngtech.keycloakmock.standalone.helper.RedirectHelper;
+import com.tngtech.keycloakmock.standalone.helper.RenderHelper;
+import com.tngtech.keycloakmock.standalone.helper.TokenHelper;
+import com.tngtech.keycloakmock.standalone.session.SessionRepository;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.common.template.TemplateEngine;
 import io.vertx.ext.web.handler.BodyHandler;
@@ -23,18 +25,13 @@ import java.util.List;
 import javax.annotation.Nonnull;
 
 class Server extends KeycloakMock {
-  @Nonnull private final TemplateEngine engine = FreeMarkerTemplateEngine.create(vertx);
-  @Nonnull private final RenderHelper renderHelper = new RenderHelper(engine);
+
   @Nonnull private final CommonHandler commonHandler = new CommonHandler();
   @Nonnull private final FailureHandler failureHandler = new FailureHandler();
-  @Nonnull private final LoginRoute loginRoute = new LoginRoute(renderHelper);
-  @Nonnull private final TokenRepository tokenRepository = new TokenRepository();
-
-  @Nonnull
-  private final AuthenticationRoute authenticationRoute;
-
-  @Nonnull private final TokenRoute tokenRoute = new TokenRoute(tokenRepository, renderHelper);
-  @Nonnull private final LogoutRoute logoutRoute = new LogoutRoute();
+  @Nonnull private final LoginRoute loginRoute;
+  @Nonnull private final AuthenticationRoute authenticationRoute;
+  @Nonnull private final TokenRoute tokenRoute;
+  @Nonnull private final LogoutRoute logoutRoute;
   @Nonnull private final IFrameRoute iframeRoute = new IFrameRoute();
 
   @Nonnull
@@ -50,8 +47,15 @@ class Server extends KeycloakMock {
 
   Server(final int port, final boolean tls, @Nonnull final List<String> resourcesToMapRolesTo) {
     super(aServerConfig().withPort(port).withTls(tls).build());
-    authenticationRoute =
-        new AuthenticationRoute(tokenGenerator, tokenRepository, resourcesToMapRolesTo);
+    TemplateEngine engine = FreeMarkerTemplateEngine.create(vertx);
+    TokenHelper tokenHelper = new TokenHelper(tokenGenerator, resourcesToMapRolesTo);
+    RedirectHelper redirectHelper = new RedirectHelper(tokenHelper);
+    RenderHelper renderHelper = new RenderHelper(engine);
+    SessionRepository sessionRepository = new SessionRepository();
+    loginRoute = new LoginRoute(sessionRepository, redirectHelper, renderHelper);
+    authenticationRoute = new AuthenticationRoute(sessionRepository, redirectHelper);
+    tokenRoute = new TokenRoute(sessionRepository, tokenHelper, renderHelper);
+    logoutRoute = new LogoutRoute(sessionRepository, redirectHelper);
     start();
   }
 
@@ -67,7 +71,8 @@ class Server extends KeycloakMock {
         .failureHandler(ErrorHandler.create(vertx));
     router.get(routing.getAuthorizationEndpoint().getPath()).handler(loginRoute);
     router
-        .get(routing.getIssuerPath().resolve("authenticate").getPath())
+        .post(routing.getAuthenticationCallbackEndpoint(":sessionId").getPath())
+        .handler(BodyHandler.create())
         .handler(authenticationRoute);
     router
         .post(routing.getTokenEndpoint().getPath())

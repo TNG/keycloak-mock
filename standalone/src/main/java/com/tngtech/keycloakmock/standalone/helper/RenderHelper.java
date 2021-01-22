@@ -1,4 +1,4 @@
-package com.tngtech.keycloakmock.standalone.render;
+package com.tngtech.keycloakmock.standalone.helper;
 
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.json.JsonObject;
@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class RenderHelper {
+
   private static final Logger LOG = LoggerFactory.getLogger(RenderHelper.class);
 
   @Nonnull private final TemplateEngine engine;
