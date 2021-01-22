@@ -10,7 +10,7 @@ plugins {
     id 'com.github.ben-manes.versions' version '0.36.0'
     id 'com.github.jk1.dependency-license-report' version '1.16' apply false
     id 'com.github.sherter.google-java-format' version '0.9' apply false
-    id 'com.google.cloud.tools.jib' version '2.7.0' apply false
+    id 'com.google.cloud.tools.jib' version '2.7.1' apply false
     id 'org.sonarqube' version '3.1'
     id 'pl.allegro.tech.build.axion-release' version '1.12.1'
 }
