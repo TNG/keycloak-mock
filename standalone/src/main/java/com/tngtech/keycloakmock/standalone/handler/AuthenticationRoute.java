@@ -4,6 +4,7 @@ import static com.tngtech.keycloakmock.impl.handler.RequestUrlConfigurationHandl
 
 import com.tngtech.keycloakmock.impl.UrlConfiguration;
 import com.tngtech.keycloakmock.standalone.helper.RedirectHelper;
+import com.tngtech.keycloakmock.standalone.helper.UserInputSanitizer;
 import com.tngtech.keycloakmock.standalone.session.Session;
 import com.tngtech.keycloakmock.standalone.session.SessionRepository;
 import io.vertx.core.Handler;
@@ -34,14 +35,17 @@ public class AuthenticationRoute implements Handler<RoutingContext> {
     String sessionId = routingContext.pathParam("sessionId");
     Session session = sessionRepository.getSession(sessionId);
     if (session == null) {
-      LOG.warn("Login for unknown session {} requested!", sessionId);
+      LOG.warn("Login for unknown session {} requested!", new UserInputSanitizer(sessionId));
       routingContext.fail(404);
       return;
     }
     String username = routingContext.request().getFormAttribute(USERNAME_PARAMETER);
     String rolesString = routingContext.request().getFormAttribute(ROLES_PARAMETER);
     if (username == null || rolesString == null) {
-      LOG.warn("Missing username {} or roles parameter {}", username, rolesString);
+      LOG.warn(
+          "Missing username {} or roles parameter {}",
+          new UserInputSanitizer(username),
+          new UserInputSanitizer(rolesString));
       routingContext.fail(400);
       return;
     }
