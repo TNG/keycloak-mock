@@ -5,8 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Header;
-import io.jsonwebtoken.Jwt;
+import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 import io.restassured.RestAssured;
@@ -81,7 +80,6 @@ class KeycloakMockTest {
   }
 
   @Test
-  @SuppressWarnings("unchecked")
   void generated_token_uses_correct_issuer() throws Exception {
     JwtParser jwtParser = Jwts.parserBuilder().setSigningKey(loadKey()).build();
     KeycloakMock keycloakMock =
@@ -90,7 +88,7 @@ class KeycloakMockTest {
 
     String token = keycloakMock.getAccessToken(TokenConfig.aTokenConfig().build());
 
-    Jwt<Header<?>, Claims> jwt = jwtParser.parse(token);
+    Jws<Claims> jwt = jwtParser.parseClaimsJws(token);
 
     assertThat(jwt.getBody().getIssuer()).isEqualTo("http://somehost:123/auth/realms/realm123");
   }
