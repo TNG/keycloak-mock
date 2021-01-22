@@ -24,5 +24,8 @@ build
 .envrc
 
 /example-backend/src/main/resources/static/
+
 /example-frontend-react/cypress/videos/
 /example-frontend-react/cypress/screenshots/
+
+/example-frontend-react/.eslintcache

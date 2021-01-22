@@ -6,10 +6,10 @@ plugins {
 
 node {
     // Version of node to use.
-    version = '12.18.4'
+    version = '14.15.4'
 
     // Version of Yarn to use.
-    yarnVersion = '1.22.5'
+    yarnVersion = '1.22.10'
 
     // Base URL for fetching node distributions (change if you have a mirror).
     distBaseUrl = 'https://nodejs.org/dist'
