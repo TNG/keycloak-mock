@@ -57,3 +57,11 @@ jib {
         ports = ['8080']
     }
 }
+
+task prepareFrontend(type: Copy) {
+    dependsOn ':example-frontend-react:yarn_build'
+    from '../example-frontend-react/build/'
+    into 'src/main/resources/static/'
+}
+
+processResources.dependsOn prepareFrontend
