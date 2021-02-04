@@ -44,11 +44,11 @@ public class LoginRoute implements Handler<RoutingContext> {
     Optional<Session> existingSession =
         Optional.ofNullable(routingContext.getCookie(KEYCLOAK_SESSION_COOKIE))
             .map(Cookie::getValue)
-            .map(s -> s.split("/"))
-            .filter(s -> s.length > 0)
-            .map(s -> s[s.length - 1])
+            .map(value -> value.split("/"))
+            .filter(split -> split.length > 0)
+            .map(split -> split[split.length - 1])
             .map(sessionRepository::getSession)
-            .filter(s -> s.getUsername() != null);
+            .filter(session -> session.getUsername() != null);
 
     // TODO: store sessions per client
     // for now, we just override the settings of the session with values of the new client
