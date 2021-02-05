@@ -82,6 +82,16 @@ public class KeycloakMock {
   /**
    * Get {@link TokenRoute} handler and control endpoit responses.
    *
+   * <p>Example use:
+   *
+   * <pre><code>
+   * {@literal //} return error 404
+   * getTokenRoute().withErrorResponse(404, "{\"error\": \"Error detail message\"}")
+   *
+   * {@literal //} return 200
+   * getTokenRoute().withOkResponse(accessTokenConfig, idTokenConfig, refreshTokenConfig, 60 * 60);
+   * </code></pre>
+   *
    * @return token route handler
    * @see TokenRoute
    */
