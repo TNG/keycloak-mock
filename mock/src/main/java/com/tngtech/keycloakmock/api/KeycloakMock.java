@@ -4,6 +4,7 @@ import com.tngtech.keycloakmock.impl.TokenGenerator;
 import com.tngtech.keycloakmock.impl.UrlConfiguration;
 import com.tngtech.keycloakmock.impl.handler.JwksRoute;
 import com.tngtech.keycloakmock.impl.handler.RequestUrlConfigurationHandler;
+import com.tngtech.keycloakmock.impl.handler.TokenRoute;
 import com.tngtech.keycloakmock.impl.handler.WellKnownRoute;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
@@ -42,6 +43,7 @@ public class KeycloakMock {
   @Nonnull private final JwksRoute jwksRoute;
   @Nonnull private final WellKnownRoute wellKnownRoute;
   @Nullable private HttpServer server;
+  @Nonnull protected final TokenRoute tokenRoute;
 
   /**
    * Create a mock instance for realm "master".
@@ -74,6 +76,27 @@ public class KeycloakMock {
             tokenGenerator.getAlgorithm(),
             tokenGenerator.getPublicKey());
     this.wellKnownRoute = new WellKnownRoute();
+    this.tokenRoute = new TokenRoute();
+  }
+
+  /**
+   * Get {@link TokenRoute} handler and control endpoit responses.
+   *
+   * <p>Example use:
+   *
+   * <pre><code>
+   * {@literal //} return error 404
+   * getTokenRoute().withErrorResponse(404, "{\"error\": \"Error detail message\"}")
+   *
+   * {@literal //} return 200
+   * getTokenRoute().withOkResponse(accessTokenConfig, idTokenConfig, refreshTokenConfig, 60 * 60);
+   * </code></pre>
+   *
+   * @return token route handler
+   * @see TokenRoute
+   */
+  public TokenRoute getTokenRoute() {
+    return tokenRoute;
   }
 
   /**
@@ -124,6 +147,7 @@ public class KeycloakMock {
     router.route().handler(requestUrlConfigurationHandler);
     router.get(routing.getJwksUri().getPath()).handler(jwksRoute);
     router.get(routing.getIssuerPath().resolve(".well-known/*").getPath()).handler(wellKnownRoute);
+    router.post(routing.getTokenEndpoint().getPath()).handler(tokenRoute);
     return router;
   }
 
