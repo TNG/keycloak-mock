@@ -1,18 +1,5 @@
 package com.tngtech.keycloakmock.api;
 
-import com.tngtech.keycloakmock.impl.TokenGenerator;
-import com.tngtech.keycloakmock.impl.UrlConfiguration;
-import com.tngtech.keycloakmock.impl.handler.JwksRoute;
-import com.tngtech.keycloakmock.impl.handler.RequestUrlConfigurationHandler;
-import com.tngtech.keycloakmock.impl.handler.WellKnownRoute;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
-import io.vertx.core.buffer.Buffer;
-import io.vertx.core.http.HttpServer;
-import io.vertx.core.http.HttpServerOptions;
-import io.vertx.core.net.JksOptions;
-import io.vertx.ext.web.Router;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -22,6 +9,20 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.tngtech.keycloakmock.impl.TokenGenerator;
+import com.tngtech.keycloakmock.impl.UrlConfiguration;
+import com.tngtech.keycloakmock.impl.handler.JwksRoute;
+import com.tngtech.keycloakmock.impl.handler.RequestUrlConfigurationHandler;
+import com.tngtech.keycloakmock.impl.handler.TokenRoute;
+import com.tngtech.keycloakmock.impl.handler.WellKnownRoute;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.http.HttpServer;
+import io.vertx.core.http.HttpServerOptions;
+import io.vertx.core.net.JksOptions;
+import io.vertx.ext.web.Router;
 
 /**
  * A mock of a keycloak instance capable of producing access tokens.
@@ -42,6 +43,7 @@ public class KeycloakMock {
   @Nonnull private final JwksRoute jwksRoute;
   @Nonnull private final WellKnownRoute wellKnownRoute;
   @Nullable private HttpServer server;
+  @Nonnull protected final TokenRoute tokenRoute;
 
   /**
    * Create a mock instance for realm "master".
@@ -74,6 +76,17 @@ public class KeycloakMock {
             tokenGenerator.getAlgorithm(),
             tokenGenerator.getPublicKey());
     this.wellKnownRoute = new WellKnownRoute();
+    this.tokenRoute = new TokenRoute();
+  }
+
+  /**
+   * Get {@link TokenRoute} handler and control endpoit responses.
+   *
+   * @return token route handler
+   * @see TokenRoute
+   */
+  public TokenRoute getTokenRoute() {
+    return tokenRoute;
   }
 
   /**
@@ -124,6 +137,7 @@ public class KeycloakMock {
     router.route().handler(requestUrlConfigurationHandler);
     router.get(routing.getJwksUri().getPath()).handler(jwksRoute);
     router.get(routing.getIssuerPath().resolve(".well-known/*").getPath()).handler(wellKnownRoute);
+    router.post(routing.getTokenEndpoint().getPath()).handler(tokenRoute);
     return router;
   }
 
