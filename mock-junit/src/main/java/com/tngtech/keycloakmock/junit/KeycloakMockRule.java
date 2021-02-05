@@ -3,6 +3,7 @@ package com.tngtech.keycloakmock.junit;
 import com.tngtech.keycloakmock.api.KeycloakMock;
 import com.tngtech.keycloakmock.api.ServerConfig;
 import com.tngtech.keycloakmock.api.TokenConfig;
+import com.tngtech.keycloakmock.impl.handler.TokenRoute;
 import javax.annotation.Nonnull;
 import org.junit.rules.ExternalResource;
 
@@ -48,6 +49,27 @@ public class KeycloakMockRule extends ExternalResource {
    */
   public KeycloakMockRule(@Nonnull final ServerConfig serverConfig) {
     mock = new KeycloakMock(serverConfig);
+  }
+
+  /**
+   * Get {@link TokenRoute} handler and control endpoit responses.
+   *
+   * <p>Example use:
+   *
+   * <pre><code>
+   * {@literal //} return error 404
+   * getTokenRoute().withErrorResponse(404, "{\"error\": \"Error detail message\"}")
+   *
+   * {@literal //} return 200
+   * getTokenRoute().withOkResponse(accessTokenConfig, idTokenConfig, refreshTokenConfig, 60 * 60);
+   * </code></pre>
+   *
+   * @return token route handler
+   * @see TokenRoute
+   */
+  @Nonnull
+  public TokenRoute getTokenRoute() {
+    return mock.getTokenRoute();
   }
 
   /**
