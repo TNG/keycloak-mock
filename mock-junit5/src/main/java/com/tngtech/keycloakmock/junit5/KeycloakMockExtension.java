@@ -1,14 +1,14 @@
 package com.tngtech.keycloakmock.junit5;
 
+import com.tngtech.keycloakmock.api.KeycloakMock;
+import com.tngtech.keycloakmock.api.ServerConfig;
+import com.tngtech.keycloakmock.api.TokenConfig;
+import com.tngtech.keycloakmock.impl.handler.TokenRoute;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
-import com.tngtech.keycloakmock.api.KeycloakMock;
-import com.tngtech.keycloakmock.api.ServerConfig;
-import com.tngtech.keycloakmock.api.TokenConfig;
-import com.tngtech.keycloakmock.impl.handler.TokenRoute;
 
 /**
  * A JUnit5 extension to be used to automatically start and stop the keycloak mock.

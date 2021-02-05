@@ -1,14 +1,15 @@
 package com.tngtech.keycloakmock.impl.handler;
 
 import static com.tngtech.keycloakmock.impl.handler.RequestUrlConfigurationHandler.CTX_REQUEST_CONFIGURATION;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+
 import com.tngtech.keycloakmock.api.TokenConfig;
 import com.tngtech.keycloakmock.impl.TokenGenerator;
 import com.tngtech.keycloakmock.impl.UrlConfiguration;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 public class TokenRoute implements Handler<RoutingContext> {
   private TokenConfig accessTokenConfig;
@@ -96,6 +97,4 @@ public class TokenRoute implements Handler<RoutingContext> {
         .putHeader("content-type", "application/json")
         .end(response);
   }
-
-
 }

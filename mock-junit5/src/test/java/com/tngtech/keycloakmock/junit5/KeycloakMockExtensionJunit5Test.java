@@ -1,14 +1,15 @@
 package com.tngtech.keycloakmock.junit5;
 
 import static com.tngtech.keycloakmock.api.ServerConfig.aServerConfig;
-import org.hamcrest.Matchers;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.matcher.ResponseAwareMatcher;
 import io.restassured.response.Response;
+import org.hamcrest.Matchers;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 class KeycloakMockExtensionJunit5Test {
   private KeycloakMockExtension keyCloakMockExtension;

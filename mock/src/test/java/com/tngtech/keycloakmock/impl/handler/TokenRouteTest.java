@@ -5,6 +5,12 @@ import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
+
+import com.tngtech.keycloakmock.api.TokenConfig;
+import com.tngtech.keycloakmock.impl.TokenGenerator;
+import com.tngtech.keycloakmock.impl.UrlConfiguration;
+import io.vertx.core.json.JsonObject;
+import io.vertx.ext.auth.impl.jose.JWT;
 import java.math.BigDecimal;
 import java.net.URI;
 import java.time.Instant;
@@ -15,11 +21,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import com.tngtech.keycloakmock.api.TokenConfig;
-import com.tngtech.keycloakmock.impl.TokenGenerator;
-import com.tngtech.keycloakmock.impl.UrlConfiguration;
-import io.vertx.core.json.JsonObject;
-import io.vertx.ext.auth.impl.jose.JWT;
 
 @ExtendWith(MockitoExtension.class)
 class TokenRouteTest extends HandlerTestBase {
