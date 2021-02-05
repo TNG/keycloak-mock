@@ -1,10 +1,11 @@
 package com.tngtech.keycloakmock.junit;
 
+import javax.annotation.Nonnull;
+import org.junit.rules.ExternalResource;
 import com.tngtech.keycloakmock.api.KeycloakMock;
 import com.tngtech.keycloakmock.api.ServerConfig;
 import com.tngtech.keycloakmock.api.TokenConfig;
-import javax.annotation.Nonnull;
-import org.junit.rules.ExternalResource;
+import com.tngtech.keycloakmock.impl.handler.TokenRoute;
 
 /**
  * A JUnit4 rule to automatically start and stop the keycloak mock.
@@ -50,6 +51,27 @@ public class KeycloakMockRule extends ExternalResource {
     mock = new KeycloakMock(serverConfig);
   }
 
+  /**
+   * Get {@link TokenRoute} handler and control endpoit responses.
+   *
+   * <p>Example use:
+   *
+   * <pre><code>
+   * {@literal //} return error 404
+   * getTokenRoute().withErrorResponse(404, "{\"error\": \"Error detail message\"}")
+   *
+   * {@literal //} return 200
+   * getTokenRoute().withOkResponse(accessTokenConfig, idTokenConfig, refreshTokenConfig, 60 * 60);
+   * </code></pre>
+   *
+   * @return token route handler
+   * @see TokenRoute
+   */
+  @Nonnull
+  public TokenRoute getTokenRoute() {
+    return mock.getTokenRoute();
+  }
+  
   /**
    * Get a signed access token for the given parameters.
    *
