@@ -23,6 +23,8 @@ public class RedirectHelper {
   private static final String ACCESS_TOKEN = "access_token";
   private static final String TOKEN_TYPE = "token_type";
 
+  private static final String DUMMY_USER_ID = "dummy-user-id";
+
   @Nonnull private final TokenHelper tokenHelper;
 
   public RedirectHelper(@Nonnull TokenHelper tokenHelper) {
@@ -71,7 +73,8 @@ public class RedirectHelper {
   public Cookie getSessionCookie(Session session, UrlConfiguration requestConfiguration) {
     return Cookie.cookie(
             KEYCLOAK_SESSION_COOKIE,
-            requestConfiguration.getRealm() + "/no-idea-what-goes-here/" + session.getSessionId())
+            String.join(
+                "/", requestConfiguration.getRealm(), DUMMY_USER_ID, session.getSessionId()))
         .setPath(requestConfiguration.getIssuerPath().getPath())
         .setMaxAge(36000)
         .setSecure(false);
@@ -80,7 +83,8 @@ public class RedirectHelper {
   @Nonnull
   public Cookie invalidateSessionCookie(UrlConfiguration requestConfiguration) {
     return Cookie.cookie(
-            KEYCLOAK_SESSION_COOKIE, requestConfiguration.getRealm() + "/no-idea-what-goes-here/")
+            KEYCLOAK_SESSION_COOKIE,
+            String.join("/", requestConfiguration.getRealm(), DUMMY_USER_ID))
         .setPath(requestConfiguration.getIssuerPath().getPath())
         .setMaxAge(0)
         .setSecure(false);
