@@ -3,9 +3,7 @@ package com.tngtech.keycloakmock.api;
 import com.tngtech.keycloakmock.impl.Protocol;
 import javax.annotation.Nonnull;
 
-/**
- * Server configuration to use.
- */
+/** Server configuration to use. */
 public final class ServerConfig {
 
   private static final String DEFAULT_HOSTNAME = "localhost";
@@ -13,12 +11,9 @@ public final class ServerConfig {
   private static final String DEFAULT_REALM = "master";
 
   private final int port;
-  @Nonnull
-  private final Protocol protocol;
-  @Nonnull
-  private final String defaultHostname;
-  @Nonnull
-  private final String defaultRealm;
+  @Nonnull private final Protocol protocol;
+  @Nonnull private final String defaultHostname;
+  @Nonnull private final String defaultRealm;
 
   private ServerConfig(@Nonnull final Builder builder) {
     this.port = builder.port;
@@ -104,15 +99,11 @@ public final class ServerConfig {
   public static final class Builder {
 
     private int port = DEFAULT_PORT;
-    @Nonnull
-    private Protocol protocol = Protocol.HTTP;
-    @Nonnull
-    private String defaultHostname = DEFAULT_HOSTNAME;
-    @Nonnull
-    private String defaultRealm = DEFAULT_REALM;
+    @Nonnull private Protocol protocol = Protocol.HTTP;
+    @Nonnull private String defaultHostname = DEFAULT_HOSTNAME;
+    @Nonnull private String defaultRealm = DEFAULT_REALM;
 
-    private Builder() {
-    }
+    private Builder() {}
 
     /**
      * Set TLS flag.
