@@ -269,8 +269,7 @@ class TokenConfigTest {
     assertThat(config.getScope().split(" "))
         .containsExactlyInAnyOrder("openid", "email", "profile");
     assertThat(config.getSubject()).isEqualTo("fbcaa40a-9480-4ead-adf2-8f6085f6f75d");
-    // TODO: extract host / realm from original token
-    assertThat(config.getHostname()).isNull();
-    assertThat(config.getRealm()).isNull();
+    assertThat(config.getHostname()).isEqualTo("localhost");
+    assertThat(config.getRealm()).isEqualTo("realm");
   }
 }
