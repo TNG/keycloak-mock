@@ -106,6 +106,9 @@ class TokenGeneratorTest {
     Jwt<Header<?>, Claims> jwt = Jwts.parserBuilder().setSigningKey(key).build().parse(token);
     assertThat(jwt.getHeader()).containsEntry("kid", "keyId");
     Claims claims = jwt.getBody();
+
+    assertThat(claims).isEqualTo(generator.parseToken(token));
+
     assertThat(claims.getExpiration()).isInSameSecondWindowAs(new Date(EXPIRATION.toEpochMilli()));
     assertThat(claims.getIssuedAt()).isInSameSecondWindowAs(new Date(ISSUED_AT.toEpochMilli()));
     assertThat(claims.getNotBefore()).isInSameSecondWindowAs(new Date(NOT_BEFORE.toEpochMilli()));
