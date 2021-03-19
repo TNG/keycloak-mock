@@ -56,7 +56,9 @@ public class TokenGenerator {
             .setIssuedAt(new Date(tokenConfig.getIssuedAt().toEpochMilli()))
             .claim("auth_time", tokenConfig.getAuthenticationTime().getEpochSecond())
             .setExpiration(new Date(tokenConfig.getExpiration().toEpochMilli()))
-            .setIssuer(requestConfiguration.getIssuer().toASCIIString())
+            .setIssuer(requestConfiguration
+                .forRequestContext(tokenConfig.getHostname(), tokenConfig.getRealm()).getIssuer()
+                .toASCIIString())
             .setSubject(tokenConfig.getSubject())
             .claim("scope", tokenConfig.getScope())
             .claim("typ", "Bearer")

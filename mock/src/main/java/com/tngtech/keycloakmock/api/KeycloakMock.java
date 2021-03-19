@@ -44,9 +44,9 @@ public class KeycloakMock {
   @Nullable private HttpServer server;
 
   /**
-   * Create a mock instance for realm "master".
+   * Create a mock instance for default realm "master".
    *
-   * <p>The JWKS endpoint is served via HTTP on port 8000.
+   * <p>The JWKS endpoint is served via HTTP on localhost with port 8000.
    *
    * @throws IllegalStateException when the built-in keystore could not be read
    * @see KeycloakMock#KeycloakMock(ServerConfig)
@@ -56,7 +56,7 @@ public class KeycloakMock {
   }
 
   /**
-   * Create a mock instance for a given realm.
+   * Create a mock instance for a given server configuration.
    *
    * <p>Depending on the tls parameter, the JWKS endpoint is served via HTTP or HTTPS.
    *

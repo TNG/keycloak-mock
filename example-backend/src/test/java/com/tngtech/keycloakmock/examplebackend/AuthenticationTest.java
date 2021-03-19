@@ -19,7 +19,7 @@ class AuthenticationTest {
 
   @RegisterExtension
   static KeycloakMockExtension mock =
-      new KeycloakMockExtension(aServerConfig().withRealm("realm").build());
+      new KeycloakMockExtension(aServerConfig().withDefaultRealm("realm").build());
 
   @LocalServerPort private int port;
 

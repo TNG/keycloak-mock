@@ -34,8 +34,10 @@ class TokenConfigTest {
     assertThat(config.getFamilyName()).isNull();
     assertThat(config.getGivenName()).isNull();
     assertThat(config.getIssuedAt()).isBetween(now.minusSeconds(1), now);
-    assertThat(config.getName()).isNull();
     assertThat(config.getNotBefore()).isNull();
+    assertThat(config.getHostname()).isNull();
+    assertThat(config.getRealm()).isNull();
+    assertThat(config.getName()).isNull();
     assertThat(config.getPreferredUsername()).isNull();
     assertThat(config.getRealmAccess().getRoles()).isEmpty();
     assertThat(config.getResourceAccess()).isEmpty();
@@ -55,6 +57,13 @@ class TokenConfigTest {
 
     assertThat(config.getAudience())
         .containsExactlyInAnyOrder("audience1", "audience2", "audience3");
+  }
+
+  @Test
+  void authentication_context_class_reference_is_set_correctly() {
+    TokenConfig config = aTokenConfig().withAuthenticationContextClassReference("0").build();
+
+    assertThat(config.getAuthenticationContextClassReference()).isEqualTo("0");
   }
 
   @Test
@@ -142,6 +151,13 @@ class TokenConfigTest {
   }
 
   @Test
+  void hostname_is_set_correctly() {
+    TokenConfig config = aTokenConfig().withHostname("hostname").build();
+
+    assertThat(config.getHostname()).isEqualTo("hostname");
+  }
+
+  @Test
   void issuedAt_is_set_correctly() {
     Instant issuedAt = Instant.now().plusSeconds(5);
     TokenConfig config = aTokenConfig().withIssuedAt(issuedAt).build();
@@ -162,6 +178,13 @@ class TokenConfigTest {
     TokenConfig config = aTokenConfig().withPreferredUsername("preferred").build();
 
     assertThat(config.getPreferredUsername()).isEqualTo("preferred");
+  }
+
+  @Test
+  void realm_is_set_correctly() {
+    TokenConfig config = aTokenConfig().withRealm("realm").build();
+
+    assertThat(config.getRealm()).isEqualTo("realm");
   }
 
   @Test
@@ -214,13 +237,6 @@ class TokenConfigTest {
   }
 
   @Test
-  void authentication_context_class_reference_is_set_correctly() {
-    TokenConfig config = aTokenConfig().withAuthenticationContextClassReference("0").build();
-
-    assertThat(config.getAuthenticationContextClassReference()).isEqualTo("0");
-  }
-
-  @Test
   void config_is_set_correctly_from_original_token() {
     TokenConfig config = aTokenConfig().withSourceToken(SOURCE_TOKEN).build();
     Instant now = Instant.now();
@@ -253,5 +269,8 @@ class TokenConfigTest {
     assertThat(config.getScope().split(" "))
         .containsExactlyInAnyOrder("openid", "email", "profile");
     assertThat(config.getSubject()).isEqualTo("fbcaa40a-9480-4ead-adf2-8f6085f6f75d");
+    // TODO: extract host / realm from original token
+    assertThat(config.getHostname()).isNull();
+    assertThat(config.getRealm()).isNull();
   }
 }

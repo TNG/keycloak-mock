@@ -24,12 +24,12 @@ public class UrlConfiguration {
     this.protocol = Objects.requireNonNull(serverConfig.getProtocol());
     this.port = serverConfig.getPort();
     if (protocol.getDefaultPort() == serverConfig.getPort()
-        || serverConfig.getHostname().contains(":")) {
-      this.hostname = serverConfig.getHostname();
+        || serverConfig.getDefaultHostname().contains(":")) {
+      this.hostname = serverConfig.getDefaultHostname();
     } else {
-      this.hostname = serverConfig.getHostname() + ":" + serverConfig.getPort();
+      this.hostname = serverConfig.getDefaultHostname() + ":" + serverConfig.getPort();
     }
-    this.realm = Objects.requireNonNull(serverConfig.getRealm());
+    this.realm = Objects.requireNonNull(serverConfig.getDefaultRealm());
   }
 
   private UrlConfiguration(
@@ -49,7 +49,7 @@ public class UrlConfiguration {
   }
 
   @Nonnull
-  public URI getBaseUrl() {
+  URI getBaseUrl() {
     try {
       return new URI(protocol.getValue() + hostname);
     } catch (URISyntaxException e) {
