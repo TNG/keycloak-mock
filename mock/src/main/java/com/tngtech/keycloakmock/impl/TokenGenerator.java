@@ -1,7 +1,11 @@
 package com.tngtech.keycloakmock.impl;
 
 import com.tngtech.keycloakmock.api.TokenConfig;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Header;
+import io.jsonwebtoken.Jwt;
 import io.jsonwebtoken.JwtBuilder;
+import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import java.io.IOException;
@@ -15,6 +19,7 @@ import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.time.Instant;
 import java.util.Date;
+import java.util.Map;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -89,6 +94,12 @@ public class TokenGenerator {
   @Nonnull
   public String getAlgorithm() {
     return ALGORITHM.getValue();
+  }
+
+  @SuppressWarnings("unchecked")
+  public Map<String, Object> parseToken(String token) {
+    JwtParser parser = Jwts.parserBuilder().setSigningKey(privateKey).build();
+    return ((Jwt<Header<?>, Claims>) parser.parse(token)).getBody();
   }
 
   private void setClaimIfPresent(

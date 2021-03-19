@@ -17,6 +17,7 @@ import io.jsonwebtoken.Jwts;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.http.Cookie;
+import io.restassured.path.json.JsonPath;
 import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
 import java.io.InputStream;
@@ -36,7 +37,9 @@ import org.junit.jupiter.params.provider.MethodSource;
 class ServerTest {
 
   private static final String LOGIN_PAGE_URL_TEMPLATE =
-      "http://localhost:8001/auth/realms/realm/protocol/openid-connect/auth?client_id=client&redirect_uri=%s&state=%s&nonce=%s&response_type=id_token";
+      "http://localhost:8001/auth/realms/realm/protocol/openid-connect/auth?client_id=client&redirect_uri=%s&state=%s&nonce=%s&response_type=%s";
+  private static final String TOKEN_ENDPOINT_URL =
+      "http://localhost:8001/auth/realms/realm/protocol/openid-connect/token";
   private static JwtParser jwtParser;
   private Server server = null;
 
@@ -159,15 +162,36 @@ class ServerTest {
     server = new Server(8001, false, Collections.emptyList());
 
     // open login page to create session (implicit flow)
-    ClientRequest firstRequest = new ClientRequest("redirect-uri", "state", "nonce");
+    ClientRequest firstRequest = new ClientRequest("redirect-uri", "state", "nonce", "id_token");
     String callbackUrl = openLoginPageAndGetCallbackUrl(firstRequest);
 
     // simulate login
     Cookie keycloakSession = loginAndValidateAndReturnSessionCookie(firstRequest, callbackUrl);
 
     // subsequent request to login page with session cookie will immediately return
-    ClientRequest secondRequest = new ClientRequest("redirect-uri2", "state2", "nonce2");
+    ClientRequest secondRequest =
+        new ClientRequest("redirect-uri2", "state2", "nonce2", "id_token");
     openLoginPageAgainAndExpectToBeLoggedInAlready(secondRequest, keycloakSession);
+
+    // logout
+    logoutAndExpectSessionCookieReset();
+  }
+
+  @Test
+  void mock_server_login_with_authorization_code_flow_works() throws Exception {
+    server = new Server(8001, false, Collections.emptyList());
+
+    // open login page to create session (authorization code flow)
+    ClientRequest firstRequest = new ClientRequest("redirect-uri", "state", "nonce", "code");
+    String callbackUrl = openLoginPageAndGetCallbackUrl(firstRequest);
+
+    // simulate login
+    String authorizationCode = loginAndValidateAndReturnAuthCode(firstRequest, callbackUrl);
+    String refreshToken =
+        validateAuthorizationAndRetrieveToken(authorizationCode, firstRequest.getNonce());
+
+    // refresh token flow
+    validateRefreshTokenFlow(refreshToken, firstRequest.getNonce());
 
     // logout
     logoutAndExpectSessionCookieReset();
@@ -208,6 +232,72 @@ class ServerTest {
     return keycloakSession;
   }
 
+  private String loginAndValidateAndReturnAuthCode(ClientRequest request, String callbackUrl)
+      throws URISyntaxException {
+    ExtractableResponse<Response> extractableResponse =
+        RestAssured.given()
+            .config(config().redirect(redirectConfig().followRedirects(false)))
+            .when()
+            .formParam("username", "username")
+            .formParam("password", "role1,role2,role3")
+            .post(callbackUrl)
+            .then()
+            .assertThat()
+            .statusCode(302)
+            .extract();
+    String location = extractableResponse.header("location");
+    Cookie keycloakSession = extractableResponse.detailedCookie("KEYCLOAK_SESSION");
+
+    return validateProperlyRedirectedWithAuthorizationCode(request, keycloakSession, location);
+  }
+
+  private String validateAuthorizationAndRetrieveToken(String authorizationCode, String nonce) {
+    ExtractableResponse<Response> extractableResponse =
+        RestAssured.given()
+            .config(config().redirect(redirectConfig().followRedirects(false)))
+            .when()
+            .formParam("grant_type", "authorization_code")
+            .formParam("code", authorizationCode)
+            .post(TOKEN_ENDPOINT_URL)
+            .then()
+            .assertThat()
+            .statusCode(200)
+            .extract();
+    JsonPath body = extractableResponse.body().jsonPath();
+    String accessToken = body.getString("access_token");
+
+    validateToken(accessToken, nonce);
+
+    return body.getString("refresh_token");
+  }
+
+  private void validateRefreshTokenFlow(String refreshToken, String nonce) {
+    ExtractableResponse<Response> extractableResponse =
+        RestAssured.given()
+            .config(config().redirect(redirectConfig().followRedirects(false)))
+            .when()
+            .formParam("grant_type", "refresh_token")
+            .formParam("refresh_token", refreshToken)
+            .post(TOKEN_ENDPOINT_URL)
+            .then()
+            .assertThat()
+            .statusCode(200)
+            .extract();
+    String accessToken = extractableResponse.body().jsonPath().getString("access_token");
+
+    validateToken(accessToken, nonce);
+  }
+
+  private void validateToken(String accessToken, String nonce) {
+    Jws<Claims> jwt = jwtParser.parseClaimsJws(accessToken);
+    assertThat(jwt.getBody().getIssuer()).isEqualTo("http://localhost:8001/auth/realms/realm");
+    TokenConfig tokenConfig = TokenConfig.aTokenConfig().withSourceToken(accessToken).build();
+    assertThat(tokenConfig.getPreferredUsername()).isEqualTo("username");
+    assertThat(tokenConfig.getRealmAccess().getRoles())
+        .containsExactlyInAnyOrder("role1", "role2", "role3");
+    assertThat(tokenConfig.getClaims()).containsEntry("nonce", nonce);
+  }
+
   private void openLoginPageAgainAndExpectToBeLoggedInAlready(
       ClientRequest request, Cookie keycloakSession) throws URISyntaxException {
     String location =
@@ -227,12 +317,7 @@ class ServerTest {
 
   private void validateProperlyLoggedInAndRedirected(
       ClientRequest request, Cookie keycloakSession, String location) throws URISyntaxException {
-    assertThat(keycloakSession.getPath()).isEqualTo("/auth/realms/realm/");
-    assertThat(keycloakSession.getMaxAge()).isEqualTo(36000);
-    String[] components = keycloakSession.getValue().split("/");
-    assertThat(components).hasSize(3);
-    assertThat(components[0]).isEqualTo("realm");
-    String sessionId = components[2];
+    String sessionId = validateCookieAndReturnSessionId(keycloakSession);
 
     assertThat(location).contains("#").doesNotContain("?");
     // neither Java nor AssertJ currently support extracting parameters from a fragment, so use a
@@ -247,13 +332,34 @@ class ServerTest {
     // there is no way to extract the value of id_token directly, so use string manipulation
     assertThat(location).matches(".*[#&]id_token=[^#&?]+");
     String token = location.split("id_token=")[1];
-    Jws<Claims> jwt = jwtParser.parseClaimsJws(token);
-    assertThat(jwt.getBody().getIssuer()).isEqualTo("http://localhost:8001/auth/realms/realm");
-    TokenConfig tokenConfig = TokenConfig.aTokenConfig().withSourceToken(token).build();
-    assertThat(tokenConfig.getPreferredUsername()).isEqualTo("username");
-    assertThat(tokenConfig.getRealmAccess().getRoles())
-        .containsExactlyInAnyOrder("role1", "role2", "role3");
-    assertThat(tokenConfig.getClaims()).containsEntry("nonce", request.getNonce());
+    validateToken(token, request.getNonce());
+  }
+
+  private String validateProperlyRedirectedWithAuthorizationCode(
+      ClientRequest request, Cookie keycloakSession, String location) throws URISyntaxException {
+    String sessionId = validateCookieAndReturnSessionId(keycloakSession);
+
+    assertThat(location).contains("?").doesNotContain("#");
+    URI redirectUri = new URI("http://" + location);
+    assertThat(redirectUri)
+        .as("redirect URL is correctly set")
+        .hasHost(request.getRedirectUri())
+        .hasParameter("state", request.getState())
+        .hasParameter("session_state", sessionId);
+
+    // there is no way to extract the value of authorization_code directly, so use string
+    // manipulation
+    assertThat(location).matches(".*[?&]code=[^?&]+");
+    return location.split("code=")[1];
+  }
+
+  private String validateCookieAndReturnSessionId(Cookie keycloakSession) {
+    assertThat(keycloakSession.getPath()).isEqualTo("/auth/realms/realm/");
+    assertThat(keycloakSession.getMaxAge()).isEqualTo(36000);
+    String[] components = keycloakSession.getValue().split("/");
+    assertThat(components).hasSize(3);
+    assertThat(components[0]).isEqualTo("realm");
+    return components[2];
   }
 
   private void logoutAndExpectSessionCookieReset() {
@@ -274,11 +380,13 @@ class ServerTest {
     private final String redirectUri;
     private final String state;
     private final String nonce;
+    private final String responseType;
 
-    private ClientRequest(String redirectUri, String state, String nonce) {
+    private ClientRequest(String redirectUri, String state, String nonce, String responseType) {
       this.redirectUri = redirectUri;
       this.state = state;
       this.nonce = nonce;
+      this.responseType = responseType;
     }
 
     public String getRedirectUri() {
@@ -294,7 +402,7 @@ class ServerTest {
     }
 
     public String getLoginPageUrl() {
-      return String.format(LOGIN_PAGE_URL_TEMPLATE, redirectUri, state, nonce);
+      return String.format(LOGIN_PAGE_URL_TEMPLATE, redirectUri, state, nonce, responseType);
     }
   }
 
