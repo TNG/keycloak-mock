@@ -3,6 +3,8 @@ package com.tngtech.keycloakmock.api;
 import io.jsonwebtoken.ClaimJwtException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
@@ -332,11 +334,20 @@ public class TokenConfig {
             }
             break;
           case "iss":
+            String issuer = getTypedValue(entry, String.class);
+            try {
+              URI issuerUrl = new URI(issuer);
+              withHostname(issuerUrl.getHost());
+              withRealm(getRealm(issuerUrl));
+            } catch (URISyntaxException e) {
+              throw new IllegalArgumentException("Issuer '" + issuer + "' is not a valid URL", e);
+            }
+            break;
           case "iat":
           case "nbf":
           case "exp":
           case "auth_time":
-            // ignoring issuer and date information
+            // ignoring date information
             break;
           default:
             withClaim(entry.getKey(), entry.getValue());
@@ -357,6 +368,17 @@ public class TokenConfig {
           String.format(
               "Expected %s for key %s, but found %s",
               clazz, entry.getKey(), entry.getValue().getClass()));
+    }
+
+    @Nonnull
+    private String getRealm(@Nonnull final URI issuer) {
+      String[] path = issuer.getPath().split("/");
+      if (path.length != 4 || !"".equals(path[0]) || !"auth".equals(path[1]) || !"realms"
+          .equals(path[2]) || path[3] == null) {
+        throw new IllegalArgumentException("The issuer '" + issuer
+            + "' did not conform to the expected format 'http[s]://$HOSTNAME[:port]/auth/realms/$REALM'.");
+      }
+      return path[3];
     }
 
     /**
@@ -456,6 +478,8 @@ public class TokenConfig {
      *
      * <p>The hostname for which this token has been requested. If not set, the default hostname of
      * the mock is used.
+     *
+     * <p>Note: The hostname must not contain a protocol prefix like 'http://'.
      *
      * @param hostname the hostname
      * @return builder
