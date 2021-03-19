@@ -35,7 +35,9 @@ class UrlConfigurationTest {
     return Stream.of(
         Arguments.of(aServerConfig().build(), "http://localhost:8000/auth/realms/master"),
         Arguments.of(
-            aServerConfig().withDefaultHostname(DEFAULT_HOSTNAME).withDefaultRealm(DEFAULT_REALM)
+            aServerConfig()
+                .withDefaultHostname(DEFAULT_HOSTNAME)
+                .withDefaultRealm(DEFAULT_REALM)
                 .build(),
             "http://defaultHost:8000/auth/realms/defaultRealm"),
         Arguments.of(aServerConfig().withPort(80).build(), "http://localhost/auth/realms/master"),

@@ -57,8 +57,7 @@ class TokenGeneratorTest {
 
   private static RSAPublicKey key;
 
-  @Mock
-  private UrlConfiguration urlConfiguration;
+  @Mock private UrlConfiguration urlConfiguration;
 
   private TokenGenerator generator;
 
@@ -74,9 +73,10 @@ class TokenGeneratorTest {
 
   @BeforeEach
   void setup() throws URISyntaxException {
-    doReturn(urlConfiguration).when(urlConfiguration)
-        .forRequestContext(ArgumentMatchers.nullable(String.class),
-            ArgumentMatchers.nullable(String.class));
+    doReturn(urlConfiguration)
+        .when(urlConfiguration)
+        .forRequestContext(
+            ArgumentMatchers.nullable(String.class), ArgumentMatchers.nullable(String.class));
     doReturn(new URI(ISSUER)).when(urlConfiguration).getIssuer();
     generator = new TokenGenerator();
   }

@@ -84,8 +84,11 @@ class KeycloakMockTest {
     JwtParser jwtParser = Jwts.parserBuilder().setSigningKey(loadKey()).build();
     KeycloakMock keycloakMock =
         new KeycloakMock(
-            aServerConfig().withPort(123).withDefaultRealm("realm123")
-                .withDefaultHostname("somehost").build());
+            aServerConfig()
+                .withPort(123)
+                .withDefaultRealm("realm123")
+                .withDefaultHostname("somehost")
+                .build());
 
     String token = keycloakMock.getAccessToken(TokenConfig.aTokenConfig().build());
 

@@ -30,44 +30,25 @@ import javax.annotation.Nullable;
  */
 public class TokenConfig {
 
-  @Nonnull
-  private final Set<String> audience;
-  @Nonnull
-  private final String authorizedParty;
-  @Nonnull
-  private final String subject;
-  @Nonnull
-  private final String scope;
-  @Nonnull
-  private final Map<String, Object> claims;
-  @Nonnull
-  private final Access realmAccess;
-  @Nonnull
-  private final Map<String, Access> resourceAccess;
-  @Nonnull
-  private final Instant issuedAt;
-  @Nonnull
-  private final Instant authenticationTime;
-  @Nonnull
-  private final Instant expiration;
-  @Nullable
-  private final Instant notBefore;
-  @Nullable
-  private final String hostname;
-  @Nullable
-  private final String realm;
-  @Nullable
-  private final String name;
-  @Nullable
-  private final String givenName;
-  @Nullable
-  private final String familyName;
-  @Nullable
-  private final String email;
-  @Nullable
-  private final String preferredUsername;
-  @Nullable
-  private final String authenticationContextClassReference;
+  @Nonnull private final Set<String> audience;
+  @Nonnull private final String authorizedParty;
+  @Nonnull private final String subject;
+  @Nonnull private final String scope;
+  @Nonnull private final Map<String, Object> claims;
+  @Nonnull private final Access realmAccess;
+  @Nonnull private final Map<String, Access> resourceAccess;
+  @Nonnull private final Instant issuedAt;
+  @Nonnull private final Instant authenticationTime;
+  @Nonnull private final Instant expiration;
+  @Nullable private final Instant notBefore;
+  @Nullable private final String hostname;
+  @Nullable private final String realm;
+  @Nullable private final String name;
+  @Nullable private final String givenName;
+  @Nullable private final String familyName;
+  @Nullable private final String email;
+  @Nullable private final String preferredUsername;
+  @Nullable private final String authenticationContextClassReference;
 
   private TokenConfig(@Nonnull final Builder builder) {
     if (builder.audience.isEmpty()) {
@@ -217,44 +198,25 @@ public class TokenConfig {
    */
   public static final class Builder {
 
-    @Nonnull
-    private final Set<String> audience = new HashSet<>();
-    @Nonnull
-    private String authorizedParty = "client";
-    @Nonnull
-    private String subject = "user";
-    @Nonnull
-    private final Set<String> scope = new HashSet<>();
-    @Nonnull
-    private final Map<String, Object> claims = new HashMap<>();
-    @Nonnull
-    private final Access realmRoles = new Access();
-    @Nonnull
-    private final Map<String, Access> resourceAccess = new HashMap<>();
-    @Nonnull
-    private Instant issuedAt = Instant.now();
-    @Nonnull
-    private Instant expiration = issuedAt.plus(10, ChronoUnit.HOURS);
-    @Nonnull
-    private Instant authenticationTime = Instant.now();
-    @Nullable
-    private Instant notBefore;
-    @Nullable
-    private String hostname;
-    @Nullable
-    private String realm;
-    @Nullable
-    private String givenName;
-    @Nullable
-    private String familyName;
-    @Nullable
-    private String name;
-    @Nullable
-    private String email;
-    @Nullable
-    private String preferredUsername;
-    @Nullable
-    private String authenticationContextClassReference;
+    @Nonnull private final Set<String> audience = new HashSet<>();
+    @Nonnull private String authorizedParty = "client";
+    @Nonnull private String subject = "user";
+    @Nonnull private final Set<String> scope = new HashSet<>();
+    @Nonnull private final Map<String, Object> claims = new HashMap<>();
+    @Nonnull private final Access realmRoles = new Access();
+    @Nonnull private final Map<String, Access> resourceAccess = new HashMap<>();
+    @Nonnull private Instant issuedAt = Instant.now();
+    @Nonnull private Instant expiration = issuedAt.plus(10, ChronoUnit.HOURS);
+    @Nonnull private Instant authenticationTime = Instant.now();
+    @Nullable private Instant notBefore;
+    @Nullable private String hostname;
+    @Nullable private String realm;
+    @Nullable private String givenName;
+    @Nullable private String familyName;
+    @Nullable private String name;
+    @Nullable private String email;
+    @Nullable private String preferredUsername;
+    @Nullable private String authenticationContextClassReference;
 
     private Builder() {
       scope.add("openid");
@@ -373,10 +335,15 @@ public class TokenConfig {
     @Nonnull
     private String getRealm(@Nonnull final URI issuer) {
       String[] path = issuer.getPath().split("/");
-      if (path.length != 4 || !"".equals(path[0]) || !"auth".equals(path[1]) || !"realms"
-          .equals(path[2]) || path[3] == null) {
-        throw new IllegalArgumentException("The issuer '" + issuer
-            + "' did not conform to the expected format 'http[s]://$HOSTNAME[:port]/auth/realms/$REALM'.");
+      if (path.length != 4
+          || !"".equals(path[0])
+          || !"auth".equals(path[1])
+          || !"realms".equals(path[2])
+          || path[3] == null) {
+        throw new IllegalArgumentException(
+            "The issuer '"
+                + issuer
+                + "' did not conform to the expected format 'http[s]://$HOSTNAME[:port]/auth/realms/$REALM'.");
       }
       return path[3];
     }
