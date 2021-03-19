@@ -7,6 +7,7 @@ import com.tngtech.keycloakmock.impl.TokenGenerator;
 import com.tngtech.keycloakmock.impl.UrlConfiguration;
 import com.tngtech.keycloakmock.standalone.session.Session;
 import java.util.List;
+import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -51,5 +52,10 @@ public class TokenHelper {
     }
     // for simplicity, the access token is the same as the ID token
     return tokenGenerator.getToken(builder.build(), requestConfiguration);
+  }
+
+  @Nonnull
+  public Map<String, Object> parseToken(@Nonnull String token) {
+    return tokenGenerator.parseToken(token);
   }
 }

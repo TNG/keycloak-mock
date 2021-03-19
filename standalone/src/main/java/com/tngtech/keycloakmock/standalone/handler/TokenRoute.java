@@ -8,6 +8,8 @@ import com.tngtech.keycloakmock.standalone.helper.TokenHelper;
 import com.tngtech.keycloakmock.standalone.session.SessionRepository;
 import io.vertx.core.Handler;
 import io.vertx.ext.web.RoutingContext;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import javax.annotation.Nonnull;
 
@@ -32,10 +34,20 @@ public class TokenRoute implements Handler<RoutingContext> {
 
   @Override
   public void handle(@Nonnull final RoutingContext routingContext) {
-    if (!"authorization_code".equals(routingContext.request().getFormAttribute(GRANT_TYPE))) {
-      routingContext.fail(400);
-      return;
+    String grantType = routingContext.request().getFormAttribute(GRANT_TYPE);
+    switch (Objects.toString(grantType)) {
+      case "authorization_code":
+        handleAuthorizationCodeFlow(routingContext);
+        break;
+      case "refresh_token":
+        handleRefreshTokenFlow(routingContext);
+        break;
+      default:
+        routingContext.fail(400);
     }
+  }
+
+  private void handleAuthorizationCodeFlow(RoutingContext routingContext) {
     // here again we use the equality of authorization code and session ID
     String sessionId = routingContext.request().getFormAttribute(CODE);
     UrlConfiguration requestConfiguration = routingContext.get(CTX_REQUEST_CONFIGURATION);
@@ -48,6 +60,20 @@ public class TokenRoute implements Handler<RoutingContext> {
       return;
     }
     routingContext.put("token", token);
+    routingContext.put(SESSION_STATE, sessionId);
+    renderHelper.renderTemplate(routingContext, "tokenResponse.ftl", "application/json");
+  }
+
+  private void handleRefreshTokenFlow(RoutingContext routingContext) {
+    String refreshToken = routingContext.request().getFormAttribute("refresh_token");
+    if (refreshToken == null || refreshToken.isEmpty()) {
+      routingContext.fail(400);
+      return;
+    }
+    Map<String, Object> token = tokenHelper.parseToken(refreshToken);
+    String sessionId = (String) token.get(SESSION_STATE);
+
+    routingContext.put("token", refreshToken);
     routingContext.put(SESSION_STATE, sessionId);
     renderHelper.renderTemplate(routingContext, "tokenResponse.ftl", "application/json");
   }
