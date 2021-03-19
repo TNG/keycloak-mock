@@ -28,23 +28,44 @@ import javax.annotation.Nullable;
  */
 public class TokenConfig {
 
-  @Nonnull private final Set<String> audience;
-  @Nonnull private final String authorizedParty;
-  @Nonnull private final String subject;
-  @Nonnull private final String scope;
-  @Nonnull private final Map<String, Object> claims;
-  @Nonnull private final Access realmAccess;
-  @Nonnull private final Map<String, Access> resourceAccess;
-  @Nonnull private final Instant issuedAt;
-  @Nonnull private final Instant authenticationTime;
-  @Nonnull private final Instant expiration;
-  @Nullable private final Instant notBefore;
-  @Nullable private final String name;
-  @Nullable private final String givenName;
-  @Nullable private final String familyName;
-  @Nullable private final String email;
-  @Nullable private final String preferredUsername;
-  @Nullable private final String authenticationContextClassReference;
+  @Nonnull
+  private final Set<String> audience;
+  @Nonnull
+  private final String authorizedParty;
+  @Nonnull
+  private final String subject;
+  @Nonnull
+  private final String scope;
+  @Nonnull
+  private final Map<String, Object> claims;
+  @Nonnull
+  private final Access realmAccess;
+  @Nonnull
+  private final Map<String, Access> resourceAccess;
+  @Nonnull
+  private final Instant issuedAt;
+  @Nonnull
+  private final Instant authenticationTime;
+  @Nonnull
+  private final Instant expiration;
+  @Nullable
+  private final Instant notBefore;
+  @Nullable
+  private final String hostname;
+  @Nullable
+  private final String realm;
+  @Nullable
+  private final String name;
+  @Nullable
+  private final String givenName;
+  @Nullable
+  private final String familyName;
+  @Nullable
+  private final String email;
+  @Nullable
+  private final String preferredUsername;
+  @Nullable
+  private final String authenticationContextClassReference;
 
   private TokenConfig(@Nonnull final Builder builder) {
     if (builder.audience.isEmpty()) {
@@ -61,6 +82,8 @@ public class TokenConfig {
     issuedAt = builder.issuedAt;
     authenticationTime = builder.authenticationTime;
     expiration = builder.expiration;
+    hostname = builder.hostname;
+    realm = builder.realm;
     notBefore = builder.notBefore;
     givenName = builder.givenName;
     familyName = builder.familyName;
@@ -146,6 +169,16 @@ public class TokenConfig {
   }
 
   @Nullable
+  public String getHostname() {
+    return hostname;
+  }
+
+  @Nullable
+  public String getRealm() {
+    return realm;
+  }
+
+  @Nullable
   public String getName() {
     return name;
   }
@@ -182,23 +215,44 @@ public class TokenConfig {
    */
   public static final class Builder {
 
-    @Nonnull private final Set<String> audience = new HashSet<>();
-    @Nonnull private String authorizedParty = "client";
-    @Nonnull private String subject = "user";
-    @Nonnull private final Set<String> scope = new HashSet<>();
-    @Nonnull private final Map<String, Object> claims = new HashMap<>();
-    @Nonnull private final Access realmRoles = new Access();
-    @Nonnull private final Map<String, Access> resourceAccess = new HashMap<>();
-    @Nonnull private Instant issuedAt = Instant.now();
-    @Nonnull private Instant expiration = issuedAt.plus(10, ChronoUnit.HOURS);
-    @Nonnull private Instant authenticationTime = Instant.now();
-    @Nullable private Instant notBefore;
-    @Nullable private String givenName;
-    @Nullable private String familyName;
-    @Nullable private String name;
-    @Nullable private String email;
-    @Nullable private String preferredUsername;
-    @Nullable private String authenticationContextClassReference;
+    @Nonnull
+    private final Set<String> audience = new HashSet<>();
+    @Nonnull
+    private String authorizedParty = "client";
+    @Nonnull
+    private String subject = "user";
+    @Nonnull
+    private final Set<String> scope = new HashSet<>();
+    @Nonnull
+    private final Map<String, Object> claims = new HashMap<>();
+    @Nonnull
+    private final Access realmRoles = new Access();
+    @Nonnull
+    private final Map<String, Access> resourceAccess = new HashMap<>();
+    @Nonnull
+    private Instant issuedAt = Instant.now();
+    @Nonnull
+    private Instant expiration = issuedAt.plus(10, ChronoUnit.HOURS);
+    @Nonnull
+    private Instant authenticationTime = Instant.now();
+    @Nullable
+    private Instant notBefore;
+    @Nullable
+    private String hostname;
+    @Nullable
+    private String realm;
+    @Nullable
+    private String givenName;
+    @Nullable
+    private String familyName;
+    @Nullable
+    private String name;
+    @Nullable
+    private String email;
+    @Nullable
+    private String preferredUsername;
+    @Nullable
+    private String authenticationContextClassReference;
 
     private Builder() {
       scope.add("openid");
@@ -394,6 +448,36 @@ public class TokenConfig {
     @Nonnull
     public Builder withScopes(@Nonnull final Collection<String> scopes) {
       this.scope.addAll(scopes);
+      return this;
+    }
+
+    /**
+     * Add authorization hostname.
+     *
+     * <p>The hostname for which this token has been requested. If not set, the default hostname of
+     * the mock is used.
+     *
+     * @param hostname the hostname
+     * @return builder
+     */
+    @Nonnull
+    public Builder withHostname(@Nonnull final String hostname) {
+      this.hostname = Objects.requireNonNull(hostname);
+      return this;
+    }
+
+    /**
+     * Add authorization realm.
+     *
+     * <p>The realm for which this token has been requested. If not set, the default realm of the
+     * mock is used.
+     *
+     * @param realm the realm
+     * @return builder
+     */
+    @Nonnull
+    public Builder withRealm(@Nonnull final String realm) {
+      this.realm = Objects.requireNonNull(realm);
       return this;
     }
 

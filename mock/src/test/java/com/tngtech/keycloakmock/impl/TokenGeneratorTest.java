@@ -26,6 +26,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -51,10 +52,13 @@ class TokenGeneratorTest {
   private static final Instant EXPIRATION = Instant.now().plus(10, ChronoUnit.MINUTES);
   private static final String ISSUER = "issuer";
   private static final String AUTHENTICATION_CONTEXT_CLASS_REFERENCE = "acc ref";
+  private static final String HOSTNAME = "hostname";
+  private static final String REALM = "realm";
 
   private static RSAPublicKey key;
 
-  @Mock private UrlConfiguration urlConfiguration;
+  @Mock
+  private UrlConfiguration urlConfiguration;
 
   private TokenGenerator generator;
 
@@ -70,6 +74,9 @@ class TokenGeneratorTest {
 
   @BeforeEach
   void setup() throws URISyntaxException {
+    doReturn(urlConfiguration).when(urlConfiguration)
+        .forRequestContext(ArgumentMatchers.nullable(String.class),
+            ArgumentMatchers.nullable(String.class));
     doReturn(new URI(ISSUER)).when(urlConfiguration).getIssuer();
     generator = new TokenGenerator();
   }
@@ -87,6 +94,8 @@ class TokenGeneratorTest {
                 .withRealmRoles(REALM_ROLES)
                 .withResourceRoles(AUDIENCE, AUDIENCE_ROLES)
                 .withResourceRole(AUTHORIZED_PARTY, PARTY_ROLE)
+                .withHostname(HOSTNAME)
+                .withRealm(REALM)
                 .withFamilyName(FAMILY)
                 .withGivenName(GIVEN)
                 .withName(NAME)
@@ -103,6 +112,7 @@ class TokenGeneratorTest {
             urlConfiguration);
 
     verify(urlConfiguration).getIssuer();
+    verify(urlConfiguration).forRequestContext(HOSTNAME, REALM);
     Jwt<Header<?>, Claims> jwt = Jwts.parserBuilder().setSigningKey(key).build().parse(token);
     assertThat(jwt.getHeader()).containsEntry("kid", "keyId");
     Claims claims = jwt.getBody();
