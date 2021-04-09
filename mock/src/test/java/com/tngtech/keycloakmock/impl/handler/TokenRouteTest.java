@@ -4,7 +4,6 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
-import com.tngtech.keycloakmock.impl.helper.RenderHelper;
 import com.tngtech.keycloakmock.impl.helper.TokenHelper;
 import com.tngtech.keycloakmock.impl.session.SessionRepository;
 import io.vertx.core.http.HttpServerRequest;
@@ -23,7 +22,6 @@ class TokenRouteTest {
 
   @Mock private SessionRepository sessionRepository;
   @Mock private TokenHelper tokenHelper;
-  @Mock private RenderHelper renderHelper;
 
   @Mock private RoutingContext routingContext;
   @Mock private HttpServerRequest request;
@@ -35,12 +33,12 @@ class TokenRouteTest {
     doReturn(request).when(routingContext).request();
     doReturn(null).when(request).getFormAttribute("grant_type");
 
-    uut = new TokenRoute(sessionRepository, tokenHelper, renderHelper);
+    uut = new TokenRoute(sessionRepository, tokenHelper);
 
     uut.handle(routingContext);
 
     verify(routingContext).fail(400);
-    verifyNoMoreInteractions(sessionRepository, tokenHelper, renderHelper);
+    verifyNoMoreInteractions(sessionRepository, tokenHelper);
   }
 
   @Test
@@ -49,12 +47,12 @@ class TokenRouteTest {
     doReturn(AUTH_CODE_GRANT_TYPE).when(request).getFormAttribute("grant_type");
     doReturn(null).when(request).getFormAttribute("code");
 
-    uut = new TokenRoute(sessionRepository, tokenHelper, renderHelper);
+    uut = new TokenRoute(sessionRepository, tokenHelper);
 
     uut.handle(routingContext);
 
     verify(routingContext).fail(404);
-    verifyNoMoreInteractions(tokenHelper, renderHelper);
+    verifyNoMoreInteractions(tokenHelper);
   }
 
   @Test
@@ -64,12 +62,12 @@ class TokenRouteTest {
     doReturn(UNKNOWN_SESSION).when(request).getFormAttribute("code");
     doReturn(null).when(sessionRepository).getSession(UNKNOWN_SESSION);
 
-    uut = new TokenRoute(sessionRepository, tokenHelper, renderHelper);
+    uut = new TokenRoute(sessionRepository, tokenHelper);
 
     uut.handle(routingContext);
 
     verify(routingContext).fail(404);
-    verifyNoMoreInteractions(tokenHelper, renderHelper);
+    verifyNoMoreInteractions(tokenHelper);
   }
 
   @Test
@@ -78,11 +76,11 @@ class TokenRouteTest {
     doReturn(REFRESH_TOKEN_GRANT_TYPE).when(request).getFormAttribute("grant_type");
     doReturn(null).when(request).getFormAttribute("refresh_token");
 
-    uut = new TokenRoute(sessionRepository, tokenHelper, renderHelper);
+    uut = new TokenRoute(sessionRepository, tokenHelper);
 
     uut.handle(routingContext);
 
     verify(routingContext).fail(400);
-    verifyNoMoreInteractions(tokenHelper, renderHelper);
+    verifyNoMoreInteractions(tokenHelper);
   }
 }

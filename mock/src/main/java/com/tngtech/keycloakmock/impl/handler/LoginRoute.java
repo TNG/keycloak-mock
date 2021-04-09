@@ -5,19 +5,23 @@ import static com.tngtech.keycloakmock.impl.helper.RedirectHelper.KEYCLOAK_SESSI
 
 import com.tngtech.keycloakmock.impl.UrlConfiguration;
 import com.tngtech.keycloakmock.impl.helper.RedirectHelper;
-import com.tngtech.keycloakmock.impl.helper.RenderHelper;
 import com.tngtech.keycloakmock.impl.session.Session;
 import com.tngtech.keycloakmock.impl.session.SessionRepository;
 import io.vertx.core.Handler;
 import io.vertx.core.http.Cookie;
+import io.vertx.core.http.HttpHeaders;
 import io.vertx.ext.web.RoutingContext;
+import io.vertx.ext.web.common.template.TemplateEngine;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.UUID;
 import javax.annotation.Nonnull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class LoginRoute implements Handler<RoutingContext> {
 
+  private static final Logger LOG = LoggerFactory.getLogger(LoginRoute.class);
   private static final String AUTHENTICATION_URI = "authentication_uri";
   private static final String CLIENT_ID = "client_id";
   private static final String STATE = "state";
@@ -27,15 +31,15 @@ public class LoginRoute implements Handler<RoutingContext> {
   private static final String RESPONSE_MODE = "response_mode";
   @Nonnull private final SessionRepository sessionRepository;
   @Nonnull private final RedirectHelper redirectHelper;
-  @Nonnull private final RenderHelper renderHelper;
+  @Nonnull private final TemplateEngine engine;
 
   public LoginRoute(
       @Nonnull SessionRepository sessionRepository,
       @Nonnull RedirectHelper redirectHelper,
-      @Nonnull RenderHelper renderHelper) {
+      @Nonnull TemplateEngine engine) {
     this.sessionRepository = sessionRepository;
     this.redirectHelper = redirectHelper;
-    this.renderHelper = renderHelper;
+    this.engine = engine;
   }
 
   @Override
@@ -81,7 +85,16 @@ public class LoginRoute implements Handler<RoutingContext> {
       routingContext.put(
           AUTHENTICATION_URI,
           requestConfiguration.getAuthenticationCallbackEndpoint(session.getSessionId()));
-      renderHelper.renderTemplate(routingContext, "loginPage.ftl", "text/html");
+      engine
+          .render(routingContext.data(), "loginPage.ftl")
+          .onSuccess(
+              b ->
+                  routingContext.response().putHeader(HttpHeaders.CONTENT_TYPE, "text/html").end(b))
+          .onFailure(
+              t -> {
+                LOG.error("Unable to render login page", t);
+                routingContext.fail(t);
+              });
     }
   }
 }
