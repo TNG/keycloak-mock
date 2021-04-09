@@ -3,10 +3,10 @@ package com.tngtech.keycloakmock.impl.handler;
 import static com.tngtech.keycloakmock.impl.handler.RequestUrlConfigurationHandler.CTX_REQUEST_CONFIGURATION;
 
 import com.tngtech.keycloakmock.impl.UrlConfiguration;
-import com.tngtech.keycloakmock.impl.helper.RenderHelper;
 import com.tngtech.keycloakmock.impl.helper.TokenHelper;
 import com.tngtech.keycloakmock.impl.session.SessionRepository;
 import io.vertx.core.Handler;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import java.util.Map;
 import java.util.Objects;
@@ -21,15 +21,11 @@ public class TokenRoute implements Handler<RoutingContext> {
 
   @Nonnull private final SessionRepository sessionRepository;
   @Nonnull private final TokenHelper tokenHelper;
-  @Nonnull private final RenderHelper renderHelper;
 
   public TokenRoute(
-      @Nonnull final SessionRepository sessionRepository,
-      @Nonnull TokenHelper tokenHelper,
-      @Nonnull final RenderHelper renderHelper) {
+      @Nonnull final SessionRepository sessionRepository, @Nonnull TokenHelper tokenHelper) {
     this.sessionRepository = sessionRepository;
     this.tokenHelper = tokenHelper;
-    this.renderHelper = renderHelper;
   }
 
   @Override
@@ -59,9 +55,10 @@ public class TokenRoute implements Handler<RoutingContext> {
       routingContext.fail(404);
       return;
     }
-    routingContext.put("token", token);
-    routingContext.put(SESSION_STATE, sessionId);
-    renderHelper.renderTemplate(routingContext, "tokenResponse.ftl", "application/json");
+    routingContext
+        .response()
+        .putHeader("content-type", "application/json")
+        .end(toTokenResponse(token, sessionId));
   }
 
   private void handleRefreshTokenFlow(RoutingContext routingContext) {
@@ -73,8 +70,20 @@ public class TokenRoute implements Handler<RoutingContext> {
     Map<String, Object> token = tokenHelper.parseToken(refreshToken);
     String sessionId = (String) token.get(SESSION_STATE);
 
-    routingContext.put("token", refreshToken);
-    routingContext.put(SESSION_STATE, sessionId);
-    renderHelper.renderTemplate(routingContext, "tokenResponse.ftl", "application/json");
+    routingContext
+        .response()
+        .putHeader("content-type", "application/json")
+        .end(toTokenResponse(refreshToken, sessionId));
+  }
+
+  private String toTokenResponse(String token, String sessionId) {
+    return new JsonObject()
+        .put("access_token", token)
+        .put("expires_in", 36_000)
+        .put("refresh_token", token)
+        .put("refresh_expires_in", 36_000)
+        .put("id_token", token)
+        .put(SESSION_STATE, sessionId)
+        .encode();
   }
 }

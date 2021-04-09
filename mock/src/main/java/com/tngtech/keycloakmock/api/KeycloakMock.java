@@ -14,7 +14,6 @@ import com.tngtech.keycloakmock.impl.handler.ResourceFileHandler;
 import com.tngtech.keycloakmock.impl.handler.TokenRoute;
 import com.tngtech.keycloakmock.impl.handler.WellKnownRoute;
 import com.tngtech.keycloakmock.impl.helper.RedirectHelper;
-import com.tngtech.keycloakmock.impl.helper.RenderHelper;
 import com.tngtech.keycloakmock.impl.helper.TokenHelper;
 import com.tngtech.keycloakmock.impl.session.SessionRepository;
 import io.vertx.core.AsyncResult;
@@ -25,7 +24,6 @@ import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.net.JksOptions;
 import io.vertx.ext.web.Router;
-import io.vertx.ext.web.common.template.TemplateEngine;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.ErrorHandler;
 import io.vertx.ext.web.templ.freemarker.FreeMarkerTemplateEngine;
@@ -109,15 +107,14 @@ public class KeycloakMock {
             tokenGenerator.getAlgorithm(),
             tokenGenerator.getPublicKey());
     this.wellKnownRoute = new WellKnownRoute();
-    TemplateEngine engine = FreeMarkerTemplateEngine.create(vertx);
     TokenHelper tokenHelper =
         new TokenHelper(tokenGenerator, serverConfig.getResourcesToMapRolesTo());
     RedirectHelper redirectHelper = new RedirectHelper(tokenHelper);
-    RenderHelper renderHelper = new RenderHelper(engine);
     SessionRepository sessionRepository = new SessionRepository();
-    loginRoute = new LoginRoute(sessionRepository, redirectHelper, renderHelper);
+    loginRoute =
+        new LoginRoute(sessionRepository, redirectHelper, FreeMarkerTemplateEngine.create(vertx));
     authenticationRoute = new AuthenticationRoute(sessionRepository, redirectHelper);
-    tokenRoute = new TokenRoute(sessionRepository, tokenHelper, renderHelper);
+    tokenRoute = new TokenRoute(sessionRepository, tokenHelper);
     logoutRoute = new LogoutRoute(sessionRepository, redirectHelper);
   }
 
