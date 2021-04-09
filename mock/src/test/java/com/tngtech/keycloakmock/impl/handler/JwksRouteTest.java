@@ -7,10 +7,7 @@ import java.security.KeyStore;
 import java.security.PublicKey;
 import javax.annotation.Nonnull;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
 
-@ExtendWith(MockitoExtension.class)
 class JwksRouteTest extends HandlerTestBase {
 
   @Test
