@@ -34,7 +34,7 @@ jobs:
         # As the secrets below are only correctly stored within our github account,
         # we need to disable the sonar run for forked repositories. Otherwise, remote
         # PRs would not be able to pass the CI check.
-        if: ${{ github.repository == 'TNG/keycloak-mock' && secrets.SONAR_LOGIN != null }}
+        if: ${{ github.repository == 'TNG/keycloak-mock' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_LOGIN }}
