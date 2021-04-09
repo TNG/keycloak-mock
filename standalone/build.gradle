@@ -89,9 +89,11 @@ processResources {
 }
 
 application {
-    mainClass.set('com.tngtech.keycloakmock.standalone.Main')
-    // still needed for shadow plugin (see https://github.com/johnrengelman/shadow/issues/609)
-    mainClassName = 'com.tngtech.keycloakmock.standalone.Main'
+    mainClass = 'com.tngtech.keycloakmock.standalone.Main'
+}
+
+shadow {
+    mainClassName = application.mainClass.get()
 }
 
 buildConfig {
