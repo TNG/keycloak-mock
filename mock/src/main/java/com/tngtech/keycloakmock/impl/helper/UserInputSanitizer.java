@@ -1,4 +1,4 @@
-package com.tngtech.keycloakmock.standalone.helper;
+package com.tngtech.keycloakmock.impl.helper;
 
 import java.util.Objects;
 import javax.annotation.Nullable;

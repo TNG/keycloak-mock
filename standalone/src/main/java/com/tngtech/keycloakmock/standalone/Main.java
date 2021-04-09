@@ -1,5 +1,8 @@
 package com.tngtech.keycloakmock.standalone;
 
+import static com.tngtech.keycloakmock.api.ServerConfig.aServerConfig;
+
+import com.tngtech.keycloakmock.api.KeycloakMock;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -48,7 +51,13 @@ public class Main implements Callable<Void> {
 
   @Override
   public Void call() {
-    new Server(port, tls, resourcesToMapRolesTo);
+    new KeycloakMock(
+            aServerConfig()
+                .withPort(port)
+                .withTls(tls)
+                .withResourcesToMapRolesTo(resourcesToMapRolesTo)
+                .build())
+        .start();
     LOG.info("Server is running on {}://localhost:{}", (tls ? "https" : "http"), port);
     return null;
   }

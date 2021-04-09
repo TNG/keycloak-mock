@@ -1,4 +1,4 @@
-package com.tngtech.keycloakmock.standalone.handler;
+package com.tngtech.keycloakmock.impl.handler;
 
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpHeaders;

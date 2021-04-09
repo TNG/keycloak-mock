@@ -1,6 +1,10 @@
 package com.tngtech.keycloakmock.api;
 
 import com.tngtech.keycloakmock.impl.Protocol;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 import javax.annotation.Nonnull;
 
 /** Server configuration to use. */
@@ -14,12 +18,14 @@ public final class ServerConfig {
   @Nonnull private final Protocol protocol;
   @Nonnull private final String defaultHostname;
   @Nonnull private final String defaultRealm;
+  @Nonnull private final List<String> resourcesToMapRolesTo;
 
   private ServerConfig(@Nonnull final Builder builder) {
     this.port = builder.port;
     this.protocol = builder.protocol;
     this.defaultHostname = builder.defaultHostname;
     this.defaultRealm = builder.defaultRealm;
+    this.resourcesToMapRolesTo = builder.resourcesToMapRolesTo;
   }
 
   /**
@@ -49,6 +55,22 @@ public final class ServerConfig {
   @Nonnull
   public Protocol getProtocol() {
     return protocol;
+  }
+
+  /**
+   * The resources for which roles will be set.
+   *
+   * <p>If this list is empty, a login via the built-in login page will take the comma-separated
+   * roles from the password field and assign it as realm roles. If it contains at least one
+   * resource, the roles will be mapped only to this resource.
+   *
+   * @return the list of resources to which roles are mapped
+   * @see <a href="https://www.keycloak.org/docs/latest/server_admin/#realm-roles">Realm Roles</a>
+   * @see <a href="https://www.keycloak.org/docs/latest/server_admin/#client-roles">Client Roles</a>
+   */
+  @Nonnull
+  public List<String> getResourcesToMapRolesTo() {
+    return Collections.unmodifiableList(resourcesToMapRolesTo);
   }
 
   /**
@@ -102,6 +124,7 @@ public final class ServerConfig {
     @Nonnull private Protocol protocol = Protocol.HTTP;
     @Nonnull private String defaultHostname = DEFAULT_HOSTNAME;
     @Nonnull private String defaultRealm = DEFAULT_REALM;
+    @Nonnull private final List<String> resourcesToMapRolesTo = new ArrayList<>();
 
     private Builder() {}
 
@@ -196,6 +219,46 @@ public final class ServerConfig {
     @Nonnull
     public Builder withDefaultRealm(@Nonnull final String defaultRealm) {
       this.defaultRealm = defaultRealm;
+      return this;
+    }
+
+    /**
+     * Set resources for which roles will be set.
+     *
+     * <p>If this list is empty, a login via the built-in login page will take the comma-separated
+     * roles from the password field and assign it as realm roles. If it contains at least one
+     * resource, the roles will be mapped only to this resource.
+     *
+     * @param resources the list of resources to which roles will be mapped
+     * @return builder
+     * @see #withResourceToMapRolesTo(String)
+     * @see <a href="https://www.keycloak.org/docs/latest/server_admin/#realm-roles">Realm Roles</a>
+     * @see <a href="https://www.keycloak.org/docs/latest/server_admin/#client-roles">Client
+     *     Roles</a>
+     */
+    @Nonnull
+    public Builder withResourcesToMapRolesTo(@Nonnull List<String> resources) {
+      resourcesToMapRolesTo.addAll(resources);
+      return this;
+    }
+
+    /**
+     * Add a resource for which roles will be set.
+     *
+     * <p>If no resource is set, a login via the built-in login page will take the comma-separated
+     * roles from the password field and assign it as realm roles. If at least one resource is
+     * configured, the roles will be mapped only to this resource.
+     *
+     * @param resource a resource to which roles will be mapped
+     * @return builder
+     * @see #withResourcesToMapRolesTo(List)
+     * @see <a href="https://www.keycloak.org/docs/latest/server_admin/#realm-roles">Realm Roles</a>
+     * @see <a href="https://www.keycloak.org/docs/latest/server_admin/#client-roles">Client
+     *     Roles</a>
+     */
+    @Nonnull
+    public Builder withResourceToMapRolesTo(@Nonnull String resource) {
+      resourcesToMapRolesTo.add(Objects.requireNonNull(resource));
       return this;
     }
 

@@ -1,12 +1,12 @@
-package com.tngtech.keycloakmock.standalone.handler;
+package com.tngtech.keycloakmock.impl.handler;
 
 import static com.tngtech.keycloakmock.impl.handler.RequestUrlConfigurationHandler.CTX_REQUEST_CONFIGURATION;
 
 import com.tngtech.keycloakmock.impl.UrlConfiguration;
-import com.tngtech.keycloakmock.standalone.helper.RedirectHelper;
-import com.tngtech.keycloakmock.standalone.helper.UserInputSanitizer;
-import com.tngtech.keycloakmock.standalone.session.Session;
-import com.tngtech.keycloakmock.standalone.session.SessionRepository;
+import com.tngtech.keycloakmock.impl.helper.RedirectHelper;
+import com.tngtech.keycloakmock.impl.helper.UserInputSanitizer;
+import com.tngtech.keycloakmock.impl.session.Session;
+import com.tngtech.keycloakmock.impl.session.SessionRepository;
 import io.vertx.core.Handler;
 import io.vertx.ext.web.RoutingContext;
 import java.util.Arrays;

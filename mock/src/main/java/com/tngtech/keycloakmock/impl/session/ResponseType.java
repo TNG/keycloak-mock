@@ -1,4 +1,4 @@
-package com.tngtech.keycloakmock.standalone.session;
+package com.tngtech.keycloakmock.impl.session;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
