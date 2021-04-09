@@ -446,10 +446,15 @@ public class TokenConfig {
      * <p>The hostname for which this token has been requested. If not set, the default hostname of
      * the mock is used.
      *
+     * <p>This will be used to construct the issuer "iss": http[s]://$HOSTNAME/auth/realms/$REALM.
+     * The protocol is taken from the server configuration.
+     *
      * <p>Note: The hostname must not contain a protocol prefix like 'http://'.
      *
      * @param hostname the hostname
      * @return builder
+     * @see #withRealm(String)
+     * @see ServerConfig#getProtocol()
      */
     @Nonnull
     public Builder withHostname(@Nonnull final String hostname) {
@@ -463,8 +468,13 @@ public class TokenConfig {
      * <p>The realm for which this token has been requested. If not set, the default realm of the
      * mock is used.
      *
+     * <p>This will be used to construct the issuer "iss": http[s]://$HOSTNAME/auth/realms/$REALM.
+     * The protocol is taken from the server configuration.
+     *
      * @param realm the realm
      * @return builder
+     * @see #withHostname(String)
+     * @see ServerConfig#getProtocol()
      */
     @Nonnull
     public Builder withRealm(@Nonnull final String realm) {
