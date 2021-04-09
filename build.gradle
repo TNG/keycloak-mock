@@ -7,12 +7,12 @@ buildscript {
 }
 
 plugins {
-    id 'com.github.ben-manes.versions' version '0.36.0'
+    id 'com.github.ben-manes.versions' version '0.38.0'
     id 'com.github.jk1.dependency-license-report' version '1.16' apply false
     id 'com.github.sherter.google-java-format' version '0.9' apply false
-    id 'com.google.cloud.tools.jib' version '2.7.1' apply false
-    id 'org.sonarqube' version '3.1'
-    id 'pl.allegro.tech.build.axion-release' version '1.12.1'
+    id 'com.google.cloud.tools.jib' version '3.0.0' apply false
+    id 'org.sonarqube' version '3.1.1'
+    id 'pl.allegro.tech.build.axion-release' version '1.13.1'
 }
 
 wrapper {
@@ -51,16 +51,16 @@ allprojects {
 }
 
 ext {
-    assertj_version = '3.18.1'
+    assertj_version = '3.19.0'
     jjwt_version = '0.11.2'
-    junit4_version = '4.13.1'
-    junit5_version = '5.7.0'
-    keycloak_version = '12.0.2'
-    mockito_version = '3.7.7'
+    junit4_version = '4.13.2'
+    junit5_version = '5.7.1'
+    keycloak_version = '12.0.4'
+    mockito_version = '3.9.0'
     picocli_version = '4.6.1'
     restassured_version = '4.3.3'
     slf4j_version = '1.7.30'
-    vertx_version = '4.0.0'
+    vertx_version = '4.0.3'
 
     license_name = 'The Apache License, Version 2.0'
     license_url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
