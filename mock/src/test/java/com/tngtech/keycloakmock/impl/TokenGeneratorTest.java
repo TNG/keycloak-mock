@@ -6,15 +6,14 @@ import static org.assertj.core.api.Assertions.entry;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 
+import com.tngtech.keycloakmock.test.KeyHelper;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Header;
 import io.jsonwebtoken.Jwt;
 import io.jsonwebtoken.Jwts;
-import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.security.KeyStore;
-import java.security.interfaces.RSAPublicKey;
+import java.security.PublicKey;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
@@ -55,7 +54,7 @@ class TokenGeneratorTest {
   private static final String HOSTNAME = "hostname";
   private static final String REALM = "realm";
 
-  private static RSAPublicKey key;
+  private static PublicKey key;
 
   @Mock private UrlConfiguration urlConfiguration;
 
@@ -63,12 +62,7 @@ class TokenGeneratorTest {
 
   @BeforeAll
   static void initKey() throws Exception {
-    KeyStore keyStore = KeyStore.getInstance("JKS");
-    try (InputStream keystoreStream =
-        TokenGeneratorTest.class.getResourceAsStream("/keystore.jks")) {
-      keyStore.load(keystoreStream, null);
-      key = (RSAPublicKey) keyStore.getCertificate("rsa").getPublicKey();
-    }
+    key = KeyHelper.loadValidKey();
   }
 
   @BeforeEach

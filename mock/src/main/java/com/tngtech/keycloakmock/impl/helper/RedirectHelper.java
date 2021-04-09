@@ -1,9 +1,9 @@
-package com.tngtech.keycloakmock.standalone.helper;
+package com.tngtech.keycloakmock.impl.helper;
 
 import com.tngtech.keycloakmock.impl.UrlConfiguration;
-import com.tngtech.keycloakmock.standalone.session.ResponseMode;
-import com.tngtech.keycloakmock.standalone.session.ResponseType;
-import com.tngtech.keycloakmock.standalone.session.Session;
+import com.tngtech.keycloakmock.impl.session.ResponseMode;
+import com.tngtech.keycloakmock.impl.session.ResponseType;
+import com.tngtech.keycloakmock.impl.session.Session;
 import io.vertx.core.http.Cookie;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

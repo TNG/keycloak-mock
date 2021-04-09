@@ -1,4 +1,4 @@
-package com.tngtech.keycloakmock.standalone.helper;
+package com.tngtech.keycloakmock.impl.helper;
 
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.json.JsonObject;

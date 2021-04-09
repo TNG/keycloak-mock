@@ -1,13 +1,13 @@
-package com.tngtech.keycloakmock.standalone.handler;
+package com.tngtech.keycloakmock.impl.handler;
 
 import static com.tngtech.keycloakmock.impl.handler.RequestUrlConfigurationHandler.CTX_REQUEST_CONFIGURATION;
-import static com.tngtech.keycloakmock.standalone.helper.RedirectHelper.KEYCLOAK_SESSION_COOKIE;
+import static com.tngtech.keycloakmock.impl.helper.RedirectHelper.KEYCLOAK_SESSION_COOKIE;
 
 import com.tngtech.keycloakmock.impl.UrlConfiguration;
-import com.tngtech.keycloakmock.standalone.helper.RedirectHelper;
-import com.tngtech.keycloakmock.standalone.helper.RenderHelper;
-import com.tngtech.keycloakmock.standalone.session.Session;
-import com.tngtech.keycloakmock.standalone.session.SessionRepository;
+import com.tngtech.keycloakmock.impl.helper.RedirectHelper;
+import com.tngtech.keycloakmock.impl.helper.RenderHelper;
+import com.tngtech.keycloakmock.impl.session.Session;
+import com.tngtech.keycloakmock.impl.session.SessionRepository;
 import io.vertx.core.Handler;
 import io.vertx.core.http.Cookie;
 import io.vertx.ext.web.RoutingContext;

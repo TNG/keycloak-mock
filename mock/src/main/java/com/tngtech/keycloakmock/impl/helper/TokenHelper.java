@@ -1,11 +1,11 @@
-package com.tngtech.keycloakmock.standalone.helper;
+package com.tngtech.keycloakmock.impl.helper;
 
 import static com.tngtech.keycloakmock.api.TokenConfig.aTokenConfig;
 
 import com.tngtech.keycloakmock.api.TokenConfig.Builder;
 import com.tngtech.keycloakmock.impl.TokenGenerator;
 import com.tngtech.keycloakmock.impl.UrlConfiguration;
-import com.tngtech.keycloakmock.standalone.session.Session;
+import com.tngtech.keycloakmock.impl.session.Session;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nonnull;

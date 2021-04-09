@@ -1,4 +1,4 @@
-package com.tngtech.keycloakmock.standalone.helper;
+package com.tngtech.keycloakmock.impl.helper;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doReturn;
@@ -7,9 +7,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import com.tngtech.keycloakmock.impl.UrlConfiguration;
-import com.tngtech.keycloakmock.standalone.session.ResponseMode;
-import com.tngtech.keycloakmock.standalone.session.ResponseType;
-import com.tngtech.keycloakmock.standalone.session.Session;
+import com.tngtech.keycloakmock.impl.session.ResponseMode;
+import com.tngtech.keycloakmock.impl.session.ResponseType;
+import com.tngtech.keycloakmock.impl.session.Session;
 import io.vertx.core.http.Cookie;
 import java.net.URI;
 import java.net.URISyntaxException;

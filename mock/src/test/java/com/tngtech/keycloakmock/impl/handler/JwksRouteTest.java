@@ -1,11 +1,10 @@
 package com.tngtech.keycloakmock.impl.handler;
 
+import static com.tngtech.keycloakmock.test.KeyHelper.loadFromResource;
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 import static org.mockito.Mockito.verify;
 
-import java.security.KeyStore;
 import java.security.PublicKey;
-import javax.annotation.Nonnull;
 import org.junit.jupiter.api.Test;
 
 class JwksRouteTest extends HandlerTestBase {
@@ -65,12 +64,5 @@ class JwksRouteTest extends HandlerTestBase {
         .hasFieldOrPropertyWithValue(
             "y",
             "AeS-w71tsY5dxsXT6QywvlQ6Gf-ePG8y6-53RSJN5hAvoIigA5IlhqCc2seSX3ixAZYqvYQBnUgmqbAE6r6HcpK8");
-  }
-
-  private PublicKey loadFromResource(@Nonnull final String resource, @Nonnull final String alias)
-      throws Exception {
-    KeyStore keyStore = KeyStore.getInstance("JKS");
-    keyStore.load(getClass().getResourceAsStream(resource), null);
-    return keyStore.getCertificate(alias).getPublicKey();
   }
 }
