@@ -2,9 +2,11 @@ package com.tngtech.keycloakmock.api;
 
 import static com.tngtech.keycloakmock.api.TokenConfig.aTokenConfig;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.entry;
 import static org.assertj.core.api.Assertions.within;
 
+import com.tngtech.keycloakmock.api.TokenConfig.Builder;
 import io.jsonwebtoken.lang.Maps;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -16,8 +18,12 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 class TokenConfigTest {
-  private static final String SOURCE_TOKEN =
+  private static final String KEYCLOAK_SOURCE_TOKEN =
       "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICI0aG9XM3JrQ1M0TFRyMXVQa05CNWxEZDVzblJxbFJkcTY3SnFPdGp0RFI4In0.eyJqdGkiOiI5Y2ZlMmI2MC0xZGI5LTRhMTItYjlkYy1kY2FiZmQxNmU5NDUiLCJleHAiOjE1ODY3Nzg2NjAsIm5iZiI6MCwiaWF0IjoxNTg2Nzc4NjAwLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwMDAvYXV0aC9yZWFsbXMvcmVhbG0iLCJhdWQiOiJhY2NvdW50Iiwic3ViIjoiZmJjYWE0MGEtOTQ4MC00ZWFkLWFkZjItOGY2MDg1ZjZmNzVkIiwidHlwIjoiQmVhcmVyIiwiYXpwIjoiY2xpZW50Iiwibm9uY2UiOiJhZWY4Y2YxYi0xMjdkLTQ2NTAtODA4MS0wZGIyNGFmMmQwZTciLCJhdXRoX3RpbWUiOjE1ODY3Nzg1OTksInNlc3Npb25fc3RhdGUiOiIwNTI3MDkwNy1kN2UyLTRiNzUtODM0MS01YmRkOTRlYWI3NjMiLCJhY3IiOiIxIiwiYWxsb3dlZC1vcmlnaW5zIjpbImh0dHA6Ly9sb2NhbGhvc3Q6MzAwMCJdLCJyZWFsbV9hY2Nlc3MiOnsicm9sZXMiOlsib2ZmbGluZV9hY2Nlc3MiLCJ1bWFfYXV0aG9yaXphdGlvbiJdfSwicmVzb3VyY2VfYWNjZXNzIjp7ImFjY291bnQiOnsicm9sZXMiOlsibWFuYWdlLWFjY291bnQiLCJtYW5hZ2UtYWNjb3VudC1saW5rcyIsInZpZXctcHJvZmlsZSJdfX0sInNjb3BlIjoib3BlbmlkIGVtYWlsIHByb2ZpbGUiLCJlbWFpbF92ZXJpZmllZCI6ZmFsc2UsIm5hbWUiOiJQZXRlciBVc2VyIiwicHJlZmVycmVkX3VzZXJuYW1lIjoidXNlciIsImdpdmVuX25hbWUiOiJQZXRlciIsImZhbWlseV9uYW1lIjoiVXNlciIsImVtYWlsIjoidXNlckBrZXljbG9hayJ9.KELcHfTpR_KAFeZdDT3gsfCMdc4dmPNv7MfOEyMXGp-Rz0FPIlILpU6U-Kw674j9oTFVnkWL7Gcj0KsOTi4tsd5fgba7X9If8_gtYGch-kjLxKzTh6gb0Xb8YobFkFzo6lRGJf_u_oKIduRtUw9nPly_55513uayAqIk-Pvx4Yi0pZSxxth_7aTgsraKlKPHIBcKY0-2MX99Ruzf_dndls99um1b7EHDNX8W_ZJA0jFgsQXvl4PFppW0oYkU4XonVU1J3tDCpvorHUEA4IBDgaIyhJFB23EXApJknVf3xaLdvLq_bSTfKF7cN-eBv54cU2h_QscU9Xm9qdV3x-7zAg";
+  private static final String TOKEN_WITH_INVALID_ISSUER_URL =
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyLCJpc3MiOiJubyB1cmwifQ.AEpkjo0rde_hsN6e4c8UfH3qqV82FkCgnE6_G8Op1HI";
+  private static final String TOKEN_WITH_UNEXPECTED_ISSUER_URL =
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0L2F1dGgifQ.Bt7a82iTzNsWO2GtOEAcoIGwEH4g4OxLNnGWhJnTego";
 
   @Test
   void default_values_are_used() {
@@ -238,7 +244,7 @@ class TokenConfigTest {
 
   @Test
   void config_is_set_correctly_from_original_token() {
-    TokenConfig config = aTokenConfig().withSourceToken(SOURCE_TOKEN).build();
+    TokenConfig config = aTokenConfig().withSourceToken(KEYCLOAK_SOURCE_TOKEN).build();
     Instant now = Instant.now();
 
     assertThat(config.getAudience()).containsExactly("account");
@@ -271,5 +277,21 @@ class TokenConfigTest {
     assertThat(config.getSubject()).isEqualTo("fbcaa40a-9480-4ead-adf2-8f6085f6f75d");
     assertThat(config.getHostname()).isEqualTo("localhost");
     assertThat(config.getRealm()).isEqualTo("realm");
+  }
+
+  @Test
+  void invalid_issuer_causes_exception() {
+    Builder builder = aTokenConfig();
+    assertThatThrownBy(() -> builder.withSourceToken(TOKEN_WITH_INVALID_ISSUER_URL))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("not a valid URL");
+  }
+
+  @Test
+  void unexpected_issuer_causes_exception() {
+    Builder builder = aTokenConfig();
+    assertThatThrownBy(() -> builder.withSourceToken(TOKEN_WITH_UNEXPECTED_ISSUER_URL))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("did not conform to the expected format");
   }
 }
