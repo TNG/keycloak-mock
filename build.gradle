@@ -208,6 +208,7 @@ subprojects {
 }
 
 sonarqube {
+    skipProject = !(System.getenv('SONAR_TOKEN')?.trim())
     properties {
         property "sonar.host.url", "https://sonarcloud.io"
         property "sonar.organization", "tng"
