@@ -210,6 +210,9 @@ public class KeycloakMock {
   private Buffer getKeystore() {
     try {
       InputStream inputStream = this.getClass().getResourceAsStream("/keystore.jks");
+      if (inputStream == null) {
+        throw new IllegalStateException("Unable to find keystore in classpath");
+      }
       ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
       byte[] buf = new byte[8192];
       int n;
