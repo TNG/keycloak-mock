@@ -16,6 +16,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -29,6 +31,7 @@ import javax.annotation.Nullable;
  * }</pre>
  */
 public class TokenConfig {
+  private static final Pattern ISSUER_PATH_PATTERN = Pattern.compile("^/auth/realms/([^/]+)$");
 
   @Nonnull private final Set<String> audience;
   @Nonnull private final String authorizedParty;
@@ -334,18 +337,14 @@ public class TokenConfig {
 
     @Nonnull
     private String getRealm(@Nonnull final URI issuer) {
-      String[] path = issuer.getPath().split("/");
-      if (path.length != 4
-          || !"".equals(path[0])
-          || !"auth".equals(path[1])
-          || !"realms".equals(path[2])
-          || path[3] == null) {
+      Matcher matcher = ISSUER_PATH_PATTERN.matcher(issuer.getPath());
+      if (!matcher.matches()) {
         throw new IllegalArgumentException(
             "The issuer '"
                 + issuer
                 + "' did not conform to the expected format 'http[s]://$HOSTNAME[:port]/auth/realms/$REALM'.");
       }
-      return path[3];
+      return matcher.group(1);
     }
 
     /**
