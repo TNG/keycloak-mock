@@ -2,9 +2,11 @@ import com.github.jengelman.gradle.plugins.shadow.transformers.ApacheNoticeResou
 
 plugins {
     id 'application'
+    id 'com.github.gmazzo.buildconfig' version '3.0.0'
     id 'com.github.johnrengelman.shadow' version '6.1.0'
-    id 'com.github.gmazzo.buildconfig' version '2.0.2'
 }
+
+apply plugin: 'com.google.cloud.tools.jib'
 
 description = 'Standalone keycloak-mock server for use in frontend development'
 
@@ -59,32 +61,14 @@ dependencies {
     implementation project(':mock')
     implementation "info.picocli:picocli:$picocli_version"
     implementation "org.slf4j:slf4j-simple:$slf4j_version"
-    implementation "io.vertx:vertx-web:$vertx_version"
-    implementation "io.vertx:vertx-web-templ-freemarker:$vertx_version"
-    resourceJars "org.keycloak:keycloak-js-adapter:$keycloak_version"
-    testImplementation "io.rest-assured:rest-assured:$restassured_version"
-    testImplementation "org.assertj:assertj-core:$assertj_version"
-    testImplementation "org.junit.jupiter:junit-jupiter-api:$junit5_version"
-    testImplementation "org.junit.jupiter:junit-jupiter-params:$junit5_version"
-    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junit5_version"
-    testRuntimeOnly "org.slf4j:slf4j-simple:$slf4j_version"
-}
-
-processResources {
-    from files(zipTree(configurations.resourceJars.singleFile)) {
-        exclude '*.ts'
-        exclude '*.min.js'
-        exclude '*.map'
-        exclude 'css'
-        exclude 'META-INF/INDEX.LIST'
-        exclude 'META-INF/MANIFEST.MF'
-    }
 }
 
 application {
-    mainClass.set('com.tngtech.keycloakmock.standalone.Main')
-    // still needed for shadow plugin (see https://github.com/johnrengelman/shadow/issues/609)
-    mainClassName = 'com.tngtech.keycloakmock.standalone.Main'
+    mainClass = 'com.tngtech.keycloakmock.standalone.Main'
+}
+
+shadow {
+    mainClassName = application.mainClass.get()
 }
 
 buildConfig {
@@ -100,5 +84,18 @@ test {
     }
     beforeTest { descriptor ->
         logger.lifecycle("Running test: ${descriptor}")
+    }
+}
+
+jib {
+    from {
+        image = 'openjdk:11-jre-slim'
+    }
+    to {
+        image = 'keycloak-mock/standalone'
+    }
+    container {
+        ports = ['8000']
+        mainClass = 'com.tngtech.keycloakmock.standalone.Main'
     }
 }

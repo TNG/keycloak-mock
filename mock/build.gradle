@@ -1,21 +1,38 @@
 description = 'Base module of keycloak-mock'
 
+configurations {
+    resourceJars
+}
+
 dependencies {
     implementation "io.jsonwebtoken:jjwt-impl:$jjwt_version"
     implementation "io.jsonwebtoken:jjwt-jackson:$jjwt_version"
     implementation "io.vertx:vertx-web:$vertx_version"
+    implementation "io.vertx:vertx-web-templ-freemarker:$vertx_version"
     implementation "org.slf4j:slf4j-api:$slf4j_version"
-    testImplementation 'io.fusionauth:fusionauth-jwt:4.0.1'
+    resourceJars "org.keycloak:keycloak-js-adapter:$keycloak_version"
+    testImplementation 'io.fusionauth:fusionauth-jwt:4.1.0'
     testImplementation "io.rest-assured:rest-assured:$restassured_version"
     // required to mock RoutingContext
     testImplementation "io.vertx:vertx-codegen:$vertx_version"
-    testImplementation 'net.javacrumbs.json-unit:json-unit-assertj:2.22.0'
+    testImplementation 'net.javacrumbs.json-unit:json-unit-assertj:2.25.0'
     testImplementation "org.assertj:assertj-core:$assertj_version"
     testImplementation "org.junit.jupiter:junit-jupiter-api:$junit5_version"
     testImplementation "org.junit.jupiter:junit-jupiter-params:$junit5_version"
     testImplementation "org.mockito:mockito-junit-jupiter:$mockito_version"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junit5_version"
     testRuntimeOnly "org.slf4j:slf4j-simple:$slf4j_version"
+}
+
+processResources {
+    from files(zipTree(configurations.resourceJars.singleFile)) {
+        exclude '*.ts'
+        exclude '*.min.js'
+        exclude '*.map'
+        exclude 'css'
+        exclude 'META-INF/INDEX.LIST'
+        exclude 'META-INF/MANIFEST.MF'
+    }
 }
 
 test {

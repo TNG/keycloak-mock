@@ -3,6 +3,8 @@ package com.tngtech.keycloakmock.api;
 import io.jsonwebtoken.ClaimJwtException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
@@ -14,6 +16,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -27,6 +31,8 @@ import javax.annotation.Nullable;
  * }</pre>
  */
 public class TokenConfig {
+  private static final Pattern ISSUER_PATH_PATTERN = Pattern.compile("^/auth/realms/([^/]+)$");
+
   @Nonnull private final Set<String> audience;
   @Nonnull private final String authorizedParty;
   @Nonnull private final String subject;
@@ -38,11 +44,14 @@ public class TokenConfig {
   @Nonnull private final Instant authenticationTime;
   @Nonnull private final Instant expiration;
   @Nullable private final Instant notBefore;
+  @Nullable private final String hostname;
+  @Nullable private final String realm;
   @Nullable private final String name;
   @Nullable private final String givenName;
   @Nullable private final String familyName;
   @Nullable private final String email;
   @Nullable private final String preferredUsername;
+  @Nullable private final String authenticationContextClassReference;
 
   private TokenConfig(@Nonnull final Builder builder) {
     if (builder.audience.isEmpty()) {
@@ -59,6 +68,8 @@ public class TokenConfig {
     issuedAt = builder.issuedAt;
     authenticationTime = builder.authenticationTime;
     expiration = builder.expiration;
+    hostname = builder.hostname;
+    realm = builder.realm;
     notBefore = builder.notBefore;
     givenName = builder.givenName;
     familyName = builder.familyName;
@@ -75,6 +86,7 @@ public class TokenConfig {
     }
     email = builder.email;
     preferredUsername = builder.preferredUsername;
+    authenticationContextClassReference = builder.authenticationContextClassReference;
   }
 
   /**
@@ -143,6 +155,16 @@ public class TokenConfig {
   }
 
   @Nullable
+  public String getHostname() {
+    return hostname;
+  }
+
+  @Nullable
+  public String getRealm() {
+    return realm;
+  }
+
+  @Nullable
   public String getName() {
     return name;
   }
@@ -167,12 +189,18 @@ public class TokenConfig {
     return preferredUsername;
   }
 
+  @Nullable
+  public String getAuthenticationContextClassReference() {
+    return authenticationContextClassReference;
+  }
+
   /**
    * Builder for {@link TokenConfig}.
    *
    * <p>Use this to generate a token configuration to your needs.
    */
   public static final class Builder {
+
     @Nonnull private final Set<String> audience = new HashSet<>();
     @Nonnull private String authorizedParty = "client";
     @Nonnull private String subject = "user";
@@ -184,11 +212,14 @@ public class TokenConfig {
     @Nonnull private Instant expiration = issuedAt.plus(10, ChronoUnit.HOURS);
     @Nonnull private Instant authenticationTime = Instant.now();
     @Nullable private Instant notBefore;
+    @Nullable private String hostname;
+    @Nullable private String realm;
     @Nullable private String givenName;
     @Nullable private String familyName;
     @Nullable private String name;
     @Nullable private String email;
     @Nullable private String preferredUsername;
+    @Nullable private String authenticationContextClassReference;
 
     private Builder() {
       scope.add("openid");
@@ -259,17 +290,29 @@ public class TokenConfig {
           case "scope":
             withScopes(Arrays.asList(getTypedValue(entry, String.class).split(" ")));
             break;
+          case "acr":
+            withAuthenticationContextClassReference(getTypedValue(entry, String.class));
+            break;
           case "typ":
             if (!"Bearer".equals(getTypedValue(entry, String.class))) {
               throw new IllegalArgumentException("Only bearer tokens are allowed here!");
             }
             break;
           case "iss":
+            String issuer = getTypedValue(entry, String.class);
+            try {
+              URI issuerUrl = new URI(issuer);
+              withHostname(issuerUrl.getHost());
+              withRealm(getRealm(issuerUrl));
+            } catch (URISyntaxException e) {
+              throw new IllegalArgumentException("Issuer '" + issuer + "' is not a valid URL", e);
+            }
+            break;
           case "iat":
           case "nbf":
           case "exp":
           case "auth_time":
-            // ignoring issuer and date information
+            // ignoring date information
             break;
           default:
             withClaim(entry.getKey(), entry.getValue());
@@ -290,6 +333,18 @@ public class TokenConfig {
           String.format(
               "Expected %s for key %s, but found %s",
               clazz, entry.getKey(), entry.getValue().getClass()));
+    }
+
+    @Nonnull
+    private String getRealm(@Nonnull final URI issuer) {
+      Matcher matcher = ISSUER_PATH_PATTERN.matcher(issuer.getPath());
+      if (!matcher.matches()) {
+        throw new IllegalArgumentException(
+            "The issuer '"
+                + issuer
+                + "' did not conform to the expected format 'http[s]://$HOSTNAME[:port]/auth/realms/$REALM'.");
+      }
+      return matcher.group(1);
     }
 
     /**
@@ -381,6 +436,48 @@ public class TokenConfig {
     @Nonnull
     public Builder withScopes(@Nonnull final Collection<String> scopes) {
       this.scope.addAll(scopes);
+      return this;
+    }
+
+    /**
+     * Add authorization hostname.
+     *
+     * <p>The hostname for which this token has been requested. If not set, the default hostname of
+     * the mock is used.
+     *
+     * <p>This will be used to construct the issuer "iss": http[s]://$HOSTNAME/auth/realms/$REALM.
+     * The protocol is taken from the server configuration.
+     *
+     * <p>Note: The hostname must not contain a protocol prefix like 'http://'.
+     *
+     * @param hostname the hostname
+     * @return builder
+     * @see #withRealm(String)
+     * @see ServerConfig#getProtocol()
+     */
+    @Nonnull
+    public Builder withHostname(@Nonnull final String hostname) {
+      this.hostname = Objects.requireNonNull(hostname);
+      return this;
+    }
+
+    /**
+     * Add authorization realm.
+     *
+     * <p>The realm for which this token has been requested. If not set, the default realm of the
+     * mock is used.
+     *
+     * <p>This will be used to construct the issuer "iss": http[s]://$HOSTNAME/auth/realms/$REALM.
+     * The protocol is taken from the server configuration.
+     *
+     * @param realm the realm
+     * @return builder
+     * @see #withHostname(String)
+     * @see ServerConfig#getProtocol()
+     */
+    @Nonnull
+    public Builder withRealm(@Nonnull final String realm) {
+      this.realm = Objects.requireNonNull(realm);
       return this;
     }
 
@@ -616,13 +713,29 @@ public class TokenConfig {
       return this;
     }
 
+    /**
+     * Set authentication context class reference.
+     *
+     * @param authenticationContextClassReference the reference class of the authentication ("0" or
+     *     "1")
+     * @return builder
+     * @see <a href="https://openid.net/specs/openid-connect-core-1_0.html#IDToken">ID token</a>
+     */
+    @Nonnull
+    public Builder withAuthenticationContextClassReference(
+        @Nullable final String authenticationContextClassReference) {
+      this.authenticationContextClassReference = authenticationContextClassReference;
+      return this;
+    }
+
     @Nonnull
     public TokenConfig build() {
       return new TokenConfig(this);
     }
   }
 
-  static class Access {
+  public static class Access {
+
     @Nonnull private final Set<String> roles = new HashSet<>();
 
     @Nonnull

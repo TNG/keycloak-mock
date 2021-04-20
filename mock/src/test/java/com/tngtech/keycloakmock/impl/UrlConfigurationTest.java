@@ -23,7 +23,8 @@ class UrlConfigurationTest {
     return Stream.of(
         Arguments.of(aServerConfig().build(), "http://localhost:8000"),
         Arguments.of(
-            aServerConfig().withHostname(DEFAULT_HOSTNAME).build(), "http://defaultHost:8000"),
+            aServerConfig().withDefaultHostname(DEFAULT_HOSTNAME).build(),
+            "http://defaultHost:8000"),
         Arguments.of(aServerConfig().withPort(80).build(), "http://localhost"),
         Arguments.of(aServerConfig().withPort(443).build(), "http://localhost:443"),
         Arguments.of(aServerConfig().withTls(true).withPort(80).build(), "https://localhost:80"),
@@ -34,7 +35,10 @@ class UrlConfigurationTest {
     return Stream.of(
         Arguments.of(aServerConfig().build(), "http://localhost:8000/auth/realms/master"),
         Arguments.of(
-            aServerConfig().withHostname(DEFAULT_HOSTNAME).withRealm(DEFAULT_REALM).build(),
+            aServerConfig()
+                .withDefaultHostname(DEFAULT_HOSTNAME)
+                .withDefaultRealm(DEFAULT_REALM)
+                .build(),
             "http://defaultHost:8000/auth/realms/defaultRealm"),
         Arguments.of(aServerConfig().withPort(80).build(), "http://localhost/auth/realms/master"),
         Arguments.of(

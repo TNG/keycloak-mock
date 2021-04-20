@@ -1,7 +1,7 @@
 import * as React from 'react';
 import axios from 'axios';
 
-const endpoint = 'http://localhost:8080';
+const endpoint = 'http://localhost:8080/api';
 
 export default class Hello extends React.Component {
 

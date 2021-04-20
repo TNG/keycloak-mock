@@ -9,6 +9,7 @@ import javax.annotation.Nullable;
 
 public class UrlConfiguration {
   private static final String ISSUER_PATH = "/auth/realms/";
+  private static final String AUTHENTICATION_CALLBACK_PATH = "authenticate/";
   private static final String ISSUER_OPEN_ID_PATH = "protocol/openid-connect/";
   private static final String OPEN_ID_TOKEN_PATH = "token";
   private static final String OPEN_ID_JWKS_PATH = "certs";
@@ -23,12 +24,12 @@ public class UrlConfiguration {
     this.protocol = Objects.requireNonNull(serverConfig.getProtocol());
     this.port = serverConfig.getPort();
     if (protocol.getDefaultPort() == serverConfig.getPort()
-        || serverConfig.getHostname().contains(":")) {
-      this.hostname = serverConfig.getHostname();
+        || serverConfig.getDefaultHostname().contains(":")) {
+      this.hostname = serverConfig.getDefaultHostname();
     } else {
-      this.hostname = serverConfig.getHostname() + ":" + serverConfig.getPort();
+      this.hostname = serverConfig.getDefaultHostname() + ":" + serverConfig.getPort();
     }
-    this.realm = Objects.requireNonNull(serverConfig.getRealm());
+    this.realm = Objects.requireNonNull(serverConfig.getDefaultRealm());
   }
 
   private UrlConfiguration(
@@ -48,7 +49,7 @@ public class UrlConfiguration {
   }
 
   @Nonnull
-  public URI getBaseUrl() {
+  URI getBaseUrl() {
     try {
       return new URI(protocol.getValue() + hostname);
     } catch (URISyntaxException e) {
@@ -69,6 +70,11 @@ public class UrlConfiguration {
   @Nonnull
   public URI getOpenIdPath(@Nonnull final String path) {
     return getIssuerPath().resolve(ISSUER_OPEN_ID_PATH).resolve(path);
+  }
+
+  @Nonnull
+  public URI getAuthenticationCallbackEndpoint(@Nonnull final String sessionId) {
+    return getIssuerPath().resolve(AUTHENTICATION_CALLBACK_PATH + sessionId);
   }
 
   @Nonnull
@@ -98,5 +104,10 @@ public class UrlConfiguration {
 
   public int getPort() {
     return port;
+  }
+
+  @Nonnull
+  public String getRealm() {
+    return realm;
   }
 }

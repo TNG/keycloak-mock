@@ -2,99 +2,89 @@ package com.tngtech.keycloakmock.impl.handler;
 
 import static com.tngtech.keycloakmock.impl.handler.RequestUrlConfigurationHandler.CTX_REQUEST_CONFIGURATION;
 
-import com.tngtech.keycloakmock.api.TokenConfig;
-import com.tngtech.keycloakmock.impl.TokenGenerator;
 import com.tngtech.keycloakmock.impl.UrlConfiguration;
+import com.tngtech.keycloakmock.impl.helper.TokenHelper;
+import com.tngtech.keycloakmock.impl.session.SessionRepository;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 public class TokenRoute implements Handler<RoutingContext> {
-  private TokenConfig accessTokenConfig;
-  private TokenConfig idTokenConfig;
-  private TokenConfig refreshTokenConfig;
-  private int statusCode = 200;
-  private int expiresIn = 3600;
-  private String errorBody;
-  private final TokenGenerator tokenGenerator = new TokenGenerator();
 
-  /**
-   * Change token endpoint to return error response.
-   *
-   * @param statusCode Http status to be returned: Example 404.
-   * @param errorBody body to be returned.
-   * @return TokenRoute
-   */
-  public TokenRoute withErrorResponse(@Nonnull int statusCode, @Nonnull String errorBody) {
-    this.statusCode = statusCode;
-    this.errorBody = errorBody;
-    this.accessTokenConfig = null;
-    this.idTokenConfig = null;
-    this.refreshTokenConfig = null;
-    return this;
-  }
+  private static final String GRANT_TYPE = "grant_type";
+  private static final String CODE = "code";
+  private static final String SESSION_STATE = "session_state";
 
-  /**
-   * Changes token endpoint to return a successful response (http status = 200) and body with
-   * TokenResponse.
-   *
-   * @param accessTokenConfig TokenConfig to use when generate access token.
-   * @param idTokenConfig TokenConfig to use when generate idToken. If null id_token will be a empty
-   *     string
-   * @param refreshTokenConfig TokenConfig to use when generate refresh token. If null refresh_token
-   *     will be a empty string
-   * @param expiresIn Token expires, in seconds. If null will be used as default 3600
-   * @see TokenConfig.Builder
-   * @see <a href="https://openid.net/specs/openid-connect-core-1_0.html#TokenResponse">Successful
-   *     Token Response</a>
-   * @return TokenRoute
-   */
-  public TokenRoute withOkResponse(
-      @Nonnull TokenConfig accessTokenConfig,
-      @Nullable TokenConfig idTokenConfig,
-      @Nullable TokenConfig refreshTokenConfig,
-      @Nullable Integer expiresIn) {
-    this.statusCode = 200;
-    this.errorBody = null;
-    this.accessTokenConfig = accessTokenConfig;
-    this.idTokenConfig = idTokenConfig;
-    this.refreshTokenConfig = refreshTokenConfig;
-    this.expiresIn = expiresIn != null ? expiresIn.intValue() : 3600;
-    return this;
+  @Nonnull private final SessionRepository sessionRepository;
+  @Nonnull private final TokenHelper tokenHelper;
+
+  public TokenRoute(
+      @Nonnull final SessionRepository sessionRepository, @Nonnull TokenHelper tokenHelper) {
+    this.sessionRepository = sessionRepository;
+    this.tokenHelper = tokenHelper;
+
   }
 
   @Override
   public void handle(@Nonnull final RoutingContext routingContext) {
+    String grantType = routingContext.request().getFormAttribute(GRANT_TYPE);
+    switch (Objects.toString(grantType)) {
+      case "authorization_code":
+        handleAuthorizationCodeFlow(routingContext);
+        break;
+      case "refresh_token":
+        handleRefreshTokenFlow(routingContext);
+        break;
+      default:
+        routingContext.fail(400);
+    }
+  }
 
-    String response = errorBody;
-    if (errorBody == null) {
-      JsonObject responseBody = new JsonObject();
-      UrlConfiguration requestConfiguration = routingContext.get(CTX_REQUEST_CONFIGURATION);
-      responseBody.put(
-          "access_token",
-          accessTokenConfig != null
-              ? tokenGenerator.getToken(accessTokenConfig, requestConfiguration)
-              : "");
-      responseBody.put(
-          "refresh_token",
-          refreshTokenConfig != null
-              ? tokenGenerator.getToken(refreshTokenConfig, requestConfiguration)
-              : "");
-      responseBody.put(
-          "id_token",
-          idTokenConfig != null
-              ? tokenGenerator.getToken(idTokenConfig, requestConfiguration)
-              : "");
-      responseBody.put("token_type", "Bearer");
-      responseBody.put("expires_in", expiresIn);
-      response = responseBody.encode();
+  private void handleAuthorizationCodeFlow(RoutingContext routingContext) {
+    // here again we use the equality of authorization code and session ID
+    String sessionId = routingContext.request().getFormAttribute(CODE);
+    UrlConfiguration requestConfiguration = routingContext.get(CTX_REQUEST_CONFIGURATION);
+    String token =
+        Optional.ofNullable(sessionRepository.getSession(sessionId))
+            .map(s -> tokenHelper.getToken(s, requestConfiguration))
+            .orElse(null);
+    if (token == null) {
+      routingContext.fail(404);
+      return;
     }
     routingContext
         .response()
-        .setStatusCode(statusCode)
         .putHeader("content-type", "application/json")
-        .end(response);
+        .end(toTokenResponse(token, sessionId));
+  }
+
+  private void handleRefreshTokenFlow(RoutingContext routingContext) {
+    String refreshToken = routingContext.request().getFormAttribute("refresh_token");
+    if (refreshToken == null || refreshToken.isEmpty()) {
+      routingContext.fail(400);
+      return;
+    }
+    Map<String, Object> token = tokenHelper.parseToken(refreshToken);
+    String sessionId = (String) token.get(SESSION_STATE);
+
+    routingContext
+        .response()
+        .putHeader("content-type", "application/json")
+        .end(toTokenResponse(refreshToken, sessionId));
+  }
+
+  private String toTokenResponse(String token, String sessionId) {
+    return new JsonObject()
+        .put("access_token", token)
+        .put("expires_in", 36_000)
+        .put("refresh_token", token)
+        .put("refresh_expires_in", 36_000)
+        .put("id_token", token)
+        .put(SESSION_STATE, sessionId)
+        .encode();
   }
 }

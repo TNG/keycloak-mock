@@ -1,6 +1,6 @@
 buildscript {
     ext {
-        springBootVersion = '2.4.1'
+        springBootVersion = '2.4.4'
     }
     repositories {
         mavenCentral()
@@ -10,9 +10,10 @@ buildscript {
     }
 }
 
+apply plugin: 'com.google.cloud.tools.jib'
+apply plugin: 'io.spring.dependency-management'
 apply plugin: 'java'
 apply plugin: 'org.springframework.boot'
-apply plugin: 'io.spring.dependency-management'
 
 // spring boot's bill of materials pulls in junit5 in an outdated version, so we need to update it
 // see https://stackoverflow.com/questions/54598484/gradle-5-junit-bom-and-spring-boot-incorrect-versions
@@ -44,3 +45,23 @@ test {
         logger.lifecycle("Running test: ${descriptor}")
     }
 }
+
+jib {
+    from {
+        image = 'openjdk:11-jre-slim'
+    }
+    to {
+        image = 'keycloak-mock/example-backend'
+    }
+    container {
+        ports = ['8080']
+    }
+}
+
+task prepareFrontend(type: Copy) {
+    dependsOn ':example-frontend-react:yarn_build'
+    from '../example-frontend-react/build/'
+    into 'src/main/resources/static/'
+}
+
+processResources.dependsOn prepareFrontend

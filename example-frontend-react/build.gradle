@@ -1,15 +1,15 @@
 import static groovy.io.FileType.FILES
 
 plugins {
-    id 'com.github.node-gradle.node' version '2.2.4'
+    id 'com.github.node-gradle.node' version '3.0.1'
 }
 
 node {
     // Version of node to use.
-    version = '12.18.4'
+    version = '14.15.4'
 
     // Version of Yarn to use.
-    yarnVersion = '1.22.5'
+    yarnVersion = '1.22.10'
 
     // Base URL for fetching node distributions (change if you have a mirror).
     distBaseUrl = 'https://nodejs.org/dist'
@@ -25,7 +25,7 @@ node {
     yarnWorkDir = file('bin/yarn')
 
     // Set the work directory where node_modules should be located
-    nodeModulesDir = file("${project.projectDir}")
+    nodeProjectDir = file("${project.projectDir}")
 }
 
 yarn_build {
@@ -61,4 +61,8 @@ nodeSetup.finalizedBy(copyNode)
 
 task build {
     dependsOn yarn_build
+}
+
+yarn_e2e {
+    mustRunAfter ':example-integration-docker:composeUp'
 }

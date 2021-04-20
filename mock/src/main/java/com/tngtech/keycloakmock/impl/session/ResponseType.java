@@ -1,4 +1,4 @@
-package com.tngtech.keycloakmock.standalone.handler;
+package com.tngtech.keycloakmock.impl.session;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -28,7 +28,7 @@ public enum ResponseType {
   }
 
   @Nonnull
-  ResponseMode getValidResponseMode(@Nullable final String responseMode) {
+  public ResponseMode getValidResponseMode(@Nullable final String responseMode) {
     if (!differentModeAllowed) {
       return defaultMode;
     }
@@ -40,7 +40,10 @@ public enum ResponseType {
   }
 
   @Nullable
-  static ResponseType fromValueOrNull(@Nonnull final String value) {
+  public static ResponseType fromValueOrNull(@Nullable final String value) {
+    if (value == null) {
+      return null;
+    }
     switch (value) {
       case "id_token":
         return ID_TOKEN;
@@ -54,6 +57,22 @@ public enum ResponseType {
       default:
         // invalid combinations (e.g. hybrid case) are ignored
         return null;
+    }
+  }
+
+  @Override
+  public String toString() {
+    switch (this) {
+      case ID_TOKEN:
+        return "id_token";
+      case ID_TOKEN_PLUS_TOKEN:
+        return "id_token token";
+      case CODE:
+        return "code";
+      case NONE:
+        return "none";
+      default:
+        throw new IllegalStateException();
     }
   }
 }

@@ -31,14 +31,14 @@ You can create and start the mock directly from the `mock` artifact using Maven
     <groupId>com.tngtech.keycloakmock</groupId>
     <artifactId>mock</artifactId>
     <scope>test</scope>
-    <version>0.6.0</version>
+    <version>0.7.0</version>
 </dependency>
 ```
 
 or Gradle
 
 ```gradle
-testImplementation 'com.tngtech.keycloakmock:mock:0.6.0'
+testImplementation 'com.tngtech.keycloakmock:mock:0.7.0'
 ```
 
 like this:
@@ -59,7 +59,7 @@ class Test {
 }
 ```
 
-Or you can use use the `mock-junit` artifact with JUnit4
+You can also use the convenience wrapper `mock-junit` for JUnit4
 
 ```java
 import com.tngtech.keycloakmock.junit.KeycloakMockRule;
@@ -73,7 +73,7 @@ public class Test {
 }
 ```
 
-or the `mock-junit5` artifact with JUnit5
+or `mock-junit5` for JUnit5
 
 ```java
 import com.tngtech.keycloakmock.junit5.KeycloakMockExtension;
@@ -103,10 +103,14 @@ class Test {
 }
 ```
 
+For a more in-detail test case, please have a look at
+the [AuthenticationTest](example-backend/src/test/java/com/tngtech/keycloakmock/examplebackend/AuthenticationTest.java)
+in our example backend project.
+
 ### Developing / testing frontends
 
-It is also possible to run a stand-alone mock server that provides a login page where a username
-and an optional list of roles can be specified. Just get the (self-contained) `standalone` artifact,
+It is also possible to run a stand-alone mock server that provides a login page where a username and
+an optional list of roles can be specified. Just get the (self-contained) `standalone` artifact,
 e.g. from [Maven Central](https://search.maven.org/artifact/com.tngtech.keycloakmock/standalone),
 and run it:
 
@@ -114,6 +118,13 @@ and run it:
 $ java -jar standalone.jar &
 Server is running on http://localhost:8000
 ```
+
+The stand-alone server can be configured using command line parameters. You can call it
+with `--help` to get a list of all options.
+
+You can even use it as a replacement in end-to-end tests, as the server is e.g. compatible with
+`cypress-keycloak`. Have a look at the [example-frontend-react](example-frontend-react) project on
+this can be set up.
 
 Please note that currently only the authorization code flow and the implicit flow are supported.
 
