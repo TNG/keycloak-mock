@@ -4,6 +4,7 @@ import static com.tngtech.keycloakmock.impl.handler.RequestUrlConfigurationHandl
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
@@ -12,8 +13,9 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import com.tngtech.keycloakmock.impl.UrlConfiguration;
 import com.tngtech.keycloakmock.impl.helper.RedirectHelper;
-import com.tngtech.keycloakmock.impl.session.Session;
+import com.tngtech.keycloakmock.impl.session.PersistentSession;
 import com.tngtech.keycloakmock.impl.session.SessionRepository;
+import com.tngtech.keycloakmock.impl.session.SessionRequest;
 import io.vertx.core.http.Cookie;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
@@ -44,7 +46,8 @@ class AuthenticationRouteTest {
   @Mock private HttpServerRequest request;
   @Mock private HttpServerResponse response;
   @Mock private UrlConfiguration urlConfiguration;
-  @Mock private Session session;
+  @Mock private SessionRequest sessionRequest;
+  @Mock private PersistentSession session;
   @Mock private Cookie cookie;
 
   @Captor private ArgumentCaptor<List<String>> rolesCaptor;
@@ -62,21 +65,21 @@ class AuthenticationRouteTest {
 
     uut.handle(routingContext);
 
-    verify(sessionRepository).getSession(SESSION_ID);
+    verify(sessionRepository).getRequest(SESSION_ID);
     verify(routingContext).fail(404);
     verifyNoMoreInteractions(urlConfiguration, sessionRepository, redirectHelper);
   }
 
   @Test
   void missing_username_causes_error() {
-    doReturn(session).when(sessionRepository).getSession(SESSION_ID);
+    doReturn(sessionRequest).when(sessionRepository).getRequest(SESSION_ID);
     doReturn(request).when(routingContext).request();
 
     uut = new AuthenticationRoute(sessionRepository, redirectHelper);
 
     uut.handle(routingContext);
 
-    verify(sessionRepository).getSession(SESSION_ID);
+    verify(sessionRepository).getRequest(SESSION_ID);
     verify(routingContext).fail(400);
     verifyNoMoreInteractions(urlConfiguration, sessionRepository, redirectHelper);
   }
@@ -88,9 +91,8 @@ class AuthenticationRouteTest {
 
     uut.handle(routingContext);
 
-    verify(sessionRepository).getSession(SESSION_ID);
-    verify(session).setUsername(USER);
-    verify(session).setRoles(rolesCaptor.capture());
+    verify(sessionRepository).getRequest(SESSION_ID);
+    verify(sessionRequest).toSession(eq(USER), rolesCaptor.capture());
     assertThat(rolesCaptor.getValue()).containsExactlyInAnyOrder("role1", "role2", "role3");
     verify(response).putHeader("location", REDIRECT_URI);
     verify(response).addCookie(cookie);
@@ -103,7 +105,8 @@ class AuthenticationRouteTest {
     doReturn(USER).when(request).getFormAttribute("username");
     doReturn(ROLES).when(request).getFormAttribute("password");
     doReturn(request).when(routingContext).request();
-    doReturn(session).when(sessionRepository).getSession(SESSION_ID);
+    doReturn(sessionRequest).when(sessionRepository).getRequest(SESSION_ID);
+    doReturn(session).when(sessionRequest).toSession(eq("user123"), anyList());
     doReturn(urlConfiguration).when(routingContext).get(CTX_REQUEST_CONFIGURATION);
     doReturn(response).when(routingContext).response();
     doReturn(response).when(response).addCookie(any(Cookie.class));
