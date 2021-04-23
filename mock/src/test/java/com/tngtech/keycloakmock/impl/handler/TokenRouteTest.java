@@ -18,6 +18,7 @@ class TokenRouteTest {
 
   private static final String AUTH_CODE_GRANT_TYPE = "authorization_code";
   private static final String REFRESH_TOKEN_GRANT_TYPE = "refresh_token";
+  private static final String PASSWORD_GRANT_TYPE = "password";
   public static final String UNKNOWN_SESSION = "unknown";
 
   @Mock private SessionRepository sessionRepository;
@@ -42,7 +43,7 @@ class TokenRouteTest {
   }
 
   @Test
-  void missing_authorization_code_causes_error() {
+  void missing_authorization_code_causes_error_for_type_authorization_code() {
     doReturn(request).when(routingContext).request();
     doReturn(AUTH_CODE_GRANT_TYPE).when(request).getFormAttribute("grant_type");
     doReturn(null).when(request).getFormAttribute("code");
@@ -56,7 +57,7 @@ class TokenRouteTest {
   }
 
   @Test
-  void unknown_authorization_code_causes_error() {
+  void unknown_authorization_code_causes_error_for_type_authorization_code() {
     doReturn(request).when(routingContext).request();
     doReturn(AUTH_CODE_GRANT_TYPE).when(request).getFormAttribute("grant_type");
     doReturn(UNKNOWN_SESSION).when(request).getFormAttribute("code");
@@ -71,10 +72,39 @@ class TokenRouteTest {
   }
 
   @Test
-  void missing_token_causes_error() {
+  void missing_token_causes_error_for_type_refresh_token() {
     doReturn(request).when(routingContext).request();
     doReturn(REFRESH_TOKEN_GRANT_TYPE).when(request).getFormAttribute("grant_type");
     doReturn(null).when(request).getFormAttribute("refresh_token");
+
+    uut = new TokenRoute(sessionRepository, tokenHelper);
+
+    uut.handle(routingContext);
+
+    verify(routingContext).fail(400);
+    verifyNoMoreInteractions(tokenHelper);
+  }
+
+  @Test
+  void missing_client_id_causes_error_for_type_password() {
+    doReturn(request).when(routingContext).request();
+    doReturn(PASSWORD_GRANT_TYPE).when(request).getFormAttribute("grant_type");
+    doReturn(null).when(request).getFormAttribute("client_id");
+
+    uut = new TokenRoute(sessionRepository, tokenHelper);
+
+    uut.handle(routingContext);
+
+    verify(routingContext).fail(400);
+    verifyNoMoreInteractions(tokenHelper);
+  }
+
+  @Test
+  void missing_username_causes_error_for_type_password() {
+    doReturn(request).when(routingContext).request();
+    doReturn(PASSWORD_GRANT_TYPE).when(request).getFormAttribute("grant_type");
+    doReturn("myclient").when(request).getFormAttribute("client_id");
+    doReturn(null).when(request).getFormAttribute("username");
 
     uut = new TokenRoute(sessionRepository, tokenHelper);
 
