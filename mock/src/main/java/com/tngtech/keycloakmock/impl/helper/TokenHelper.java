@@ -27,9 +27,6 @@ public class TokenHelper {
 
   @Nullable
   public String getToken(Session session, UrlConfiguration requestConfiguration) {
-    if (session.getUsername() == null) {
-      return null;
-    }
     Builder builder =
         aTokenConfig()
             .withAuthorizedParty(session.getClientId())
@@ -38,11 +35,13 @@ public class TokenHelper {
             .withSubject(session.getUsername())
             .withPreferredUsername(session.getUsername())
             .withFamilyName(session.getUsername())
-            .withClaim(NONCE, session.getNonce())
             .withClaim(SESSION_STATE, session.getSessionId())
             // we currently don't do proper authorization anyway, so we can just act as if we were
             // compliant to ISO/IEC 29115 level 1 (see KEYCLOAK-3223 / KEYCLOAK-3314)
             .withAuthenticationContextClassReference("1");
+    if (session.getNonce() != null) {
+      builder.withClaim(NONCE, session.getNonce());
+    }
     if (resourcesToMapRolesTo.isEmpty()) {
       builder.withRealmRoles(session.getRoles());
     } else {

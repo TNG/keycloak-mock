@@ -1,9 +1,9 @@
 package com.tngtech.keycloakmock.impl.helper;
 
 import com.tngtech.keycloakmock.impl.UrlConfiguration;
+import com.tngtech.keycloakmock.impl.session.PersistentSession;
 import com.tngtech.keycloakmock.impl.session.ResponseMode;
 import com.tngtech.keycloakmock.impl.session.ResponseType;
-import com.tngtech.keycloakmock.impl.session.Session;
 import io.vertx.core.http.Cookie;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -33,7 +33,8 @@ public class RedirectHelper {
 
   @Nullable
   public String getRedirectLocation(
-      @Nonnull final Session session, @Nonnull final UrlConfiguration requestConfiguration) {
+      @Nonnull final PersistentSession session,
+      @Nonnull final UrlConfiguration requestConfiguration) {
     ResponseType responseType = ResponseType.fromValueOrNull(session.getResponseType());
     if (responseType == null) {
       LOG.warn("Invalid response type '{}' requested!", session.getResponseType());
@@ -70,7 +71,7 @@ public class RedirectHelper {
   }
 
   @Nonnull
-  public Cookie getSessionCookie(Session session, UrlConfiguration requestConfiguration) {
+  public Cookie getSessionCookie(PersistentSession session, UrlConfiguration requestConfiguration) {
     return Cookie.cookie(
             KEYCLOAK_SESSION_COOKIE,
             String.join(
