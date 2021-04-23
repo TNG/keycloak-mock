@@ -4,6 +4,8 @@ import static com.tngtech.keycloakmock.impl.handler.RequestUrlConfigurationHandl
 
 import com.tngtech.keycloakmock.impl.UrlConfiguration;
 import com.tngtech.keycloakmock.impl.helper.TokenHelper;
+import com.tngtech.keycloakmock.impl.session.AdHocSession;
+import com.tngtech.keycloakmock.impl.session.Session;
 import com.tngtech.keycloakmock.impl.session.SessionRepository;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
@@ -37,6 +39,9 @@ public class TokenRoute implements Handler<RoutingContext> {
         break;
       case "refresh_token":
         handleRefreshTokenFlow(routingContext);
+        break;
+      case "password":
+        handlePasswordFlow(routingContext);
         break;
       default:
         routingContext.fail(400);
@@ -74,6 +79,29 @@ public class TokenRoute implements Handler<RoutingContext> {
         .response()
         .putHeader("content-type", "application/json")
         .end(toTokenResponse(refreshToken, sessionId));
+  }
+
+  private void handlePasswordFlow(RoutingContext routingContext) {
+    String clientId = routingContext.request().getFormAttribute("client_id");
+    if (clientId == null || clientId.isEmpty()) {
+      routingContext.fail(400);
+      return;
+    }
+    String username = routingContext.request().getFormAttribute("username");
+    if (username == null || username.isEmpty()) {
+      routingContext.fail(400);
+      return;
+    }
+    UrlConfiguration requestConfiguration = routingContext.get(CTX_REQUEST_CONFIGURATION);
+    String password = routingContext.request().getFormAttribute("password");
+
+    Session session = AdHocSession.fromClientIdUsernameAndPassword(clientId, username, password);
+    String token = tokenHelper.getToken(session, requestConfiguration);
+
+    routingContext
+        .response()
+        .putHeader("content-type", "application/json")
+        .end(toTokenResponse(token, session.getSessionId()));
   }
 
   private String toTokenResponse(String token, String sessionId) {
