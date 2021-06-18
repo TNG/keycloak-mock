@@ -11,11 +11,11 @@ dependencies {
     implementation "io.vertx:vertx-web-templ-freemarker:$vertx_version"
     implementation "org.slf4j:slf4j-api:$slf4j_version"
     resourceJars "org.keycloak:keycloak-js-adapter:$keycloak_version"
-    testImplementation 'io.fusionauth:fusionauth-jwt:4.1.0'
+    testImplementation 'io.fusionauth:fusionauth-jwt:4.2.0'
     testImplementation "io.rest-assured:rest-assured:$restassured_version"
     // required to mock RoutingContext
     testImplementation "io.vertx:vertx-codegen:$vertx_version"
-    testImplementation 'net.javacrumbs.json-unit:json-unit-assertj:2.25.0'
+    testImplementation 'net.javacrumbs.json-unit:json-unit-assertj:2.26.0'
     testImplementation "org.assertj:assertj-core:$assertj_version"
     testImplementation "org.junit.jupiter:junit-jupiter-api:$junit5_version"
     testImplementation "org.junit.jupiter:junit-jupiter-params:$junit5_version"
