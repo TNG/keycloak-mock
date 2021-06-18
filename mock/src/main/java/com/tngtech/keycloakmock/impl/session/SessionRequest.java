@@ -8,10 +8,10 @@ import javax.annotation.Nullable;
 public class SessionRequest {
   @Nonnull private final String clientId;
   @Nonnull private final String sessionId;
-  @Nonnull private final String state;
-  @Nonnull private final String redirectUri;
-  @Nonnull private final String responseType;
   @Nullable private final String responseMode;
+  @Nonnull private final String responseType;
+  @Nonnull private final String redirectUri;
+  @Nonnull private final String state;
   @Nullable private final String nonce;
 
   private SessionRequest(Builder builder) {
@@ -34,9 +34,14 @@ public class SessionRequest {
     return sessionId;
   }
 
+  @Nullable
+  public String getResponseMode() {
+    return responseMode;
+  }
+
   @Nonnull
-  public String getState() {
-    return state;
+  public String getResponseType() {
+    return responseType;
   }
 
   @Nonnull
@@ -45,13 +50,8 @@ public class SessionRequest {
   }
 
   @Nonnull
-  public String getResponseType() {
-    return responseType;
-  }
-
-  @Nullable
-  public String getResponseMode() {
-    return responseMode;
+  public String getState() {
+    return state;
   }
 
   @Nullable
