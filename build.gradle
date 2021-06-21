@@ -51,12 +51,11 @@ allprojects {
 }
 
 ext {
-    // 3.20 currently incompatible with json-unit, see https://github.com/lukas-krecan/JsonUnit/issues/379
-    assertj_version = '3.19.0'
+    assertj_version = '3.20.2'
     jjwt_version = '0.11.2'
     junit4_version = '4.13.2'
     junit5_version = '5.7.2'
-    keycloak_version = '13.0.1'
+    keycloak_version = '14.0.0'
     mockito_version = '3.11.1'
     picocli_version = '4.6.1'
     restassured_version = '4.4.0'
