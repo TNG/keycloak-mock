@@ -1,23 +1,24 @@
 [![Java CI](https://github.com/TNG/keycloak-mock/workflows/Java%20CI/badge.svg?branch=master)](https://github.com/TNG/keycloak-mock/actions?query=branch%3Amaster)
 [![Github release date](https://img.shields.io/github/release-date/TNG/keycloak-mock.svg?logo=github)
- ![Github release](https://img.shields.io/github/release/TNG/keycloak-mock.svg?logo=github)](https://github.com/TNG/keycloak-mock/releases)
+![Github release](https://img.shields.io/github/release/TNG/keycloak-mock.svg?logo=github)](https://github.com/TNG/keycloak-mock/releases)
 [![Maven release](https://img.shields.io/maven-central/v/com.tngtech.keycloakmock/mock?color=informational)](https://search.maven.org/search?q=com.tngtech.keycloakmock)
 [![Sonarcloud](https://img.shields.io/sonar/quality_gate/TNG_keycloak-mock?server=https%3A%2F%2Fsonarcloud.io)](https://sonarcloud.io/dashboard?id=TNG_keycloak-mock)
 
 # Keycloak Mock
 
 [Keycloak](https://www.keycloak.org) is a single sign-on solution that supports the
-[Open ID connect](https://openid.net/connect/) standard. However, it does not deliver any
-test support. This library is intended to fill that gap.
+[Open ID connect](https://openid.net/connect/) standard. However, it does not deliver any test
+support. This library is intended to fill that gap.
 
 ## Recent changes
 
-Have a look at our [release notes](https://github.com/TNG/keycloak-mock/releases) for recent releases and changes.
+Have a look at our [release notes](https://github.com/TNG/keycloak-mock/releases) for recent
+releases and changes.
 
 ## Usage
 
-All artifacts are available on [Maven Central Repository](https://search.maven.org/) under the
-group ID `com.tngtech.keycloakmock`.
+All artifacts are available on [Maven Central Repository](https://search.maven.org/) under the group
+ID `com.tngtech.keycloakmock`.
 
 ### Testing authenticated backend calls
 
@@ -31,14 +32,14 @@ You can create and start the mock directly from the `mock` artifact using Maven
     <groupId>com.tngtech.keycloakmock</groupId>
     <artifactId>mock</artifactId>
     <scope>test</scope>
-    <version>0.7.0</version>
+    <version>0.8.0</version>
 </dependency>
 ```
 
 or Gradle
 
 ```gradle
-testImplementation 'com.tngtech.keycloakmock:mock:0.7.0'
+testImplementation 'com.tngtech.keycloakmock:mock:0.8.0'
 ```
 
 like this:
