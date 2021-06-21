@@ -15,7 +15,7 @@ dependencies {
     testImplementation "io.rest-assured:rest-assured:$restassured_version"
     // required to mock RoutingContext
     testImplementation "io.vertx:vertx-codegen:$vertx_version"
-    testImplementation 'net.javacrumbs.json-unit:json-unit-assertj:2.26.0'
+    testImplementation 'net.javacrumbs.json-unit:json-unit-assertj:2.27.0'
     testImplementation "org.assertj:assertj-core:$assertj_version"
     testImplementation "org.junit.jupiter:junit-jupiter-api:$junit5_version"
     testImplementation "org.junit.jupiter:junit-jupiter-params:$junit5_version"
