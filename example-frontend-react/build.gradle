@@ -1,15 +1,20 @@
 import static groovy.io.FileType.FILES
 
 plugins {
-    id 'com.github.node-gradle.node' version '3.0.1'
+    id 'com.github.node-gradle.node' version '3.1.0'
 }
+
+def nodeDir = 'bin/nodejs'
+def yarnDir = 'bin/yarn'
+def nodeVersionString = '14.15.4'
+def yarnVersionString = '1.22.10'
 
 node {
     // Version of node to use.
-    version = '14.15.4'
+    version = nodeVersionString
 
     // Version of Yarn to use.
-    yarnVersion = '1.22.10'
+    yarnVersion = yarnVersionString
 
     // Base URL for fetching node distributions (change if you have a mirror).
     distBaseUrl = 'https://nodejs.org/dist'
@@ -19,10 +24,10 @@ node {
     download = true
 
     // Set the work directory for unpacking node
-    workDir = file('bin/nodejs')
+    workDir = file(nodeDir)
 
     // Set the work directory for Yarn
-    yarnWorkDir = file('bin/yarn')
+    yarnWorkDir = file(yarnDir)
 
     // Set the work directory where node_modules should be located
     nodeProjectDir = file("${project.projectDir}")
@@ -39,25 +44,27 @@ yarn_build {
 }
 
 task copyNode(type: Copy) {
+    dependsOn nodeSetup
     if (org.gradle.internal.os.OperatingSystem.current().isLinux()) {
-        from "${node.workDir}/node-v${node.version}-linux-x64/"
-        into "${node.workDir}/node/"
+        from "${projectDir}/${nodeDir}/node-v${nodeVersionString}-linux-x64/"
+        into "${projectDir}/${nodeDir}/node/"
     } else if (org.gradle.internal.os.OperatingSystem.current().isMacOsX()) {
-        from "${node.workDir}/node-v${node.version}-darwin-x64/"
-        into "${node.workDir}/node/"
+        from "${projectDir}/${nodeDir}/node-v${nodeVersionString}-darwin-x64/"
+        into "${projectDir}/${nodeDir}/node/"
     } else if (org.gradle.internal.os.OperatingSystem.current().isWindows()) {
-        from "${node.workDir}/node-v${node.version}-win-x64/"
-        into "${node.workDir}/node/"
+        from "${projectDir}/${nodeDir}/node-v${nodeVersionString}-win-x64/"
+        into "${projectDir}/${nodeDir}/node/"
     }
 }
 
 task copyYarn(type: Copy) {
-    from file("${node.yarnWorkDir}/yarn-v${node.yarnVersion}/")
-    into file("${node.yarnWorkDir}/yarn/")
+    dependsOn yarnSetup
+    from file("${projectDir}/${yarnDir}/yarn-v${yarnVersionString}/")
+    into file("${projectDir}/${yarnDir}/yarn/")
 }
 
-yarnSetup.finalizedBy(copyYarn)
-nodeSetup.finalizedBy(copyNode)
+yarnSetup.dependsOn copyNode
+yarn_install.dependsOn copyYarn
 
 task build {
     dependsOn yarn_build

@@ -8,7 +8,7 @@ import static org.mockito.Mockito.doReturn;
 import com.tngtech.keycloakmock.api.TokenConfig;
 import com.tngtech.keycloakmock.impl.TokenGenerator;
 import com.tngtech.keycloakmock.impl.UrlConfiguration;
-import com.tngtech.keycloakmock.impl.session.Session;
+import com.tngtech.keycloakmock.impl.session.PersistentSession;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
@@ -35,7 +35,7 @@ class TokenHelperTest {
 
   @Mock private TokenGenerator tokenGenerator;
 
-  @Mock private Session session;
+  @Mock private PersistentSession session;
   @Mock private UrlConfiguration urlConfiguration;
 
   @Captor private ArgumentCaptor<TokenConfig> configCaptor;

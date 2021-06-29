@@ -7,9 +7,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import com.tngtech.keycloakmock.impl.UrlConfiguration;
+import com.tngtech.keycloakmock.impl.session.PersistentSession;
 import com.tngtech.keycloakmock.impl.session.ResponseMode;
 import com.tngtech.keycloakmock.impl.session.ResponseType;
-import com.tngtech.keycloakmock.impl.session.Session;
 import io.vertx.core.http.Cookie;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -46,7 +46,7 @@ class RedirectHelperTest {
 
   @Mock private TokenHelper tokenHelper;
 
-  @Mock private Session session;
+  @Mock private PersistentSession session;
   @Mock private UrlConfiguration urlConfiguration;
 
   @InjectMocks private RedirectHelper uut;

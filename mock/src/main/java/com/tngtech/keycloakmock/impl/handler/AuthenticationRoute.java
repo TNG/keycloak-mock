@@ -5,12 +5,15 @@ import static com.tngtech.keycloakmock.impl.handler.RequestUrlConfigurationHandl
 import com.tngtech.keycloakmock.impl.UrlConfiguration;
 import com.tngtech.keycloakmock.impl.helper.RedirectHelper;
 import com.tngtech.keycloakmock.impl.helper.UserInputSanitizer;
-import com.tngtech.keycloakmock.impl.session.Session;
+import com.tngtech.keycloakmock.impl.session.PersistentSession;
 import com.tngtech.keycloakmock.impl.session.SessionRepository;
+import com.tngtech.keycloakmock.impl.session.SessionRequest;
 import io.vertx.core.Handler;
 import io.vertx.ext.web.RoutingContext;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import javax.annotation.Nonnull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,26 +36,29 @@ public class AuthenticationRoute implements Handler<RoutingContext> {
   @Override
   public void handle(@Nonnull final RoutingContext routingContext) {
     String sessionId = routingContext.pathParam("sessionId");
-    Session session = sessionRepository.getSession(sessionId);
-    if (session == null) {
+    SessionRequest request = sessionRepository.getRequest(sessionId);
+    if (request == null) {
       LOG.warn("Login for unknown session {} requested!", new UserInputSanitizer(sessionId));
       routingContext.fail(404);
       return;
     }
     String username = routingContext.request().getFormAttribute(USERNAME_PARAMETER);
-    String rolesString = routingContext.request().getFormAttribute(ROLES_PARAMETER);
-    if (username == null || rolesString == null) {
-      LOG.warn(
-          "Missing username {} or roles parameter {}",
-          new UserInputSanitizer(username),
-          new UserInputSanitizer(rolesString));
+    if (username == null) {
+      LOG.warn("Missing username {}", new UserInputSanitizer(username));
       routingContext.fail(400);
       return;
     }
+    String rolesString = routingContext.request().getFormAttribute(ROLES_PARAMETER);
+    List<String> roles =
+        Optional.ofNullable(rolesString)
+            .map(s -> Arrays.asList(s.split(",")))
+            .orElseGet(Collections::emptyList);
+
+    PersistentSession session = request.toSession(username, roles);
+    sessionRepository.upgradeRequest(request, session);
+
     UrlConfiguration requestConfiguration = routingContext.get(CTX_REQUEST_CONFIGURATION);
-    List<String> roles = Arrays.asList(rolesString.trim().split(","));
-    session.setUsername(username);
-    session.setRoles(roles);
+
     routingContext
         .response()
         .addCookie(redirectHelper.getSessionCookie(session, requestConfiguration))
