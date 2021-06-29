@@ -3,6 +3,8 @@ description = 'JUnit4 helper for keycloak-mock'
 dependencies {
     api project(':mock')
     implementation "junit:junit:$junit4_version"
+    // required to mock RoutingContext / Handler
+    testImplementation "io.vertx:vertx-web:$vertx_version"
     testImplementation "io.rest-assured:rest-assured:$restassured_version"
     testImplementation "org.assertj:assertj-core:$assertj_version"
 }

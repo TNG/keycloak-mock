@@ -75,6 +75,7 @@ public class KeycloakMock {
   private final ResourceFileHandler keycloakJsRoute = new ResourceFileHandler("/keycloak.js");
 
   @Nullable private HttpServer server;
+  @Nonnull protected final TokenRoute tokenRoute;
 
   /**
    * Create a mock instance for default realm "master".
@@ -116,6 +117,26 @@ public class KeycloakMock {
     authenticationRoute = new AuthenticationRoute(sessionRepository, redirectHelper);
     tokenRoute = new TokenRoute(sessionRepository, tokenHelper);
     logoutRoute = new LogoutRoute(sessionRepository, redirectHelper);
+  }
+
+  /**
+   * Get {@link TokenRoute} handler and control endpoit responses.
+   *
+   * <p>Example use:
+   *
+   * <pre><code>
+   * {@literal //} return error 404
+   * getTokenRoute().withErrorResponse(404, "{\"error\": \"Error detail message\"}")
+   *
+   * {@literal //} return 200
+   * getTokenRoute().withOkResponse(accessTokenConfig, idTokenConfig, refreshTokenConfig, 60 * 60);
+   * </code></pre>
+   *
+   * @return token route handler
+   * @see TokenRoute
+   */
+  public TokenRoute getTokenRoute() {
+    return tokenRoute;
   }
 
   /**

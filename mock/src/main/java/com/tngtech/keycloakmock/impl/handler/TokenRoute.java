@@ -28,6 +28,7 @@ public class TokenRoute implements Handler<RoutingContext> {
       @Nonnull final SessionRepository sessionRepository, @Nonnull TokenHelper tokenHelper) {
     this.sessionRepository = sessionRepository;
     this.tokenHelper = tokenHelper;
+
   }
 
   @Override

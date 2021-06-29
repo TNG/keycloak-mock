@@ -4,6 +4,8 @@ dependencies {
     api project(':mock')
     implementation "org.junit.jupiter:junit-jupiter-api:$junit5_version"
     implementation "org.junit.jupiter:junit-jupiter-migrationsupport:$junit5_version"
+    // required to mock RoutingContext / Handler
+    testImplementation "io.vertx:vertx-web:$vertx_version"
     testImplementation "io.rest-assured:rest-assured:$restassured_version"
     testImplementation "org.assertj:assertj-core:$assertj_version"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junit5_version"

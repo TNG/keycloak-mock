@@ -3,6 +3,7 @@ package com.tngtech.keycloakmock.junit5;
 import com.tngtech.keycloakmock.api.KeycloakMock;
 import com.tngtech.keycloakmock.api.ServerConfig;
 import com.tngtech.keycloakmock.api.TokenConfig;
+import com.tngtech.keycloakmock.impl.handler.TokenRoute;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.extension.AfterAllCallback;
@@ -51,6 +52,26 @@ public class KeycloakMockExtension implements BeforeAllCallback, AfterAllCallbac
    */
   public KeycloakMockExtension(@Nonnull final ServerConfig serverConfig) {
     mock = new KeycloakMock(serverConfig);
+  }
+
+  /**
+   * Get {@link TokenRoute} handler and control endpoit responses.
+   *
+   * <p>Example use:
+   *
+   * <pre><code>
+   * {@literal //} return error 404
+   * getTokenRoute().withErrorResponse(404, "{\"error\": \"Error detail message\"}")
+   *
+   * {@literal //} return 200
+   * getTokenRoute().withOkResponse(accessTokenConfig, idTokenConfig, refreshTokenConfig, 60 * 60);
+   * </code></pre>
+   *
+   * @return token route handler
+   * @see TokenRoute
+   */
+  public TokenRoute getTokenRoute() {
+    return mock.getTokenRoute();
   }
 
   /**
