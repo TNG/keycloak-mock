@@ -6,8 +6,11 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import com.tngtech.keycloakmock.impl.helper.TokenHelper;
 import com.tngtech.keycloakmock.impl.session.SessionRepository;
+import io.netty.handler.codec.http.HttpHeaderNames;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.ext.web.RoutingContext;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -19,6 +22,7 @@ class TokenRouteTest {
   private static final String AUTH_CODE_GRANT_TYPE = "authorization_code";
   private static final String REFRESH_TOKEN_GRANT_TYPE = "refresh_token";
   private static final String PASSWORD_GRANT_TYPE = "password";
+  private static final String CLIENT_CREDENTIALS_GRANT_TYPE = "client_credentials";
   public static final String UNKNOWN_SESSION = "unknown";
 
   @Mock private SessionRepository sessionRepository;
@@ -105,6 +109,39 @@ class TokenRouteTest {
     doReturn(PASSWORD_GRANT_TYPE).when(request).getFormAttribute("grant_type");
     doReturn("myclient").when(request).getFormAttribute("client_id");
     doReturn(null).when(request).getFormAttribute("username");
+
+    uut = new TokenRoute(sessionRepository, tokenHelper);
+
+    uut.handle(routingContext);
+
+    verify(routingContext).fail(400);
+    verifyNoMoreInteractions(tokenHelper);
+  }
+
+  @Test
+  void missing_basic_authorization_token_causes_error_for_type_client_credentials() {
+    doReturn(request).when(routingContext).request();
+    doReturn(CLIENT_CREDENTIALS_GRANT_TYPE).when(request).getFormAttribute("grant_type");
+    doReturn(null).when(request).getHeader(HttpHeaderNames.AUTHORIZATION);
+
+    uut = new TokenRoute(sessionRepository, tokenHelper);
+
+    uut.handle(routingContext);
+
+    verify(routingContext).fail(400);
+    verifyNoMoreInteractions(tokenHelper);
+  }
+
+  @Test
+  void missing_clientId_in_basic_authorization_token_causes_error_for_type_client_credentials() {
+    final String decodedBasicAuthToken = ":client_secret";
+    doReturn(request).when(routingContext).request();
+    doReturn(CLIENT_CREDENTIALS_GRANT_TYPE).when(request).getFormAttribute("grant_type");
+    doReturn(
+            Base64.getEncoder()
+                .encodeToString(decodedBasicAuthToken.getBytes(StandardCharsets.UTF_8)))
+        .when(request)
+        .getHeader(HttpHeaderNames.AUTHORIZATION);
 
     uut = new TokenRoute(sessionRepository, tokenHelper);
 
