@@ -114,7 +114,10 @@ public class KeycloakMock {
             tokenGenerator.getPublicKey());
     this.wellKnownRoute = new WellKnownRoute();
     TokenHelper tokenHelper =
-        new TokenHelper(tokenGenerator, serverConfig.getResourcesToMapRolesTo());
+        new TokenHelper(
+            tokenGenerator,
+            serverConfig.getResourcesToMapRolesTo(),
+            serverConfig.getRolesForResourcesServiceAccounts());
     RedirectHelper redirectHelper = new RedirectHelper(tokenHelper);
     SessionRepository sessionRepository = new SessionRepository();
     FreeMarkerTemplateEngine engine = FreeMarkerTemplateEngine.create(vertx);
