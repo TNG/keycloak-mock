@@ -2,6 +2,18 @@
 
 Contributions are very welcome. The following will provide some helpful guidelines.
 
+## Initial setup
+
+Please consider installing [pre-commit](https://pre-commit.com/) and registering it for this repo by
+runnning
+
+```bash
+pre-commit install
+```
+
+This will ensure correct file formatting by registering a pre-commit hook. If committing fails,
+check the unstaged changes and add them to the staging area, then commit.
+
 ## How to build the project
 
 KeycloakMock requires JDK 8. To build the entire project run
@@ -64,6 +76,6 @@ Resolves #123
 ### Formatting
 
 This project uses [google code style](https://github.com/google/styleguide).
-Running ```./gradlew googleJavaFormat```
+Running ```pre-commit run --all-files```
 will automatically format java code correctly.
 See [here](https://github.com/google/google-java-format) for IDE integration.

@@ -24,4 +24,3 @@ task e2e {
   dependsOn ':example-frontend-react:yarn_e2e'
   finalizedBy composeDown
 }
-

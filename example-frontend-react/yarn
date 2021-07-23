@@ -1,4 +1,3 @@
 #!/bin/bash
 # gradle can not copy symbolic links, so the "binary" for yarn can not be used
 ./bin/nodejs/node/bin/node ./bin/yarn/yarn/lib/node_modules/yarn/bin/yarn.js "$@"
-

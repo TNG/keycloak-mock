@@ -7,4 +7,3 @@ include 'standalone'
 include 'example-backend'
 include 'example-frontend-react'
 include 'example-integration-docker'
-
