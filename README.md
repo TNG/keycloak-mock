@@ -70,7 +70,7 @@ public class Test {
   public static KeycloakMockRule mock = new KeycloakMockRule();
 
   // ...
-    
+
 }
 ```
 
@@ -84,7 +84,7 @@ class Test {
   static KeycloakMockExtension mock = new KeycloakMockExtension();
 
   // ...
-    
+
 }
 ```
 

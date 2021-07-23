@@ -342,7 +342,8 @@ public class TokenConfig {
         throw new IllegalArgumentException(
             "The issuer '"
                 + issuer
-                + "' did not conform to the expected format 'http[s]://$HOSTNAME[:port]/auth/realms/$REALM'.");
+                + "' did not conform to the expected format"
+                + " 'http[s]://$HOSTNAME[:port]/auth/realms/$REALM'.");
       }
       return matcher.group(1);
     }

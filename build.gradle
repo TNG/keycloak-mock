@@ -9,7 +9,6 @@ buildscript {
 plugins {
     id 'com.github.ben-manes.versions' version '0.39.0'
     id 'com.github.jk1.dependency-license-report' version '1.16' apply false
-    id 'com.github.sherter.google-java-format' version '0.9' apply false
     id 'com.google.cloud.tools.jib' version '3.1.1' apply false
     id 'org.sonarqube' version '3.3'
     id 'pl.allegro.tech.build.axion-release' version '1.13.2'
@@ -33,7 +32,6 @@ scmVersion {
 
 allprojects {
     apply plugin: 'idea'
-    apply plugin: 'com.github.sherter.google-java-format'
 
     repositories {
         mavenCentral()
@@ -41,13 +39,6 @@ allprojects {
 
     group = 'com.tngtech.keycloakmock'
     version = scmVersion.version
-
-    verifyGoogleJavaFormat.onlyIf {
-        JavaVersion.current().isJava11Compatible()
-    }
-    tasks.googleJavaFormat.onlyIf {
-        JavaVersion.current().isJava11Compatible()
-    }
 }
 
 ext {
