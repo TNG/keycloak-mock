@@ -11,11 +11,11 @@ plugins {
     id 'com.github.jk1.dependency-license-report' version '1.16' apply false
     id 'com.google.cloud.tools.jib' version '3.1.1' apply false
     id 'org.sonarqube' version '3.3'
-    id 'pl.allegro.tech.build.axion-release' version '1.13.2'
+    id 'pl.allegro.tech.build.axion-release' version '1.13.3'
 }
 
 wrapper {
-    gradleVersion = '7.1'
+    gradleVersion = '7.1.1'
     distributionType = Wrapper.DistributionType.ALL
 }
 
@@ -47,10 +47,10 @@ ext {
     junit4_version = '4.13.2'
     junit5_version = '5.7.2'
     keycloak_version = '14.0.0'
-    mockito_version = '3.11.1'
+    mockito_version = '3.11.2'
     picocli_version = '4.6.1'
     restassured_version = '4.4.0'
-    slf4j_version = '1.7.30'
+    slf4j_version = '1.7.32'
     vertx_version = '4.1.0'
 
     license_name = 'The Apache License, Version 2.0'
