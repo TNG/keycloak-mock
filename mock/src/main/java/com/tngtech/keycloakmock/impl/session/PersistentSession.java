@@ -10,7 +10,7 @@ public class PersistentSession implements Session {
   @Nonnull private final String sessionId;
   @Nonnull private final String username;
   @Nonnull private final List<String> roles;
-  @Nonnull private final String state;
+  @Nullable private final String state;
   @Nonnull private final String redirectUri;
   @Nonnull private final String responseType;
   @Nullable private final String responseMode;
@@ -53,7 +53,7 @@ public class PersistentSession implements Session {
     return roles;
   }
 
-  @Nonnull
+  @Nullable
   public String getState() {
     return state;
   }

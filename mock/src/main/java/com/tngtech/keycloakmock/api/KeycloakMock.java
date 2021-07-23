@@ -10,6 +10,7 @@ import com.tngtech.keycloakmock.impl.handler.IFrameRoute;
 import com.tngtech.keycloakmock.impl.handler.JwksRoute;
 import com.tngtech.keycloakmock.impl.handler.LoginRoute;
 import com.tngtech.keycloakmock.impl.handler.LogoutRoute;
+import com.tngtech.keycloakmock.impl.handler.OutOfBandLoginRoute;
 import com.tngtech.keycloakmock.impl.handler.RequestUrlConfigurationHandler;
 import com.tngtech.keycloakmock.impl.handler.ResourceFileHandler;
 import com.tngtech.keycloakmock.impl.handler.TokenRoute;
@@ -64,6 +65,7 @@ public class KeycloakMock {
   @Nonnull private final LogoutRoute logoutRoute;
   @Nonnull private final IFrameRoute iframeRoute = new IFrameRoute();
   @Nonnull private final DelegationRoute delegationRoute;
+  @Nonnull private final OutOfBandLoginRoute outOfBandLoginRoute;
 
   @Nonnull
   private final ResourceFileHandler thirdPartyCookies1Route =
@@ -119,6 +121,7 @@ public class KeycloakMock {
     tokenRoute = new TokenRoute(sessionRepository, tokenHelper);
     logoutRoute = new LogoutRoute(sessionRepository, redirectHelper);
     delegationRoute = new DelegationRoute(engine);
+    outOfBandLoginRoute = new OutOfBandLoginRoute(engine);
   }
 
   /**
@@ -192,6 +195,7 @@ public class KeycloakMock {
         .handler(thirdPartyCookies2Route);
     router.get(routing.getEndSessionEndpoint().getPath()).handler(logoutRoute);
     router.get(routing.getOpenIdPath("delegated").getPath()).handler(delegationRoute);
+    router.get(routing.getOutOfBandLoginLoginEndpoint().getPath()).handler(outOfBandLoginRoute);
     router.route("/auth/js/keycloak.js").handler(keycloakJsRoute);
     return router;
   }

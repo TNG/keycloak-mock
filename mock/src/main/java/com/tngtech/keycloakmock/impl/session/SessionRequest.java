@@ -11,13 +11,13 @@ public class SessionRequest {
   @Nullable private final String responseMode;
   @Nonnull private final String responseType;
   @Nonnull private final String redirectUri;
-  @Nonnull private final String state;
+  @Nullable private final String state;
   @Nullable private final String nonce;
 
   private SessionRequest(Builder builder) {
     clientId = Objects.requireNonNull(builder.clientId);
     sessionId = Objects.requireNonNull(builder.sessionId);
-    state = Objects.requireNonNull(builder.state);
+    state = builder.state;
     redirectUri = Objects.requireNonNull(builder.redirectUri);
     responseType = Objects.requireNonNull(builder.responseType);
     responseMode = builder.responseMode;
@@ -49,7 +49,7 @@ public class SessionRequest {
     return redirectUri;
   }
 
-  @Nonnull
+  @Nullable
   public String getState() {
     return state;
   }
@@ -66,7 +66,7 @@ public class SessionRequest {
   public static class Builder {
     private String clientId;
     private String sessionId;
-    private String state;
+    @Nullable private String state;
     private String redirectUri;
     private String responseType;
     @Nullable private String responseMode;
@@ -77,8 +77,8 @@ public class SessionRequest {
       return this;
     }
 
-    public Builder setState(@Nonnull String state) {
-      this.state = Objects.requireNonNull(state);
+    public Builder setState(@Nullable String state) {
+      this.state = state;
       return this;
     }
 

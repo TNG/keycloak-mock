@@ -65,51 +65,51 @@ class RedirectHelperTest {
         Arguments.of(
             ResponseType.CODE,
             null,
-            "https://localhost:1234/gohere?state=state123&session_state=session123&code=session123"),
+            "https://localhost:1234/gohere?session_state=session123&state=state123&code=session123"),
         Arguments.of(
             ResponseType.CODE,
             ResponseMode.FRAGMENT,
-            "https://localhost:1234/gohere#state=state123&session_state=session123&code=session123"),
+            "https://localhost:1234/gohere#session_state=session123&state=state123&code=session123"),
         Arguments.of(
             ResponseType.CODE,
             ResponseMode.QUERY,
-            "https://localhost:1234/gohere?state=state123&session_state=session123&code=session123"),
+            "https://localhost:1234/gohere?session_state=session123&state=state123&code=session123"),
         Arguments.of(
             ResponseType.ID_TOKEN,
             null,
-            "https://localhost:1234/gohere#state=state123&session_state=session123&id_token=tokenstring"),
+            "https://localhost:1234/gohere#session_state=session123&state=state123&id_token=tokenstring"),
         Arguments.of(
             ResponseType.ID_TOKEN,
             ResponseMode.FRAGMENT,
-            "https://localhost:1234/gohere#state=state123&session_state=session123&id_token=tokenstring"),
+            "https://localhost:1234/gohere#session_state=session123&state=state123&id_token=tokenstring"),
         Arguments.of(
             ResponseType.ID_TOKEN,
             ResponseMode.QUERY,
-            "https://localhost:1234/gohere#state=state123&session_state=session123&id_token=tokenstring"),
+            "https://localhost:1234/gohere#session_state=session123&state=state123&id_token=tokenstring"),
         Arguments.of(
             ResponseType.ID_TOKEN_PLUS_TOKEN,
             null,
-            "https://localhost:1234/gohere#state=state123&session_state=session123&id_token=tokenstring&access_token=tokenstring&token_type=bearer"),
+            "https://localhost:1234/gohere#session_state=session123&state=state123&id_token=tokenstring&access_token=tokenstring&token_type=bearer"),
         Arguments.of(
             ResponseType.ID_TOKEN_PLUS_TOKEN,
             ResponseMode.FRAGMENT,
-            "https://localhost:1234/gohere#state=state123&session_state=session123&id_token=tokenstring&access_token=tokenstring&token_type=bearer"),
+            "https://localhost:1234/gohere#session_state=session123&state=state123&id_token=tokenstring&access_token=tokenstring&token_type=bearer"),
         Arguments.of(
             ResponseType.ID_TOKEN_PLUS_TOKEN,
             ResponseMode.QUERY,
-            "https://localhost:1234/gohere#state=state123&session_state=session123&id_token=tokenstring&access_token=tokenstring&token_type=bearer"),
+            "https://localhost:1234/gohere#session_state=session123&state=state123&id_token=tokenstring&access_token=tokenstring&token_type=bearer"),
         Arguments.of(
             ResponseType.NONE,
             null,
-            "https://localhost:1234/gohere?state=state123&session_state=session123"),
+            "https://localhost:1234/gohere?session_state=session123&state=state123"),
         Arguments.of(
             ResponseType.NONE,
             ResponseMode.FRAGMENT,
-            "https://localhost:1234/gohere#state=state123&session_state=session123"),
+            "https://localhost:1234/gohere#session_state=session123&state=state123"),
         Arguments.of(
             ResponseType.NONE,
             ResponseMode.QUERY,
-            "https://localhost:1234/gohere?state=state123&session_state=session123"));
+            "https://localhost:1234/gohere?session_state=session123&state=state123"));
   }
 
   @ParameterizedTest(name = "correct redirect for ''{0}'' and ''{1}''")
@@ -130,6 +130,22 @@ class RedirectHelperTest {
     String redirectLocation = uut.getRedirectLocation(session, urlConfiguration);
 
     assertThat(redirectLocation).isEqualTo(expectedRedirectUrl);
+  }
+
+  @Test
+  void oob_redirect_location_is_generated_correctly() {
+    doReturn(SESSION_ID).when(session).getSessionId();
+    doReturn(STATE).when(session).getState();
+    doReturn("urn:ietf:wg:oauth:2.0:oob").when(session).getRedirectUri();
+    doReturn(ResponseType.CODE.toString()).when(session).getResponseType();
+    URI oobUri = URI.create("file:///oob-dummy");
+    doReturn(oobUri).when(urlConfiguration).getOutOfBandLoginLoginEndpoint();
+    doReturn(TOKEN).when(tokenHelper).getToken(session, urlConfiguration);
+
+    String redirectLocation = uut.getRedirectLocation(session, urlConfiguration);
+
+    assertThat(redirectLocation)
+        .isEqualTo("file:///oob-dummy?session_state=session123&state=state123&code=session123");
   }
 
   @Test
