@@ -1,8 +1,6 @@
 buildscript {
     ext {
-        // it seems that Spring Boot 2.5+ is currently incompatible with the Keycloak Spring adapter
-        // see https://issues.redhat.com/browse/KEYCLOAK-18283 and https://github.com/spring-projects/spring-security/issues/9787
-        springBootVersion = '2.4.7'
+        springBootVersion = '2.5.3'
     }
     repositories {
         mavenCentral()
@@ -16,12 +14,6 @@ apply plugin: 'com.google.cloud.tools.jib'
 apply plugin: 'io.spring.dependency-management'
 apply plugin: 'java'
 apply plugin: 'org.springframework.boot'
-
-// spring boot's bill of materials pulls in junit5 in an outdated version, so we need to update it
-// see https://stackoverflow.com/questions/54598484/gradle-5-junit-bom-and-spring-boot-incorrect-versions
-ext['junit-jupiter.version'] = junit5_version
-// spring boot's bill of materials pulls in groovy v2, but rest assured needs groovy v3
-ext['groovy.version'] = '3.0.8'
 
 dependencies {
     implementation "org.springframework.boot:spring-boot-starter-web:$springBootVersion"
