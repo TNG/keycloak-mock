@@ -2,28 +2,34 @@
 
 Contributions are very welcome. The following will provide some helpful guidelines.
 
-
 ## How to build the project
 
 KeycloakMock requires JDK 8. To build the entire project run
+
 ```bash
 ./gradlew build
 ```
+
 ### Core functionality
 
-The main logic of the KeycloakMock is located in the [mock](mock) module. You can find functionality to generate user-defined access tokens
-and the mock endpoint to retrieve the public signature key here. To build, run
+The main logic of the KeycloakMock is located in the [mock](mock) module. It contains a lightweight
+mock implementation of the most commonly used REST APIs. In addition, it offers the functionality to
+generate user-defined access tokens which can be validated with the provided the public signature
+key endpoint. To build, run
+
 ```
 ./gradlew mock:build
 ```
 
 ### JUnit integration
 
-JUnit integration is provided in [mock-junit](mock-junit) (for JUnit 4) and [mock-junit5](mock-junit5).
+JUnit integration is provided in [mock-junit](mock-junit) (for JUnit 4)
+and [mock-junit5](mock-junit5).
 
 ### Standalone Mock
 
-[standalone](standalone) contains a lightweight standalone application with support for the OpenID Connect authorization code flow.
+[standalone](standalone) bundles the functionality of the mock module in a single JAR with no
+external dependencies.
 
 ## How to contribute
 
@@ -38,8 +44,8 @@ If you want to submit a contribution, please follow the following workflow:
 
 ### Commits
 
-Commit messages should be clear and fully elaborate the context and the reason of a change.
-If your commit refers to an issue, please post-fix it with the issue number, e.g.
+Commit messages should be clear and fully elaborate the context and the reason of a change. If your
+commit refers to an issue, please post-fix it with the issue number, e.g.
 
 ```
 Issue: #123
@@ -57,5 +63,7 @@ Resolves #123
 
 ### Formatting
 
-This project uses [google code style](https://github.com/google/styleguide). Running ```./gradlew googleJavaFormat``` 
-will automatically format java code correctly. See [here](https://github.com/google/google-java-format) for IDE integration.
+This project uses [google code style](https://github.com/google/styleguide).
+Running ```./gradlew googleJavaFormat```
+will automatically format java code correctly.
+See [here](https://github.com/google/google-java-format) for IDE integration.
