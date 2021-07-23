@@ -4,6 +4,7 @@ import com.tngtech.keycloakmock.impl.TokenGenerator;
 import com.tngtech.keycloakmock.impl.UrlConfiguration;
 import com.tngtech.keycloakmock.impl.handler.AuthenticationRoute;
 import com.tngtech.keycloakmock.impl.handler.CommonHandler;
+import com.tngtech.keycloakmock.impl.handler.DelegationRoute;
 import com.tngtech.keycloakmock.impl.handler.FailureHandler;
 import com.tngtech.keycloakmock.impl.handler.IFrameRoute;
 import com.tngtech.keycloakmock.impl.handler.JwksRoute;
@@ -62,6 +63,7 @@ public class KeycloakMock {
   @Nonnull private final TokenRoute tokenRoute;
   @Nonnull private final LogoutRoute logoutRoute;
   @Nonnull private final IFrameRoute iframeRoute = new IFrameRoute();
+  @Nonnull private final DelegationRoute delegationRoute;
 
   @Nonnull
   private final ResourceFileHandler thirdPartyCookies1Route =
@@ -111,11 +113,12 @@ public class KeycloakMock {
         new TokenHelper(tokenGenerator, serverConfig.getResourcesToMapRolesTo());
     RedirectHelper redirectHelper = new RedirectHelper(tokenHelper);
     SessionRepository sessionRepository = new SessionRepository();
-    loginRoute =
-        new LoginRoute(sessionRepository, redirectHelper, FreeMarkerTemplateEngine.create(vertx));
+    FreeMarkerTemplateEngine engine = FreeMarkerTemplateEngine.create(vertx);
+    loginRoute = new LoginRoute(sessionRepository, redirectHelper, engine);
     authenticationRoute = new AuthenticationRoute(sessionRepository, redirectHelper);
     tokenRoute = new TokenRoute(sessionRepository, tokenHelper);
     logoutRoute = new LogoutRoute(sessionRepository, redirectHelper);
+    delegationRoute = new DelegationRoute(engine);
   }
 
   /**
@@ -188,6 +191,7 @@ public class KeycloakMock {
         .get(routing.getOpenIdPath("3p-cookies/step2.html").getPath())
         .handler(thirdPartyCookies2Route);
     router.get(routing.getEndSessionEndpoint().getPath()).handler(logoutRoute);
+    router.get(routing.getOpenIdPath("delegated").getPath()).handler(delegationRoute);
     router.route("/auth/js/keycloak.js").handler(keycloakJsRoute);
     return router;
   }
