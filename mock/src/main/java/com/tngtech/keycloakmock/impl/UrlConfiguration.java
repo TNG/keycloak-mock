@@ -10,6 +10,7 @@ import javax.annotation.Nullable;
 public class UrlConfiguration {
   private static final String ISSUER_PATH = "/auth/realms/";
   private static final String AUTHENTICATION_CALLBACK_PATH = "authenticate/";
+  private static final String OUT_OF_BAND_PATH = "oob";
   private static final String ISSUER_OPEN_ID_PATH = "protocol/openid-connect/";
   private static final String OPEN_ID_TOKEN_PATH = "token";
   private static final String OPEN_ID_JWKS_PATH = "certs";
@@ -75,6 +76,11 @@ public class UrlConfiguration {
   @Nonnull
   public URI getAuthenticationCallbackEndpoint(@Nonnull final String sessionId) {
     return getIssuerPath().resolve(AUTHENTICATION_CALLBACK_PATH + sessionId);
+  }
+
+  @Nonnull
+  public URI getOutOfBandLoginLoginEndpoint() {
+    return getIssuerPath().resolve(OUT_OF_BAND_PATH);
   }
 
   @Nonnull

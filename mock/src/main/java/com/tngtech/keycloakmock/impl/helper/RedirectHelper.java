@@ -23,6 +23,8 @@ public class RedirectHelper {
   private static final String ACCESS_TOKEN = "access_token";
   private static final String TOKEN_TYPE = "token_type";
 
+  private static final String OOB_REDIRECT = "urn:ietf:wg:oauth:2.0:oob";
+
   private static final String DUMMY_USER_ID = "dummy-user-id";
 
   @Nonnull private final TokenHelper tokenHelper;
@@ -42,9 +44,16 @@ public class RedirectHelper {
     }
 
     ResponseMode responseMode = responseType.getValidResponseMode(session.getResponseMode());
-    StringBuilder redirectUri = new StringBuilder(session.getRedirectUri());
-    redirectUri.append(getResponseParameter(responseMode, STATE, session.getState()));
-    redirectUri.append(getResponseParameter(null, SESSION_STATE, session.getSessionId()));
+    String originalRedirectUri = session.getRedirectUri();
+    StringBuilder redirectUri;
+    if (OOB_REDIRECT.equals(originalRedirectUri)) {
+      redirectUri =
+          new StringBuilder(requestConfiguration.getOutOfBandLoginLoginEndpoint().toASCIIString());
+    } else {
+      redirectUri = new StringBuilder(originalRedirectUri);
+    }
+    redirectUri.append(getResponseParameter(responseMode, SESSION_STATE, session.getSessionId()));
+    redirectUri.append(getResponseParameter(null, STATE, session.getState()));
     String token = tokenHelper.getToken(session, requestConfiguration);
     if (token == null) {
       LOG.warn("No token available for session {}", session.getSessionId());
@@ -94,7 +103,10 @@ public class RedirectHelper {
   private String getResponseParameter(
       @Nullable final ResponseMode responseMode,
       @Nonnull final String name,
-      @Nonnull final String value) {
+      @Nullable final String value) {
+    if (value == null) {
+      return "";
+    }
     return (responseMode != null ? responseMode.getSign() : "&") + name + "=" + value;
   }
 }
