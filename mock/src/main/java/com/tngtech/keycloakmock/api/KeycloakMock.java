@@ -10,6 +10,7 @@ import com.tngtech.keycloakmock.impl.handler.IFrameRoute;
 import com.tngtech.keycloakmock.impl.handler.JwksRoute;
 import com.tngtech.keycloakmock.impl.handler.LoginRoute;
 import com.tngtech.keycloakmock.impl.handler.LogoutRoute;
+import com.tngtech.keycloakmock.impl.handler.OptionalBasicAuthHandler;
 import com.tngtech.keycloakmock.impl.handler.OutOfBandLoginRoute;
 import com.tngtech.keycloakmock.impl.handler.RequestUrlConfigurationHandler;
 import com.tngtech.keycloakmock.impl.handler.ResourceFileHandler;
@@ -54,6 +55,7 @@ public class KeycloakMock {
   @Nonnull private final Vertx vertx = Vertx.vertx();
   @Nonnull private final CommonHandler commonHandler = new CommonHandler();
   @Nonnull private final FailureHandler failureHandler = new FailureHandler();
+  @Nonnull private final OptionalBasicAuthHandler basicAuthHandler = new OptionalBasicAuthHandler();
   @Nonnull private final TokenGenerator tokenGenerator;
   @Nonnull private final UrlConfiguration urlConfiguration;
   @Nonnull private final RequestUrlConfigurationHandler requestUrlConfigurationHandler;
@@ -184,6 +186,7 @@ public class KeycloakMock {
         .handler(authenticationRoute);
     router
         .post(routing.getTokenEndpoint().getPath())
+        .handler(basicAuthHandler)
         .handler(BodyHandler.create())
         .handler(tokenRoute);
     router.get(routing.getOpenIdPath("login-status-iframe.html*").getPath()).handler(iframeRoute);

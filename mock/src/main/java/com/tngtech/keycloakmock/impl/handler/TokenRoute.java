@@ -9,6 +9,7 @@ import com.tngtech.keycloakmock.impl.session.Session;
 import com.tngtech.keycloakmock.impl.session.SessionRepository;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.auth.User;
 import io.vertx.ext.web.RoutingContext;
 import java.util.Map;
 import java.util.Objects;
@@ -83,6 +84,12 @@ public class TokenRoute implements Handler<RoutingContext> {
 
   private void handlePasswordFlow(RoutingContext routingContext) {
     String clientId = routingContext.request().getFormAttribute("client_id");
+    if (clientId == null || clientId.isEmpty()) {
+      User user = routingContext.user();
+      if (user != null) {
+        clientId = user.get("username");
+      }
+    }
     if (clientId == null || clientId.isEmpty()) {
       routingContext.fail(400);
       return;

@@ -491,18 +491,11 @@ class KeycloakMockIntegrationTest {
   }
 
   @Test
-  void mock_server_login_with_resource_owner_password_credentials_flow_works() {
+  void
+      mock_server_login_with_resource_owner_password_credentials_flow_works_with_client_id_parameter() {
     keycloakMock = new KeycloakMock();
     keycloakMock.start();
 
-    // simulate login
-    getTokenAndValidateAndReturnSessionCookie();
-
-    // logout
-    logoutAndExpectSessionCookieReset();
-  }
-
-  private void getTokenAndValidateAndReturnSessionCookie() {
     ExtractableResponse<Response> extractableResponse =
         RestAssured.given()
             .when()
@@ -524,7 +517,41 @@ class KeycloakMockIntegrationTest {
     assertThat(tokenConfig.getPreferredUsername()).isEqualTo("username");
     assertThat(tokenConfig.getRealmAccess().getRoles())
         .containsExactlyInAnyOrder("role1", "role2", "role3");
+    assertThat(tokenConfig.getAudience()).containsExactly("client");
   }
+
+  @Test
+  void mock_server_login_with_resource_owner_password_credentials_flow_works() {
+    keycloakMock = new KeycloakMock();
+    keycloakMock.start();
+
+    ExtractableResponse<Response> extractableResponse =
+        RestAssured.given()
+            .auth()
+            .preemptive()
+            .basic("client", "does not matter")
+            .when()
+            .formParam("username", "username")
+            .formParam("password", "role1,role2,role3")
+            .formParam("grant_type", "password")
+            .post(TOKEN_ENDPOINT_URL)
+            .then()
+            .assertThat()
+            .statusCode(200)
+            .extract();
+
+    String accessToken = extractableResponse.body().jsonPath().getString("access_token");
+
+    Jws<Claims> jwt = jwtParser.parseClaimsJws(accessToken);
+    assertThat(jwt.getBody().getIssuer()).isEqualTo("http://localhost:8000/auth/realms/realm");
+    TokenConfig tokenConfig = TokenConfig.aTokenConfig().withSourceToken(accessToken).build();
+    assertThat(tokenConfig.getPreferredUsername()).isEqualTo("username");
+    assertThat(tokenConfig.getRealmAccess().getRoles())
+        .containsExactlyInAnyOrder("role1", "role2", "role3");
+    assertThat(tokenConfig.getAudience()).containsExactly("client");
+  }
+
+  private void getTokenAndValidateAndReturnSessionCookie() {}
 
   private static class ClientRequest {
 
