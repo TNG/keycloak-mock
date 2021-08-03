@@ -6,6 +6,7 @@ import io.vertx.ext.auth.User;
 import io.vertx.ext.auth.authentication.Credentials;
 import io.vertx.ext.auth.authentication.UsernamePasswordCredentials;
 import io.vertx.ext.web.RoutingContext;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,7 +20,9 @@ public class OptionalBasicAuthHandler implements Handler<RoutingContext> {
     if (authorization != null) {
       try {
         String usernamePassword =
-            new String(Base64.getDecoder().decode(authorization.replace("Basic ", "")));
+            new String(
+                Base64.getDecoder().decode(authorization.replace("Basic ", "")),
+                StandardCharsets.UTF_8);
         String[] split = usernamePassword.split(":", 2);
         Credentials credentials;
         if (split.length == 2) {
