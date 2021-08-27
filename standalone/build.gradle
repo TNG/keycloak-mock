@@ -2,7 +2,7 @@ import com.github.jengelman.gradle.plugins.shadow.transformers.ApacheNoticeResou
 
 plugins {
     id 'application'
-    id 'com.github.gmazzo.buildconfig' version '3.0.1'
+    id 'com.github.gmazzo.buildconfig' version '3.0.2'
     id 'com.github.johnrengelman.shadow' version '7.0.0'
 }
 
