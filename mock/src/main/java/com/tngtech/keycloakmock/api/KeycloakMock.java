@@ -215,6 +215,9 @@ public class KeycloakMock {
       stopHandler.await();
       server = null;
     }
+    ResultHandler<Void> stopHandler = new ResultHandler<>();
+    vertx.close(stopHandler);
+    stopHandler.await();
   }
 
   @Nonnull
