@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.within;
 import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.lenient;
 
 import com.tngtech.keycloakmock.api.TokenConfig;
 import com.tngtech.keycloakmock.impl.TokenGenerator;
@@ -15,7 +14,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,8 +32,6 @@ class TokenHelperTest {
   private static final String TOKEN = "token123";
   private static final List<String> ROLES = Arrays.asList("role1", "role2");
   private static final List<String> CONFIGURED_RESOURCES = Arrays.asList("resource1", "resource2");
-  private static final Map<String, List<String>> CONFIGURED_ROLES_FOR_RESOURCES_SERVICE_ACC0UNTS =
-      Collections.singletonMap("resource1", ROLES);
 
   @Mock private TokenGenerator tokenGenerator;
 
@@ -48,17 +44,17 @@ class TokenHelperTest {
 
   @BeforeEach
   void setup() {
-    lenient().doReturn(CLIENT_ID).when(session).getClientId();
-    lenient().doReturn(SESSION_ID).when(session).getSessionId();
-    lenient().doReturn(NONCE).when(session).getNonce();
-    lenient().doReturn(USER).when(session).getUsername();
-    lenient().doReturn(ROLES).when(session).getRoles();
+    doReturn(CLIENT_ID).when(session).getClientId();
+    doReturn(SESSION_ID).when(session).getSessionId();
+    doReturn(NONCE).when(session).getNonce();
+    doReturn(USER).when(session).getUsername();
+    doReturn(ROLES).when(session).getRoles();
     doReturn(TOKEN).when(tokenGenerator).getToken(configCaptor.capture(), same(urlConfiguration));
   }
 
   @Test
   void token_is_correctly_generated() {
-    uut = new TokenHelper(tokenGenerator, Collections.emptyList(), Collections.emptyMap());
+    uut = new TokenHelper(tokenGenerator, Collections.emptyList());
 
     uut.getToken(session, urlConfiguration);
 
@@ -82,7 +78,7 @@ class TokenHelperTest {
 
   @Test
   void resource_roles_are_used_if_configured() {
-    uut = new TokenHelper(tokenGenerator, CONFIGURED_RESOURCES, Collections.emptyMap());
+    uut = new TokenHelper(tokenGenerator, CONFIGURED_RESOURCES);
 
     uut.getToken(session, urlConfiguration);
 
@@ -93,26 +89,5 @@ class TokenHelperTest {
         .containsExactlyInAnyOrderElementsOf(ROLES);
     assertThat(tokenConfig.getResourceAccess().get("resource2").getRoles())
         .containsExactlyInAnyOrderElementsOf(ROLES);
-  }
-
-  @Test
-  void roles_for_resources_service_accounts_are_used_if_configured() {
-    uut =
-        new TokenHelper(
-            tokenGenerator,
-            Collections.emptyList(),
-            CONFIGURED_ROLES_FOR_RESOURCES_SERVICE_ACC0UNTS);
-
-    final String clientId =
-        CONFIGURED_ROLES_FOR_RESOURCES_SERVICE_ACC0UNTS.entrySet().stream()
-            .findFirst()
-            .get()
-            .getKey();
-    uut.getServiceAccountToken(clientId, urlConfiguration);
-
-    TokenConfig tokenConfig = configCaptor.getValue();
-    assertThat(tokenConfig.getRealmAccess().getRoles()).containsExactlyInAnyOrderElementsOf(ROLES);
-    ;
-    assertThat(tokenConfig.getResourceAccess()).isEmpty();
   }
 }

@@ -3,12 +3,10 @@ package com.tngtech.keycloakmock.impl.handler;
 import static com.tngtech.keycloakmock.impl.handler.RequestUrlConfigurationHandler.CTX_REQUEST_CONFIGURATION;
 
 import com.tngtech.keycloakmock.impl.UrlConfiguration;
-import com.tngtech.keycloakmock.impl.helper.BasicTokenHelper;
 import com.tngtech.keycloakmock.impl.helper.TokenHelper;
 import com.tngtech.keycloakmock.impl.session.AdHocSession;
 import com.tngtech.keycloakmock.impl.session.Session;
 import com.tngtech.keycloakmock.impl.session.SessionRepository;
-import io.netty.handler.codec.http.HttpHeaderNames;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.auth.User;
@@ -116,29 +114,32 @@ public class TokenRoute implements Handler<RoutingContext> {
         .end(toTokenResponse(token, session.getSessionId()));
   }
 
-  private void handleClientCredentialsFlow(RoutingContext routingContext) {
-    final String basicAuthToken = routingContext.request().getHeader(HttpHeaderNames.AUTHORIZATION);
-    if (basicAuthToken == null || basicAuthToken.isEmpty()) {
-      routingContext.fail(400);
+  private void handleClientCredentialsFlow(final RoutingContext routingContext) {
+    final User user = routingContext.user();
+    if (user == null) {
+      routingContext.fail(401);
       return;
     }
 
-    final Map<String, String> clientCredentials = new BasicTokenHelper().parseToken(basicAuthToken);
-
-    final String clientId = clientCredentials.get("clientId");
+    final String clientId = routingContext.user().get("username");
+    // Password is a list of roles
+    final String password = routingContext.user().get("password");
     if (clientId == null || clientId.isEmpty()) {
       routingContext.fail(400);
       return;
     }
 
-    UrlConfiguration requestConfiguration = routingContext.get(CTX_REQUEST_CONFIGURATION);
+    final UrlConfiguration requestConfiguration = routingContext.get(CTX_REQUEST_CONFIGURATION);
 
-    String token = tokenHelper.getServiceAccountToken(clientId, requestConfiguration);
+    final Session session =
+        AdHocSession.fromClientIdUsernameAndPassword(clientId, clientId, password);
+
+    final String token = tokenHelper.getToken(session, requestConfiguration);
 
     routingContext
         .response()
         .putHeader("content-type", "application/json")
-        .end(toTokenResponse(token));
+        .end(toTokenResponse(token, null));
   }
 
   private String toTokenResponse(String token, String sessionId) {
@@ -149,15 +150,6 @@ public class TokenRoute implements Handler<RoutingContext> {
         .put("refresh_expires_in", 36_000)
         .put("id_token", token)
         .put(SESSION_STATE, sessionId)
-        .encode();
-  }
-
-  private String toTokenResponse(String token) {
-    // With client credentials flow, there is no refresh token and no session
-    return new JsonObject()
-        .put("access_token", token)
-        .put("expires_in", 36_000)
-        .put("id_token", token)
         .encode();
   }
 }
