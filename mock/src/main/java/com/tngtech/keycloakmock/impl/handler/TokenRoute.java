@@ -139,7 +139,7 @@ public class TokenRoute implements Handler<RoutingContext> {
     routingContext
         .response()
         .putHeader("content-type", "application/json")
-        .end(toTokenResponse(token, null));
+        .end(toTokenResponse(token, session.getSessionId()));
   }
 
   private String toTokenResponse(String token, String sessionId) {
