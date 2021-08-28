@@ -18,15 +18,11 @@ public class TokenHelper {
 
   @Nonnull private final TokenGenerator tokenGenerator;
   @Nonnull private final List<String> resourcesToMapRolesTo;
-  @Nonnull private final Map<String, List<String>> rolesForResourcesServiceAccounts;
 
   public TokenHelper(
-      @Nonnull TokenGenerator tokenGenerator,
-      @Nonnull List<String> resourcesToMapRolesTo,
-      @Nonnull Map<String, List<String>> rolesForResourcesServiceAccounts) {
+      @Nonnull TokenGenerator tokenGenerator, @Nonnull List<String> resourcesToMapRolesTo) {
     this.tokenGenerator = tokenGenerator;
     this.resourcesToMapRolesTo = resourcesToMapRolesTo;
-    this.rolesForResourcesServiceAccounts = rolesForResourcesServiceAccounts;
   }
 
   @Nullable
@@ -52,25 +48,6 @@ public class TokenHelper {
       for (String resource : resourcesToMapRolesTo) {
         builder.withResourceRoles(resource, session.getRoles());
       }
-    }
-    // for simplicity, the access token is the same as the ID token
-    return tokenGenerator.getToken(builder.build(), requestConfiguration);
-  }
-
-  @Nullable
-  public String getServiceAccountToken(String clientId, UrlConfiguration requestConfiguration) {
-    Builder builder =
-        aTokenConfig()
-            .withAuthorizedParty(clientId)
-            // at the moment, there is no explicit way of setting an audience
-            .withAudience(clientId)
-            // we currently don't do proper authorization anyway, so we can just act as if we were
-            // compliant to ISO/IEC 29115 level 1 (see KEYCLOAK-3223 / KEYCLOAK-3314)
-            .withAuthenticationContextClassReference("1");
-    // For now we only set service account roles in realm roles in TokenConfig (in keycloak its
-    // possible to set client roles for service accounts)
-    if (!rolesForResourcesServiceAccounts.isEmpty()) {
-      builder.withRealmRoles(rolesForResourcesServiceAccounts.get(clientId));
     }
     // for simplicity, the access token is the same as the ID token
     return tokenGenerator.getToken(builder.build(), requestConfiguration);

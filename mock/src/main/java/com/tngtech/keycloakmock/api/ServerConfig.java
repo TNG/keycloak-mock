@@ -1,7 +1,10 @@
 package com.tngtech.keycloakmock.api;
 
 import com.tngtech.keycloakmock.impl.Protocol;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 import javax.annotation.Nonnull;
 
 /** Server configuration to use. */
@@ -16,7 +19,6 @@ public final class ServerConfig {
   @Nonnull private final String defaultHostname;
   @Nonnull private final String defaultRealm;
   @Nonnull private final List<String> resourcesToMapRolesTo;
-  @Nonnull private final Map<String, List<String>> rolesForResourcesServiceAccounts;
 
   private ServerConfig(@Nonnull final Builder builder) {
     this.port = builder.port;
@@ -24,7 +26,6 @@ public final class ServerConfig {
     this.defaultHostname = builder.defaultHostname;
     this.defaultRealm = builder.defaultRealm;
     this.resourcesToMapRolesTo = builder.resourcesToMapRolesTo;
-    this.rolesForResourcesServiceAccounts = builder.rolesForResourcesServiceAccounts;
   }
 
   /**
@@ -70,19 +71,6 @@ public final class ServerConfig {
   @Nonnull
   public List<String> getResourcesToMapRolesTo() {
     return Collections.unmodifiableList(resourcesToMapRolesTo);
-  }
-
-  /**
-   * Add a resource with roles that will be put in Service Account access token.
-   *
-   * @return map of resources and roles of the associated service accounts
-   * @see <a
-   *     href="https://www.keycloak.org/docs/latest/server_admin/index.html#_service_accounts">Service
-   *     Accounts</a>
-   */
-  @Nonnull
-  public Map<String, List<String>> getRolesForResourcesServiceAccounts() {
-    return Collections.unmodifiableMap(rolesForResourcesServiceAccounts);
   }
 
   /**
@@ -137,9 +125,6 @@ public final class ServerConfig {
     @Nonnull private String defaultHostname = DEFAULT_HOSTNAME;
     @Nonnull private String defaultRealm = DEFAULT_REALM;
     @Nonnull private final List<String> resourcesToMapRolesTo = new ArrayList<>();
-
-    @Nonnull
-    private final Map<String, List<String>> rolesForResourcesServiceAccounts = new HashMap<>();
 
     private Builder() {}
 
@@ -274,42 +259,6 @@ public final class ServerConfig {
     @Nonnull
     public Builder withResourceToMapRolesTo(@Nonnull String resource) {
       resourcesToMapRolesTo.add(Objects.requireNonNull(resource));
-      return this;
-    }
-
-    /**
-     * Add a resource with roles that will be put in Service Account access token.
-     *
-     * @param rolesForResourcesServiceAccounts map of resources and associated service accounts
-     *     roles
-     * @return builder
-     * @see #withRolesForResourcesServiceAccounts(String, List)
-     * @see <a
-     *     href="https://www.keycloak.org/docs/latest/server_admin/index.html#_service_accounts">Service
-     *     Accounts</a>
-     */
-    @Nonnull
-    public Builder withRolesForResourcesServiceAccounts(
-        @Nonnull Map<String, List<String>> rolesForResourcesServiceAccounts) {
-      rolesForResourcesServiceAccounts.putAll(rolesForResourcesServiceAccounts);
-      return this;
-    }
-
-    /**
-     * Add roles for a resource service accounts.
-     *
-     * @param resource a resource to which service accounts roles
-     * @param serviceAccountRoles roles to map to resource service account
-     * @return builder
-     * @see #withRolesForResourcesServiceAccounts(Map)
-     * @see <a
-     *     href="https://www.keycloak.org/docs/latest/server_admin/index.html#_service_accounts">Service
-     *     Accounts</a>
-     */
-    @Nonnull
-    public Builder withRolesForResourcesServiceAccounts(
-        @Nonnull String resource, List<String> serviceAccountRoles) {
-      rolesForResourcesServiceAccounts.put(resource, serviceAccountRoles);
       return this;
     }
 

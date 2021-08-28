@@ -6,11 +6,9 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import com.tngtech.keycloakmock.impl.helper.TokenHelper;
 import com.tngtech.keycloakmock.impl.session.SessionRepository;
-import io.netty.handler.codec.http.HttpHeaderNames;
 import io.vertx.core.http.HttpServerRequest;
+import io.vertx.ext.auth.User;
 import io.vertx.ext.web.RoutingContext;
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -122,26 +120,22 @@ class TokenRouteTest {
   void missing_basic_authorization_token_causes_error_for_type_client_credentials() {
     doReturn(request).when(routingContext).request();
     doReturn(CLIENT_CREDENTIALS_GRANT_TYPE).when(request).getFormAttribute("grant_type");
-    doReturn(null).when(request).getHeader(HttpHeaderNames.AUTHORIZATION);
+    doReturn(null).when(routingContext).user();
 
     uut = new TokenRoute(sessionRepository, tokenHelper);
 
     uut.handle(routingContext);
 
-    verify(routingContext).fail(400);
+    verify(routingContext).fail(401);
     verifyNoMoreInteractions(tokenHelper);
   }
 
   @Test
   void missing_clientId_in_basic_authorization_token_causes_error_for_type_client_credentials() {
-    final String decodedBasicAuthToken = ":client_secret";
     doReturn(request).when(routingContext).request();
     doReturn(CLIENT_CREDENTIALS_GRANT_TYPE).when(request).getFormAttribute("grant_type");
-    doReturn(
-            Base64.getEncoder()
-                .encodeToString(decodedBasicAuthToken.getBytes(StandardCharsets.UTF_8)))
-        .when(request)
-        .getHeader(HttpHeaderNames.AUTHORIZATION);
+    final User user = User.fromName("");
+    doReturn(user).when(routingContext).user();
 
     uut = new TokenRoute(sessionRepository, tokenHelper);
 
