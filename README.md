@@ -127,7 +127,8 @@ You can even use it as a replacement in end-to-end tests, as the server is e.g. 
 `cypress-keycloak`. Have a look at the [example-frontend-react](example-frontend-react) project on
 this can be set up.
 
-Please note that currently only the authorization code flow and the implicit flow are supported.
+Please note that the Device Authorization Grant flow and the Client Initiated Backchannel
+Authentication Grant flow are currently not supported (yet).
 
 ## License
 
