@@ -51,7 +51,7 @@ import com.tngtech.keycloakmock.api.KeycloakMock;
 
 class Test {
 
-  KeycloakMock mock = new KeycloakMock(aServerConfig().withPort(8000).withRealm("master").build());
+  KeycloakMock mock = new KeycloakMock(aServerConfig().withPort(8000).withDefaultRealm("master").build());
 
   static {
     mock.start();
