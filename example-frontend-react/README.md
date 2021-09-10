@@ -2,12 +2,16 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 
 ## Prerequisites
 
-Before you can run this web app, you need a running Keycloak service.
-For this, you can either start a real Keycloak server:
+Before you can run this web app, you need a running Keycloak service. For this, you can either start
+a real Keycloak server:
 
 ```bash
 ./gradlew example-integration-docker:realKeycloakComposeUp
 ```
+
+The server has a pre-configured user `user` with password `user` in realm `realm` and
+client `client`. The client has enabled authorization code flow, implicit flow and direct access
+password grant flow.
 
 Stopping the server can be done running:
 
