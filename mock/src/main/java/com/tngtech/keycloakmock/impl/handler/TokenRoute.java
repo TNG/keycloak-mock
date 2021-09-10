@@ -145,7 +145,7 @@ public class TokenRoute implements Handler<RoutingContext> {
   private String toTokenResponse(String token, String sessionId) {
     return new JsonObject()
         .put("access_token", token)
-        .put("token_type","Bearer")
+        .put("token_type", "Bearer")
         .put("expires_in", 36_000)
         .put("refresh_token", token)
         .put("refresh_expires_in", 36_000)
