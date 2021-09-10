@@ -32,14 +32,14 @@ You can create and start the mock directly from the `mock` artifact using Maven
     <groupId>com.tngtech.keycloakmock</groupId>
     <artifactId>mock</artifactId>
     <scope>test</scope>
-    <version>0.9.0</version>
+    <version>0.10.0</version>
 </dependency>
 ```
 
 or Gradle
 
 ```gradle
-testImplementation 'com.tngtech.keycloakmock:mock:0.9.0'
+testImplementation 'com.tngtech.keycloakmock:mock:0.10.0'
 ```
 
 like this:
@@ -51,10 +51,13 @@ import com.tngtech.keycloakmock.api.KeycloakMock;
 
 class Test {
 
-  KeycloakMock mock = new KeycloakMock(aServerConfig().withPort(8000).withDefaultRealm("master").build());
-
-  static {
+  void checkSomething() {
+    KeycloakMock mock = new KeycloakMock(aServerConfig().withPort(8000).withDefaultRealm("master").build());
     mock.start();
+
+    // do your test stuff
+
+    mock.stop();
   }
 
 }
@@ -108,16 +111,29 @@ For a more in-detail test case, please have a look at
 the [AuthenticationTest](example-backend/src/test/java/com/tngtech/keycloakmock/examplebackend/AuthenticationTest.java)
 in our example backend project.
 
+In addition to generating and signing tokens programmatically, the mock also offers
+
+* user login (using implicit or authorization code flow, including support for redirect
+  to `http://localhost` and `urn:ietf:wg:oauth:2.0:oob` for desktop applications)
+  ** instead of a password, you can enter the roles of the user
+* client credentials authentication
+* resource owner password credentials authentication (both for public and confidential clients)
+
+Note that as this is a mock, all flows are allowed for any client. For simplicity all successful
+calls to the token endpoint return the same response including a refresh token, even for flows which
+should not contain it according to the specifications.
+
 ### Developing / testing frontends
 
-It is also possible to run a stand-alone mock server that provides a login page where a username and
-an optional list of roles can be specified. Just get the (self-contained) `standalone` artifact,
-e.g. from [Maven Central](https://search.maven.org/artifact/com.tngtech.keycloakmock/standalone),
-and run it:
+It is also possible to run the mock server as a stand-alone application. Just get the (
+self-contained)
+`standalone` artifact, e.g.
+from [Maven Central](https://search.maven.org/artifact/com.tngtech.keycloakmock/standalone), and run
+it:
 
 ```bash
 $ java -jar standalone.jar &
-Server is running on http://localhost:8000
+[main] INFO com.tngtech.keycloakmock.standalone.Main - Server is running on http://localhost:8000
 ```
 
 The stand-alone server can be configured using command line parameters. You can call it
@@ -126,9 +142,6 @@ with `--help` to get a list of all options.
 You can even use it as a replacement in end-to-end tests, as the server is e.g. compatible with
 `cypress-keycloak`. Have a look at the [example-frontend-react](example-frontend-react) project on
 this can be set up.
-
-Please note that the Device Authorization Grant flow and the Client Initiated Backchannel
-Authentication Grant flow are currently not supported (yet).
 
 ## License
 
