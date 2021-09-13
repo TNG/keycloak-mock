@@ -118,15 +118,22 @@ public class TokenRoute implements Handler<RoutingContext> {
   }
 
   private void handleClientCredentialsFlow(RoutingContext routingContext) {
+    String clientId = routingContext.request().getFormAttribute("client_id");
+    String password = routingContext.request().getFormAttribute("client_secret");
+    boolean formBasedAuth = clientId != null && !clientId.isEmpty() && password != null && !password.isEmpty();
     final User user = routingContext.user();
-    if (user == null) {
+    if (user == null && !formBasedAuth) {
       routingContext.fail(401);
       return;
     }
 
-    final String clientId = routingContext.user().get("username");
-    // Password is a list of roles
-    final String password = routingContext.user().get("password");
+    //if not form based, try using user (BASIC auth or custom)
+    if (!formBasedAuth) {
+      clientId = routingContext.user().get("username");
+      // Password is a list of roles
+      password = routingContext.user().get("password");
+    }
+
     if (clientId == null || clientId.isEmpty()) {
       routingContext.fail(400);
       return;
