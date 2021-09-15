@@ -9,7 +9,7 @@ a real Keycloak server:
 ./gradlew example-integration-docker:realKeycloakComposeUp
 ```
 
-The server has a pre-configured user `user` with password `user` in realm `realm` and
+The server has a preconfigured user `user` with password `user` in realm `realm` and
 client `client`. The client has enabled authorization code flow, implicit flow and direct access
 password grant flow.
 
