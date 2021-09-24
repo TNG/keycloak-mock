@@ -4,38 +4,41 @@ import static com.tngtech.keycloakmock.api.ServerConfig.aServerConfig;
 import static com.tngtech.keycloakmock.api.TokenConfig.aTokenConfig;
 import static org.hamcrest.Matchers.equalTo;
 
-import com.tngtech.keycloakmock.junit5.KeycloakMockExtension;
+import com.tngtech.keycloakmock.junit.KeycloakMockRule;
 import io.restassured.RestAssured;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+@RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(
     classes = ExampleBackendApplication.class,
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-class AuthenticationTest {
+public class AuthenticationJUnit4Test {
 
-  @RegisterExtension
-  static KeycloakMockExtension mock =
-      new KeycloakMockExtension(aServerConfig().withDefaultRealm("realm").build());
+  @ClassRule
+  public static KeycloakMockRule mock =
+      new KeycloakMockRule(aServerConfig().withDefaultRealm("realm").build());
 
   @LocalServerPort private int port;
 
-  @BeforeEach
-  void setup() {
+  @Before
+  public void setup() {
     RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
     RestAssured.port = port;
   }
 
   @Test
-  void no_authentication_fails() {
+  public void no_authentication_fails() {
     RestAssured.given().when().get("/api/hello").then().statusCode(401);
   }
 
   @Test
-  void authentication_works() {
+  public void authentication_works() {
     RestAssured.given()
         .auth()
         .preemptive()
@@ -49,7 +52,7 @@ class AuthenticationTest {
   }
 
   @Test
-  void authentication_without_role_fails() {
+  public void authentication_without_role_fails() {
     RestAssured.given()
         .auth()
         .preemptive()
@@ -61,7 +64,7 @@ class AuthenticationTest {
   }
 
   @Test
-  void authentication_with_role_works() {
+  public void authentication_with_role_works() {
     RestAssured.given()
         .auth()
         .preemptive()
