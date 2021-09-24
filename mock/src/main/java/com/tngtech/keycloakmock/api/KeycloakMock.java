@@ -47,7 +47,8 @@ import org.slf4j.LoggerFactory;
  * provides a REST API compatible with a real Keycloak to use in tests.
  *
  * <p>Typically, you should not need to use this class directly. Consider using {@code
- * com.tngtech.keycloakmock.junit.KeycloakMock} from module mock-junit instead.
+ * com.tngtech.keycloakmock.junit.KeycloakMockRule} from module mock-junit or {@code
+ * com.tngtech.keycloakmock.junit5.KeycloakMockExtension} instead.
  */
 public class KeycloakMock {
   private static final Logger LOG = LoggerFactory.getLogger(KeycloakMock.class);
