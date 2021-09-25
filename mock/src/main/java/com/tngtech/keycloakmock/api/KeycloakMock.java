@@ -1,38 +1,13 @@
 package com.tngtech.keycloakmock.api;
 
-import com.tngtech.keycloakmock.impl.TokenGenerator;
 import com.tngtech.keycloakmock.impl.UrlConfiguration;
-import com.tngtech.keycloakmock.impl.handler.AuthenticationRoute;
-import com.tngtech.keycloakmock.impl.handler.CommonHandler;
-import com.tngtech.keycloakmock.impl.handler.DelegationRoute;
-import com.tngtech.keycloakmock.impl.handler.FailureHandler;
-import com.tngtech.keycloakmock.impl.handler.IFrameRoute;
-import com.tngtech.keycloakmock.impl.handler.JwksRoute;
-import com.tngtech.keycloakmock.impl.handler.LoginRoute;
-import com.tngtech.keycloakmock.impl.handler.LogoutRoute;
-import com.tngtech.keycloakmock.impl.handler.OptionalBasicAuthHandler;
-import com.tngtech.keycloakmock.impl.handler.OutOfBandLoginRoute;
-import com.tngtech.keycloakmock.impl.handler.RequestUrlConfigurationHandler;
-import com.tngtech.keycloakmock.impl.handler.ResourceFileHandler;
-import com.tngtech.keycloakmock.impl.handler.TokenRoute;
-import com.tngtech.keycloakmock.impl.handler.WellKnownRoute;
-import com.tngtech.keycloakmock.impl.helper.RedirectHelper;
-import com.tngtech.keycloakmock.impl.helper.TokenHelper;
-import com.tngtech.keycloakmock.impl.session.SessionRepository;
+import com.tngtech.keycloakmock.impl.dagger.DaggerServerComponent;
+import com.tngtech.keycloakmock.impl.dagger.DaggerSignatureComponent;
+import com.tngtech.keycloakmock.impl.dagger.ServerComponent;
+import com.tngtech.keycloakmock.impl.dagger.SignatureComponent;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
-import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServer;
-import io.vertx.core.http.HttpServerOptions;
-import io.vertx.core.net.JksOptions;
-import io.vertx.ext.web.Router;
-import io.vertx.ext.web.handler.BodyHandler;
-import io.vertx.ext.web.handler.ErrorHandler;
-import io.vertx.ext.web.templ.freemarker.FreeMarkerTemplateEngine;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import javax.annotation.Nonnull;
@@ -53,35 +28,12 @@ import org.slf4j.LoggerFactory;
 public class KeycloakMock {
   private static final Logger LOG = LoggerFactory.getLogger(KeycloakMock.class);
 
-  @Nonnull private final Vertx vertx = Vertx.vertx();
-  @Nonnull private final CommonHandler commonHandler = new CommonHandler();
-  @Nonnull private final FailureHandler failureHandler = new FailureHandler();
-  @Nonnull private final OptionalBasicAuthHandler basicAuthHandler = new OptionalBasicAuthHandler();
-  @Nonnull private final TokenGenerator tokenGenerator;
-  @Nonnull private final UrlConfiguration urlConfiguration;
-  @Nonnull private final RequestUrlConfigurationHandler requestUrlConfigurationHandler;
-  @Nonnull private final JwksRoute jwksRoute;
-  @Nonnull private final WellKnownRoute wellKnownRoute;
-  @Nonnull private final LoginRoute loginRoute;
-  @Nonnull private final AuthenticationRoute authenticationRoute;
-  @Nonnull private final TokenRoute tokenRoute;
-  @Nonnull private final LogoutRoute logoutRoute;
-  @Nonnull private final IFrameRoute iframeRoute = new IFrameRoute();
-  @Nonnull private final DelegationRoute delegationRoute;
-  @Nonnull private final OutOfBandLoginRoute outOfBandLoginRoute;
+  @Nonnull private final ServerConfig serverConfig;
+  @Nonnull private final UrlConfiguration defaultConfiguration;
 
-  @Nonnull
-  private final ResourceFileHandler thirdPartyCookies1Route =
-      new ResourceFileHandler("/3p-cookies-step1.html");
+  @Nonnull private final SignatureComponent signatureComponent;
 
-  @Nonnull
-  private final ResourceFileHandler thirdPartyCookies2Route =
-      new ResourceFileHandler("/3p-cookies-step2.html");
-
-  @Nonnull
-  private final ResourceFileHandler keycloakJsRoute = new ResourceFileHandler("/keycloak.js");
-
-  @Nullable private HttpServer server;
+  @Nullable private ServerComponent serverComponent;
 
   /**
    * Create a mock instance for default realm "master".
@@ -105,26 +57,9 @@ public class KeycloakMock {
    * @see KeycloakMock#KeycloakMock()
    */
   public KeycloakMock(@Nonnull final ServerConfig serverConfig) {
-    this.urlConfiguration = new UrlConfiguration(serverConfig);
-    this.tokenGenerator = new TokenGenerator();
-    this.requestUrlConfigurationHandler = new RequestUrlConfigurationHandler(urlConfiguration);
-    this.jwksRoute =
-        new JwksRoute(
-            tokenGenerator.getKeyId(),
-            tokenGenerator.getAlgorithm(),
-            tokenGenerator.getPublicKey());
-    this.wellKnownRoute = new WellKnownRoute();
-    TokenHelper tokenHelper =
-        new TokenHelper(tokenGenerator, serverConfig.getResourcesToMapRolesTo());
-    RedirectHelper redirectHelper = new RedirectHelper(tokenHelper);
-    SessionRepository sessionRepository = new SessionRepository();
-    FreeMarkerTemplateEngine engine = FreeMarkerTemplateEngine.create(vertx);
-    loginRoute = new LoginRoute(sessionRepository, redirectHelper, engine);
-    authenticationRoute = new AuthenticationRoute(sessionRepository, redirectHelper);
-    tokenRoute = new TokenRoute(sessionRepository, tokenHelper);
-    logoutRoute = new LogoutRoute(sessionRepository, redirectHelper);
-    delegationRoute = new DelegationRoute(engine);
-    outOfBandLoginRoute = new OutOfBandLoginRoute(engine);
+    this.serverConfig = serverConfig;
+    this.defaultConfiguration = new UrlConfiguration(serverConfig);
+    this.signatureComponent = DaggerSignatureComponent.create();
   }
 
   /**
@@ -136,7 +71,7 @@ public class KeycloakMock {
    */
   @Nonnull
   public String getAccessToken(@Nonnull final TokenConfig tokenConfig) {
-    return tokenGenerator.getToken(tokenConfig, urlConfiguration);
+    return signatureComponent.tokenGenerator().getToken(tokenConfig, defaultConfiguration);
   }
 
   /**
@@ -145,63 +80,24 @@ public class KeycloakMock {
    * @throws MockServerException when the server could not be started properly
    * @throws IllegalStateException when the built-in keystore could not be read for TLS mode
    */
-  public void start() {
-    if (server != null) {
+  public synchronized void start() {
+    if (serverComponent != null) {
       LOG.warn("Start request ignored as server is already running");
       return;
     }
-    HttpServerOptions options = new HttpServerOptions().setPort(urlConfiguration.getPort());
-    if (urlConfiguration.getProtocol().isTls()) {
-      options
-          .setSsl(true)
-          .setKeyStoreOptions(new JksOptions().setValue(getKeystore()).setPassword(""));
-    }
-    Router router = configureRouter();
     ResultHandler<HttpServer> startHandler = new ResultHandler<>();
-
-    server =
-        vertx
-            .createHttpServer(options)
-            .requestHandler(router)
-            .exceptionHandler(t -> LOG.error("Exception while processing request", t))
-            .listen(startHandler);
+    serverComponent =
+        DaggerServerComponent.builder()
+            .serverConfig(serverConfig)
+            .publicKey(signatureComponent.publicKey())
+            .keyId(signatureComponent.keyId())
+            .signatureAlgorithm(signatureComponent.signatureAlgorithm())
+            .keyStore(signatureComponent.keyStore())
+            .tokenGenerator(signatureComponent.tokenGenerator())
+            .defaultConfiguration(defaultConfiguration)
+            .build();
+    serverComponent.server().listen(startHandler);
     startHandler.await();
-  }
-
-  @Nonnull
-  private Router configureRouter() {
-    UrlConfiguration routing = urlConfiguration.forRequestContext(null, ":realm");
-    Router router = Router.router(vertx);
-    router
-        .route()
-        .handler(requestUrlConfigurationHandler)
-        .handler(commonHandler)
-        .failureHandler(failureHandler)
-        .failureHandler(ErrorHandler.create(vertx));
-    router.get(routing.getJwksUri().getPath()).handler(jwksRoute);
-    router.get(routing.getIssuerPath().resolve(".well-known/*").getPath()).handler(wellKnownRoute);
-    router.get(routing.getAuthorizationEndpoint().getPath()).handler(loginRoute);
-    router
-        .post(routing.getAuthenticationCallbackEndpoint(":sessionId").getPath())
-        .handler(BodyHandler.create())
-        .handler(authenticationRoute);
-    router
-        .post(routing.getTokenEndpoint().getPath())
-        .handler(basicAuthHandler)
-        .handler(BodyHandler.create())
-        .handler(tokenRoute);
-    router.get(routing.getOpenIdPath("login-status-iframe.html*").getPath()).handler(iframeRoute);
-    router
-        .get(routing.getOpenIdPath("3p-cookies/step1.html").getPath())
-        .handler(thirdPartyCookies1Route);
-    router
-        .get(routing.getOpenIdPath("3p-cookies/step2.html").getPath())
-        .handler(thirdPartyCookies2Route);
-    router.get(routing.getEndSessionEndpoint().getPath()).handler(logoutRoute);
-    router.get(routing.getOpenIdPath("delegated").getPath()).handler(delegationRoute);
-    router.get(routing.getOutOfBandLoginLoginEndpoint().getPath()).handler(outOfBandLoginRoute);
-    router.route("/auth/js/keycloak.js").handler(keycloakJsRoute);
-    return router;
   }
 
   /**
@@ -209,34 +105,15 @@ public class KeycloakMock {
    *
    * @throws MockServerException when the server could not be stopped properly
    */
-  public void stop() {
-    if (server != null) {
-      ResultHandler<Void> stopHandler = new ResultHandler<>();
-      server.close(stopHandler);
-      stopHandler.await();
-      server = null;
-    }
-    ResultHandler<Void> stopHandler = new ResultHandler<>();
-    vertx.close(stopHandler);
-    stopHandler.await();
-  }
-
-  @Nonnull
-  private Buffer getKeystore() {
-    try {
-      InputStream inputStream = this.getClass().getResourceAsStream("/keystore.jks");
-      if (inputStream == null) {
-        throw new IllegalStateException("Unable to find keystore in classpath");
-      }
-      ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-      byte[] buf = new byte[8192];
-      int n;
-      while ((n = inputStream.read(buf)) > 0) {
-        outputStream.write(buf, 0, n);
-      }
-      return Buffer.buffer(outputStream.toByteArray());
-    } catch (IOException e) {
-      throw new IllegalStateException("Error while loading keystore for TLS key configuration", e);
+  public synchronized void stop() {
+    if (serverComponent != null) {
+      ResultHandler<Void> stopServerHandler = new ResultHandler<>();
+      serverComponent.server().close(stopServerHandler);
+      stopServerHandler.await();
+      ResultHandler<Void> stopVertxHandler = new ResultHandler<>();
+      serverComponent.vertx().close(stopVertxHandler);
+      stopVertxHandler.await();
+      serverComponent = null;
     }
   }
 

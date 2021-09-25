@@ -7,9 +7,12 @@ import com.tngtech.keycloakmock.impl.session.ResponseType;
 import io.vertx.core.http.Cookie;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Singleton
 public class RedirectHelper {
 
   public static final String KEYCLOAK_SESSION_COOKIE = "KEYCLOAK_SESSION";
@@ -29,14 +32,14 @@ public class RedirectHelper {
 
   @Nonnull private final TokenHelper tokenHelper;
 
-  public RedirectHelper(@Nonnull TokenHelper tokenHelper) {
+  @Inject
+  RedirectHelper(@Nonnull TokenHelper tokenHelper) {
     this.tokenHelper = tokenHelper;
   }
 
   @Nullable
   public String getRedirectLocation(
-      @Nonnull final PersistentSession session,
-      @Nonnull final UrlConfiguration requestConfiguration) {
+      @Nonnull PersistentSession session, @Nonnull UrlConfiguration requestConfiguration) {
     ResponseType responseType = ResponseType.fromValueOrNull(session.getResponseType());
     if (responseType == null) {
       LOG.warn("Invalid response type '{}' requested!", session.getResponseType());
@@ -80,7 +83,8 @@ public class RedirectHelper {
   }
 
   @Nonnull
-  public Cookie getSessionCookie(PersistentSession session, UrlConfiguration requestConfiguration) {
+  public Cookie getSessionCookie(
+      @Nonnull PersistentSession session, @Nonnull UrlConfiguration requestConfiguration) {
     return Cookie.cookie(
             KEYCLOAK_SESSION_COOKIE,
             String.join(
@@ -91,7 +95,7 @@ public class RedirectHelper {
   }
 
   @Nonnull
-  public Cookie invalidateSessionCookie(UrlConfiguration requestConfiguration) {
+  public Cookie invalidateSessionCookie(@Nonnull UrlConfiguration requestConfiguration) {
     return Cookie.cookie(
             KEYCLOAK_SESSION_COOKIE,
             String.join("/", requestConfiguration.getRealm(), DUMMY_USER_ID))
@@ -101,9 +105,7 @@ public class RedirectHelper {
   }
 
   private String getResponseParameter(
-      @Nullable final ResponseMode responseMode,
-      @Nonnull final String name,
-      @Nullable final String value) {
+      @Nullable ResponseMode responseMode, @Nonnull String name, @Nullable String value) {
     if (value == null) {
       return "";
     }

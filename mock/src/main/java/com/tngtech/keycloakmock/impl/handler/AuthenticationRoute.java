@@ -15,9 +15,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nonnull;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Singleton
 public class AuthenticationRoute implements Handler<RoutingContext> {
 
   private static final Logger LOG = LoggerFactory.getLogger(AuthenticationRoute.class);
@@ -27,14 +30,15 @@ public class AuthenticationRoute implements Handler<RoutingContext> {
   @Nonnull private final SessionRepository sessionRepository;
   @Nonnull private final RedirectHelper redirectHelper;
 
-  public AuthenticationRoute(
-      @Nonnull final SessionRepository sessionRepository, @Nonnull RedirectHelper redirectHelper) {
+  @Inject
+  AuthenticationRoute(
+      @Nonnull SessionRepository sessionRepository, @Nonnull RedirectHelper redirectHelper) {
     this.sessionRepository = sessionRepository;
     this.redirectHelper = redirectHelper;
   }
 
   @Override
-  public void handle(@Nonnull final RoutingContext routingContext) {
+  public void handle(@Nonnull RoutingContext routingContext) {
     String sessionId = routingContext.pathParam("sessionId");
     SessionRequest request = sessionRepository.getRequest(sessionId);
     if (request == null) {

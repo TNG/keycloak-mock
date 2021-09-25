@@ -10,7 +10,11 @@ import java.util.List;
 import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Singleton;
 
+@Singleton
 public class TokenHelper {
 
   private static final String SESSION_STATE = "session_state";
@@ -19,14 +23,16 @@ public class TokenHelper {
   @Nonnull private final TokenGenerator tokenGenerator;
   @Nonnull private final List<String> resourcesToMapRolesTo;
 
-  public TokenHelper(
-      @Nonnull TokenGenerator tokenGenerator, @Nonnull List<String> resourcesToMapRolesTo) {
+  @Inject
+  TokenHelper(
+      @Nonnull TokenGenerator tokenGenerator,
+      @Nonnull @Named("resources") List<String> resourcesToMapRolesTo) {
     this.tokenGenerator = tokenGenerator;
     this.resourcesToMapRolesTo = resourcesToMapRolesTo;
   }
 
   @Nullable
-  public String getToken(Session session, UrlConfiguration requestConfiguration) {
+  public String getToken(@Nonnull Session session, @Nonnull UrlConfiguration requestConfiguration) {
     Builder builder =
         aTokenConfig()
             .withAuthorizedParty(session.getClientId())

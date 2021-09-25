@@ -24,7 +24,7 @@ public class ResourceFileHandler implements Handler<RoutingContext> {
   }
 
   @Override
-  public void handle(RoutingContext routingContext) {
+  public void handle(@Nonnull RoutingContext routingContext) {
     Optional<String> resourceContent = loadResourceAsString(resource);
     if (resourceContent.isPresent()) {
       routingContext

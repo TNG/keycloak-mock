@@ -6,14 +6,14 @@ import static org.assertj.core.api.Assertions.entry;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 
-import com.tngtech.keycloakmock.test.KeyHelper;
+import com.tngtech.keycloakmock.impl.dagger.DaggerSignatureComponent;
+import com.tngtech.keycloakmock.impl.dagger.SignatureComponent;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Header;
 import io.jsonwebtoken.Jwt;
 import io.jsonwebtoken.Jwts;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.security.PublicKey;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
@@ -54,15 +54,15 @@ class TokenGeneratorTest {
   private static final String HOSTNAME = "hostname";
   private static final String REALM = "realm";
 
-  private static PublicKey key;
+  private static SignatureComponent signatureComponent;
 
   @Mock private UrlConfiguration urlConfiguration;
 
   private TokenGenerator generator;
 
   @BeforeAll
-  static void initKey() throws Exception {
-    key = KeyHelper.loadValidKey();
+  static void initKey() {
+    signatureComponent = DaggerSignatureComponent.create();
   }
 
   @BeforeEach
@@ -72,7 +72,8 @@ class TokenGeneratorTest {
         .forRequestContext(
             ArgumentMatchers.nullable(String.class), ArgumentMatchers.nullable(String.class));
     doReturn(new URI(ISSUER)).when(urlConfiguration).getIssuer();
-    generator = new TokenGenerator();
+    // this is a bit awkward, as the token generator is a singleton within the component
+    generator = signatureComponent.tokenGenerator();
   }
 
   @Test
@@ -107,7 +108,8 @@ class TokenGeneratorTest {
 
     verify(urlConfiguration).getIssuer();
     verify(urlConfiguration).forRequestContext(HOSTNAME, REALM);
-    Jwt<Header<?>, Claims> jwt = Jwts.parserBuilder().setSigningKey(key).build().parse(token);
+    Jwt<Header<?>, Claims> jwt =
+        Jwts.parserBuilder().setSigningKey(signatureComponent.publicKey()).build().parse(token);
     assertThat(jwt.getHeader()).containsEntry("kid", "keyId");
     Claims claims = jwt.getBody();
 

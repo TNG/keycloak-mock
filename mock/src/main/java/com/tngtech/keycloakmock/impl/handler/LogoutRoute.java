@@ -11,21 +11,25 @@ import io.vertx.core.http.Cookie;
 import io.vertx.ext.web.RoutingContext;
 import java.util.Optional;
 import javax.annotation.Nonnull;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
+@Singleton
 public class LogoutRoute implements Handler<RoutingContext> {
 
   private static final String REDIRECT_URI = "redirect_uri";
   @Nonnull private final SessionRepository sessionRepository;
   @Nonnull private final RedirectHelper redirectHelper;
 
-  public LogoutRoute(
+  @Inject
+  LogoutRoute(
       @Nonnull SessionRepository sessionRepository, @Nonnull RedirectHelper redirectHelper) {
     this.sessionRepository = sessionRepository;
     this.redirectHelper = redirectHelper;
   }
 
   @Override
-  public void handle(@Nonnull final RoutingContext routingContext) {
+  public void handle(@Nonnull RoutingContext routingContext) {
     String redirectUri = routingContext.queryParams().get(REDIRECT_URI);
     UrlConfiguration requestConfiguration = routingContext.get(CTX_REQUEST_CONFIGURATION);
     invalidateSession(routingContext);
