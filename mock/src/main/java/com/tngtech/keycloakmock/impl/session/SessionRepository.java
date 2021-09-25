@@ -5,19 +5,25 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
+@Singleton
 public class SessionRepository {
 
   @Nonnull
   private final ConcurrentMap<String, RequestOrSession> sessions = new ConcurrentHashMap<>();
 
+  @Inject
+  SessionRepository() {}
+
   @Nullable
-  public PersistentSession getSession(@Nonnull final String sessionId) {
+  public PersistentSession getSession(@Nonnull String sessionId) {
     return sessions.getOrDefault(sessionId, RequestOrSession.EMPTY).session;
   }
 
   public void updateSession(
-      @Nonnull final PersistentSession oldSession, @Nonnull final PersistentSession newSession) {
+      @Nonnull PersistentSession oldSession, @Nonnull PersistentSession newSession) {
     if (!sessions.replace(
         newSession.getSessionId(),
         new RequestOrSession(oldSession),
@@ -29,7 +35,7 @@ public class SessionRepository {
   }
 
   public void upgradeRequest(
-      @Nonnull final SessionRequest existingRequest, @Nonnull final PersistentSession newSession) {
+      @Nonnull SessionRequest existingRequest, @Nonnull PersistentSession newSession) {
     if (!sessions.replace(
         newSession.getSessionId(),
         new RequestOrSession(existingRequest),
@@ -40,16 +46,16 @@ public class SessionRepository {
     }
   }
 
-  public void removeSession(@Nonnull final String sessionId) {
+  public void removeSession(@Nonnull String sessionId) {
     sessions.remove(sessionId);
   }
 
   @Nullable
-  public SessionRequest getRequest(@Nonnull final String sessionId) {
+  public SessionRequest getRequest(@Nonnull String sessionId) {
     return sessions.getOrDefault(sessionId, RequestOrSession.EMPTY).request;
   }
 
-  public void putRequest(@Nonnull final SessionRequest sequest) {
+  public void putRequest(@Nonnull SessionRequest sequest) {
     if (sessions.putIfAbsent(sequest.getSessionId(), new RequestOrSession(sequest)) != null) {
       throw new InvalidSessionStateException(
           "Unable to create session request, session ID is already in use: "

@@ -8,14 +8,21 @@ import io.vertx.ext.auth.authentication.UsernamePasswordCredentials;
 import io.vertx.ext.web.RoutingContext;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import javax.annotation.Nonnull;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Singleton
 public class OptionalBasicAuthHandler implements Handler<RoutingContext> {
   private static final Logger LOG = LoggerFactory.getLogger(OptionalBasicAuthHandler.class);
 
+  @Inject
+  OptionalBasicAuthHandler() {}
+
   @Override
-  public void handle(RoutingContext routingContext) {
+  public void handle(@Nonnull RoutingContext routingContext) {
     String authorization = routingContext.request().getHeader(HttpHeaders.AUTHORIZATION);
     if (authorization != null) {
       try {

@@ -15,7 +15,10 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import javax.annotation.Nonnull;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
+@Singleton
 public class TokenRoute implements Handler<RoutingContext> {
 
   private static final String GRANT_TYPE = "grant_type";
@@ -25,14 +28,14 @@ public class TokenRoute implements Handler<RoutingContext> {
   @Nonnull private final SessionRepository sessionRepository;
   @Nonnull private final TokenHelper tokenHelper;
 
-  public TokenRoute(
-      @Nonnull final SessionRepository sessionRepository, @Nonnull TokenHelper tokenHelper) {
+  @Inject
+  TokenRoute(@Nonnull SessionRepository sessionRepository, @Nonnull TokenHelper tokenHelper) {
     this.sessionRepository = sessionRepository;
     this.tokenHelper = tokenHelper;
   }
 
   @Override
-  public void handle(@Nonnull final RoutingContext routingContext) {
+  public void handle(@Nonnull RoutingContext routingContext) {
     String grantType = routingContext.request().getFormAttribute(GRANT_TYPE);
     switch (Objects.toString(grantType)) {
       case "authorization_code":
@@ -114,7 +117,7 @@ public class TokenRoute implements Handler<RoutingContext> {
         .end(toTokenResponse(token, session.getSessionId()));
   }
 
-  private void handleClientCredentialsFlow(final RoutingContext routingContext) {
+  private void handleClientCredentialsFlow(RoutingContext routingContext) {
     final User user = routingContext.user();
     if (user == null) {
       routingContext.fail(401);

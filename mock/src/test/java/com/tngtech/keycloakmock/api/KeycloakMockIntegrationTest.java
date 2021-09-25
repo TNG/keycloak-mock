@@ -82,6 +82,20 @@ class KeycloakMockIntegrationTest {
     assertServerMockRunnning(false);
   }
 
+  @Test
+  void mock_server_can_be_started_and_stopped_twice() {
+    keycloakMock = new KeycloakMock();
+    assertServerMockRunnning(false);
+    keycloakMock.start();
+    assertServerMockRunnning(true);
+    keycloakMock.stop();
+    assertServerMockRunnning(false);
+    keycloakMock.start();
+    assertServerMockRunnning(true);
+    keycloakMock.stop();
+    assertServerMockRunnning(false);
+  }
+
   private void assertServerMockRunnning(boolean running) {
     try {
       RestAssured.when()
@@ -145,9 +159,9 @@ class KeycloakMockIntegrationTest {
                     k -> {
                       PublicKey key = JSONWebKey.parse(k);
                       if (key instanceof RSAPublicKey) {
-                        return RSAVerifier.newVerifier((RSAPublicKey) key);
+                        return RSAVerifier.newVerifier(key);
                       } else if (key instanceof ECPublicKey) {
-                        return ECVerifier.newVerifier((ECPublicKey) key);
+                        return ECVerifier.newVerifier(key);
                       } else {
                         throw new IllegalArgumentException("Unexpected public key " + key);
                       }

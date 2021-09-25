@@ -4,6 +4,7 @@ import static com.tngtech.keycloakmock.test.KeyHelper.loadFromResource;
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 import static org.mockito.Mockito.verify;
 
+import io.jsonwebtoken.SignatureAlgorithm;
 import java.security.PublicKey;
 import org.junit.jupiter.api.Test;
 
@@ -12,7 +13,7 @@ class JwksRouteTest extends HandlerTestBase {
   @Test
   void rsaKeyIsCorrectlyExported() throws Exception {
     PublicKey key = loadFromResource("/keystore.jks", "rsa");
-    JwksRoute jwksRoute = new JwksRoute("key321", "RS256", key);
+    JwksRoute jwksRoute = new JwksRoute("key321", SignatureAlgorithm.RS256, key);
 
     jwksRoute.handle(routingContext);
 
@@ -39,7 +40,7 @@ class JwksRouteTest extends HandlerTestBase {
   @Test
   void ecKeyIsCorrectlyExported() throws Exception {
     PublicKey key = loadFromResource("/ec521.jks", "key");
-    JwksRoute jwksRoute = new JwksRoute("key123", "ES512", key);
+    JwksRoute jwksRoute = new JwksRoute("key123", SignatureAlgorithm.ES512, key);
 
     jwksRoute.handle(routingContext);
 

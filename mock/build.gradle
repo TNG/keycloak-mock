@@ -4,12 +4,17 @@ configurations {
     resourceJars
 }
 
+ext {
+    dagger_version = '2.38.1'
+}
+
 dependencies {
     implementation "io.jsonwebtoken:jjwt-impl:$jjwt_version"
     implementation "io.jsonwebtoken:jjwt-jackson:$jjwt_version"
     implementation "io.vertx:vertx-web:$vertx_version"
     implementation "io.vertx:vertx-web-templ-freemarker:$vertx_version"
     implementation "org.slf4j:slf4j-api:$slf4j_version"
+    implementation "com.google.dagger:dagger:$dagger_version"
     resourceJars "org.keycloak:keycloak-js-adapter:$keycloak_version"
     testImplementation 'io.fusionauth:fusionauth-jwt:4.3.1'
     testImplementation "io.rest-assured:rest-assured:$restassured_version"
@@ -22,6 +27,7 @@ dependencies {
     testImplementation "org.mockito:mockito-junit-jupiter:$mockito_version"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junit5_version"
     testRuntimeOnly "org.slf4j:slf4j-simple:$slf4j_version"
+    annotationProcessor "com.google.dagger:dagger-compiler:$dagger_version"
 }
 
 processResources {

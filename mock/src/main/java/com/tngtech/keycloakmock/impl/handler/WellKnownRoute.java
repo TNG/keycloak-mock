@@ -10,11 +10,17 @@ import io.vertx.ext.web.RoutingContext;
 import java.util.Arrays;
 import java.util.Collections;
 import javax.annotation.Nonnull;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
+@Singleton
 public class WellKnownRoute implements Handler<RoutingContext> {
 
+  @Inject
+  WellKnownRoute() {}
+
   @Override
-  public void handle(@Nonnull final RoutingContext routingContext) {
+  public void handle(@Nonnull RoutingContext routingContext) {
     UrlConfiguration requestConfiguration = routingContext.get(CTX_REQUEST_CONFIGURATION);
     routingContext
         .response()
@@ -22,7 +28,7 @@ public class WellKnownRoute implements Handler<RoutingContext> {
         .end(getConfiguration(requestConfiguration).encode());
   }
 
-  private JsonObject getConfiguration(@Nonnull final UrlConfiguration requestConfiguration) {
+  private JsonObject getConfiguration(@Nonnull UrlConfiguration requestConfiguration) {
     JsonObject result = new JsonObject();
     result
         .put("issuer", requestConfiguration.getIssuer().toASCIIString())

@@ -1,5 +1,6 @@
 package com.tngtech.keycloakmock.impl.handler;
 
+import io.jsonwebtoken.SignatureAlgorithm;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -10,31 +11,36 @@ import java.security.interfaces.RSAPublicKey;
 import java.util.Base64;
 import java.util.Collections;
 import javax.annotation.Nonnull;
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Singleton;
 
+@Singleton
 public class JwksRoute implements Handler<RoutingContext> {
   private final String jwksResponse;
 
-  public JwksRoute(
-      @Nonnull final String keyId,
-      @Nonnull final String algorithm,
-      @Nonnull final PublicKey publicKey) {
+  @Inject
+  JwksRoute(
+      @Nonnull @Named("keyId") String keyId,
+      @Nonnull SignatureAlgorithm algorithm,
+      @Nonnull PublicKey publicKey) {
     this.jwksResponse =
         new JsonObject()
             .put(
                 "keys",
-                new JsonArray(Collections.singletonList(toSigningKey(keyId, algorithm, publicKey))))
+                new JsonArray(
+                    Collections.singletonList(
+                        toSigningKey(keyId, algorithm.getValue(), publicKey))))
             .encode();
   }
 
   @Override
-  public void handle(@Nonnull final RoutingContext routingContext) {
+  public void handle(@Nonnull RoutingContext routingContext) {
     routingContext.response().putHeader("content-type", "application/json").end(jwksResponse);
   }
 
-  private JsonObject toSigningKey(
-      @Nonnull final String keyId,
-      @Nonnull final String algorithm,
-      @Nonnull final PublicKey publicKey) {
+  private static JsonObject toSigningKey(
+      @Nonnull String keyId, @Nonnull String algorithm, @Nonnull PublicKey publicKey) {
     JsonObject result = new JsonObject();
     result.put("kid", keyId);
     result.put("use", "sig");

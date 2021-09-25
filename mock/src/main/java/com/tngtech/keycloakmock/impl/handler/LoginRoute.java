@@ -16,9 +16,12 @@ import io.vertx.ext.web.common.template.TemplateEngine;
 import java.util.Optional;
 import java.util.UUID;
 import javax.annotation.Nonnull;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Singleton
 public class LoginRoute implements Handler<RoutingContext> {
 
   private static final Logger LOG = LoggerFactory.getLogger(LoginRoute.class);
@@ -33,7 +36,8 @@ public class LoginRoute implements Handler<RoutingContext> {
   @Nonnull private final RedirectHelper redirectHelper;
   @Nonnull private final TemplateEngine engine;
 
-  public LoginRoute(
+  @Inject
+  LoginRoute(
       @Nonnull SessionRepository sessionRepository,
       @Nonnull RedirectHelper redirectHelper,
       @Nonnull TemplateEngine engine) {
@@ -43,7 +47,7 @@ public class LoginRoute implements Handler<RoutingContext> {
   }
 
   @Override
-  public void handle(@Nonnull final RoutingContext routingContext) {
+  public void handle(@Nonnull RoutingContext routingContext) {
     // if we have a stored session with a valid token, re-use it
     Optional<PersistentSession> existingSession =
         Optional.ofNullable(routingContext.getCookie(KEYCLOAK_SESSION_COOKIE))

@@ -5,9 +5,12 @@ import io.vertx.core.http.HttpHeaders;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.common.template.TemplateEngine;
 import javax.annotation.Nonnull;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Singleton
 public class DelegationRoute implements Handler<RoutingContext> {
   private static final Logger LOG = LoggerFactory.getLogger(DelegationRoute.class);
   private static final String HEADER = "header";
@@ -15,12 +18,13 @@ public class DelegationRoute implements Handler<RoutingContext> {
 
   @Nonnull private final TemplateEngine engine;
 
-  public DelegationRoute(@Nonnull TemplateEngine engine) {
+  @Inject
+  DelegationRoute(@Nonnull TemplateEngine engine) {
     this.engine = engine;
   }
 
   @Override
-  public void handle(RoutingContext routingContext) {
+  public void handle(@Nonnull RoutingContext routingContext) {
     if ("true".equals(routingContext.queryParams().get("error"))) {
       routingContext.put(HEADER, "Delegation failed");
       routingContext.put(

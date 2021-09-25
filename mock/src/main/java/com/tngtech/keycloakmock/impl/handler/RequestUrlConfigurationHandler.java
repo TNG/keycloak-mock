@@ -7,7 +7,10 @@ import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
+@Singleton
 public class RequestUrlConfigurationHandler implements Handler<RoutingContext> {
   public static final String CTX_REQUEST_CONFIGURATION = "requestConfiguration";
 
@@ -15,12 +18,13 @@ public class RequestUrlConfigurationHandler implements Handler<RoutingContext> {
 
   @Nonnull private final UrlConfiguration baseConfiguration;
 
-  public RequestUrlConfigurationHandler(@Nonnull final UrlConfiguration baseConfiguration) {
+  @Inject
+  RequestUrlConfigurationHandler(@Nonnull UrlConfiguration baseConfiguration) {
     this.baseConfiguration = Objects.requireNonNull(baseConfiguration);
   }
 
   @Override
-  public void handle(RoutingContext routingContext) {
+  public void handle(@Nonnull RoutingContext routingContext) {
     String requestHostname = routingContext.request().getHeader("Host");
     String requestRealm = null;
     Matcher matcher = REALM_PATTERN.matcher(routingContext.normalizedPath());
