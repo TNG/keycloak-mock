@@ -2,8 +2,8 @@ import com.github.jengelman.gradle.plugins.shadow.transformers.ApacheNoticeResou
 
 plugins {
     id 'application'
-    id 'com.github.gmazzo.buildconfig' version '3.0.2'
-    id 'com.github.johnrengelman.shadow' version '7.0.0'
+    id 'com.github.gmazzo.buildconfig' version '3.0.3'
+    id 'com.github.johnrengelman.shadow' version '7.1.0'
 }
 
 apply plugin: 'com.google.cloud.tools.jib'
