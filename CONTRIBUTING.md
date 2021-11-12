@@ -79,3 +79,8 @@ This project uses [google code style](https://github.com/google/styleguide).
 Running ```pre-commit run --all-files```
 will automatically format java code correctly.
 See [here](https://github.com/google/google-java-format) for IDE integration.
+
+### Updating the baseline
+
+This repository uses a rebase-only strategy. When you need to update your branch to include the
+latest changes from the main repository, please do not merge them but rebase your changes.
