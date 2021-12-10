@@ -5,7 +5,7 @@ configurations {
 }
 
 ext {
-    dagger_version = '2.40.1'
+    dagger_version = '2.40.5'
 }
 
 dependencies {
