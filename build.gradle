@@ -26,7 +26,7 @@ scmVersion {
     }
     branchVersionIncrementer = [
         'feature/.*' : 'incrementMinor',
-        'master' : 'incrementMinor',
+        'main' : 'incrementMinor',
     ]
 }
 
