@@ -4,16 +4,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.within;
 import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.lenient;
 
-import com.tngtech.keycloakmock.api.TokenConfig;
-import com.tngtech.keycloakmock.impl.TokenGenerator;
-import com.tngtech.keycloakmock.impl.UrlConfiguration;
-import com.tngtech.keycloakmock.impl.session.PersistentSession;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,6 +19,11 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import com.tngtech.keycloakmock.api.TokenConfig;
+import com.tngtech.keycloakmock.impl.TokenGenerator;
+import com.tngtech.keycloakmock.impl.UrlConfiguration;
+import com.tngtech.keycloakmock.impl.session.PersistentSession;
 
 @ExtendWith(MockitoExtension.class)
 class TokenHelperTest {
@@ -47,7 +50,7 @@ class TokenHelperTest {
     doReturn(CLIENT_ID).when(session).getClientId();
     doReturn(SESSION_ID).when(session).getSessionId();
     doReturn(NONCE).when(session).getNonce();
-    doReturn(USER).when(session).getUsername();
+    lenient().doReturn(USER).when(session).getUsername();
     doReturn(ROLES).when(session).getRoles();
     doReturn(TOKEN).when(tokenGenerator).getToken(configCaptor.capture(), same(urlConfiguration));
   }
@@ -89,5 +92,23 @@ class TokenHelperTest {
         .containsExactlyInAnyOrderElementsOf(ROLES);
     assertThat(tokenConfig.getResourceAccess().get("resource2").getRoles())
         .containsExactlyInAnyOrderElementsOf(ROLES);
+  }
+
+  @Test
+  void email_username_correctly_resolved() {
+    String userEmail = "john.smith@somewhere.com";
+
+    doReturn(userEmail).when(session).getUsername();
+
+    uut = new TokenHelper(tokenGenerator, Collections.emptyList());
+
+    uut.getToken(session, urlConfiguration);
+
+    TokenConfig tokenConfig = configCaptor.getValue();
+    assertThat(tokenConfig.getPreferredUsername()).isEqualTo("john.smith");
+    assertThat(tokenConfig.getSubject()).isEqualTo("john.smith");
+    assertThat(tokenConfig.getGivenName()).isEqualTo("John");
+    assertThat(tokenConfig.getFamilyName()).isEqualTo("Smith");
+    assertThat(tokenConfig.getEmail()).isEqualTo(userEmail);
   }
 }
