@@ -150,8 +150,8 @@ public class ServerModule {
         .handler(authenticationRoute);
     router
         .post(routing.getTokenEndpoint().getPath())
-        .handler(basicAuthHandler)
         .handler(BodyHandler.create())
+        .handler(basicAuthHandler)
         .handler(tokenRoute);
     router.get(routing.getOpenIdPath("login-status-iframe.html*").getPath()).handler(iframeRoute);
     router
