@@ -1,13 +1,13 @@
 import static groovy.io.FileType.FILES
 
 plugins {
-    id 'com.github.node-gradle.node' version '3.1.1'
+    id 'com.github.node-gradle.node' version '3.3.0'
 }
 
 def nodeDir = 'bin/nodejs'
 def yarnDir = 'bin/yarn'
-def nodeVersionString = '16.13.1'
-def yarnVersionString = '1.22.17'
+def nodeVersionString = '16.15.0'
+def yarnVersionString = '1.22.18'
 
 node {
     // Version of node to use.

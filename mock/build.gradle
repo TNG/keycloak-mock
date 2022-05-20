@@ -5,7 +5,7 @@ configurations {
 }
 
 ext {
-    dagger_version = '2.40.5'
+    dagger_version = '2.42'
 }
 
 dependencies {
@@ -16,11 +16,11 @@ dependencies {
     implementation "org.slf4j:slf4j-api:$slf4j_version"
     implementation "com.google.dagger:dagger:$dagger_version"
     resourceJars "org.keycloak:keycloak-js-adapter:$keycloak_version"
-    testImplementation 'io.fusionauth:fusionauth-jwt:5.0.0'
+    testImplementation 'io.fusionauth:fusionauth-jwt:5.2.0'
     testImplementation "io.rest-assured:rest-assured:$restassured_version"
     // required to mock RoutingContext
     testImplementation "io.vertx:vertx-codegen:$vertx_version"
-    testImplementation 'net.javacrumbs.json-unit:json-unit-assertj:2.28.0'
+    testImplementation 'net.javacrumbs.json-unit:json-unit-assertj:2.35.0'
     testImplementation "org.assertj:assertj-core:$assertj_version"
     testImplementation "org.junit.jupiter:junit-jupiter-api:$junit5_version"
     testImplementation "org.junit.jupiter:junit-jupiter-params:$junit5_version"
