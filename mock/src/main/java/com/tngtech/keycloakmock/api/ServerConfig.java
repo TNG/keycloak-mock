@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import javax.annotation.Nonnull;
 
 /** Server configuration to use. */
@@ -153,6 +154,31 @@ public final class ServerConfig {
     @Nonnull
     public Builder withPort(final int port) {
       this.port = port;
+      return this;
+    }
+
+    /**
+     * Set client scopes.
+     *
+     * <p>Set of scopes to be configured
+     *
+     * @param scope as set
+     * @return builder
+     */
+    @Nonnull
+    public Builder withClientScopes(Set<String> scope) {
+      TokenConfig.addClientScopes(scope);
+      return this;
+    }
+
+    /**
+     * Resets the client scopes if already set.
+     *
+     * @return builder
+     */
+    @Nonnull
+    public Builder resetClientScopes() {
+      TokenConfig.addClientScopes(Collections.emptySet());
       return this;
     }
 
