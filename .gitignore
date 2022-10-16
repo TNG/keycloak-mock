@@ -20,6 +20,9 @@ build
 *.ipr
 **/out/
 
+### Eclipse ###
+**/bin/
+
 # direnv
 .envrc
 
