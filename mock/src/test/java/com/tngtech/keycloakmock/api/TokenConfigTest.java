@@ -47,7 +47,6 @@ class TokenConfigTest {
     assertThat(config.getPreferredUsername()).isNull();
     assertThat(config.getRealmAccess().getRoles()).isEmpty();
     assertThat(config.getResourceAccess()).isEmpty();
-    assertThat(config.getScope()).isEqualTo("openid");
     assertThat(config.getSubject()).isEqualTo("user");
     assertThat(config.getAuthenticationContextClassReference()).isNull();
   }
@@ -232,7 +231,7 @@ class TokenConfigTest {
             .withScope("scope3")
             .build();
 
-    assertThat(config.getScope().split(" ")).containsOnly("openid", "scope1", "scope2", "scope3");
+    assertThat(config.getScope().split(" ")).containsOnly("scope1", "scope2", "scope3");
   }
 
   @Test

@@ -99,20 +99,6 @@ public class TokenConfig {
     return new Builder();
   }
 
-  /**
-   * Add client scope during server configuration.
-   *
-   * @param set of scopes to add
-   */
-  @Nonnull
-  public static void addClientScopes(Set<String> clientScopes) {
-    if (!Builder.clientScope.isEmpty()) {
-      Builder.clientScope.clear();
-    }
-
-    Builder.clientScope.addAll(clientScopes);
-  }
-
   @Nonnull
   public Set<String> getAudience() {
     return Collections.unmodifiableSet(audience);
@@ -234,15 +220,8 @@ public class TokenConfig {
     @Nullable private String email;
     @Nullable private String preferredUsername;
     @Nullable private String authenticationContextClassReference;
-    @Nonnull protected static final Set<String> clientScope = new HashSet<>();
 
-    private Builder() {
-      scope.add("openid");
-
-      if (!clientScope.isEmpty()) {
-        scope.addAll(clientScope);
-      }
-    }
+    private Builder() {}
 
     /**
      * Add the contents of a real token.
