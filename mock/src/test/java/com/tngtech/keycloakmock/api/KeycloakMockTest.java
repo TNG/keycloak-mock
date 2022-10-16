@@ -54,7 +54,7 @@ class KeycloakMockTest {
             aServerConfig()
                 .withPort(9005)
                 .withDefaultRealm("test-demo")
-                .withClientScopes(scopes)
+                .withDefaultScopes(scopes)
                 .build());
     keycloakMock.start();
 
@@ -66,7 +66,21 @@ class KeycloakMockTest {
     assertTrue(
         scope.contains("openid") && scope.contains("TestScope1") && scope.contains("TestScope2"));
 
-    aServerConfig().resetClientScopes().build();
+    keycloakMock.stop();
+  }
+
+  @Test
+  void contains_default_client_scope_during_server_configuration() throws Exception {
+    KeycloakMock keycloakMock =
+        new KeycloakMock(aServerConfig().withPort(9005).withDefaultRealm("test-demo").build());
+    keycloakMock.start();
+
+    String token = getAuthorization();
+
+    Set<String> scope = extractScopeFromToken(token);
+
+    assertEquals(1, scope.size());
+    assertTrue(scope.contains("openid"));
 
     keycloakMock.stop();
   }

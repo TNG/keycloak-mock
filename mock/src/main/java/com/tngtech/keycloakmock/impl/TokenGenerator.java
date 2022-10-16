@@ -53,7 +53,7 @@ public class TokenGenerator {
                     .getIssuer()
                     .toASCIIString())
             .setSubject(tokenConfig.getSubject())
-            .claim("scope", tokenConfig.getScope())
+            .claim("scope", getScopes(tokenConfig, requestConfiguration))
             .claim("typ", "Bearer")
             .claim("azp", tokenConfig.getAuthorizedParty());
     setClaimIfPresent(builder, "nbf", tokenConfig.getNotBefore());
@@ -69,6 +69,23 @@ public class TokenGenerator {
         .addClaims(tokenConfig.getClaims())
         .signWith(privateKey, algorithm)
         .compact();
+  }
+
+  private Object getScopes(TokenConfig tokenConfig, UrlConfiguration requestConfiguration) {
+    if (tokenConfig.getScope().isBlank()) {
+      return String.join(" ", requestConfiguration.getScopes());
+    } else if (requestConfiguration.getScopes().isEmpty()) {
+      // This condition is true when token generation started without starting keycloak mock server
+
+      return tokenConfig.getScope();
+    } else {
+      // Means server started with default scopes (openid) or with additional specified default
+      // scopes, in addition to it
+      // scopes are also configured in TokenConfig
+      // In this case concatenate both default scopes and TokenConfig scopes
+
+      return String.join(" ", requestConfiguration.getScopes()) + " " + tokenConfig.getScope();
+    }
   }
 
   @SuppressWarnings("unchecked")

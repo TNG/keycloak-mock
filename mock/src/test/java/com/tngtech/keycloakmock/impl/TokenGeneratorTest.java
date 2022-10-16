@@ -125,7 +125,7 @@ class TokenGeneratorTest {
     assertThat(claims)
         .containsEntry("aud", Collections.singletonList(AUDIENCE))
         .containsEntry("azp", AUTHORIZED_PARTY)
-        .containsEntry("scope", "openid " + SCOPE)
+        .containsEntry("scope", SCOPE)
         .containsEntry("name", NAME)
         .containsEntry("given_name", GIVEN)
         .containsEntry("family_name", FAMILY)

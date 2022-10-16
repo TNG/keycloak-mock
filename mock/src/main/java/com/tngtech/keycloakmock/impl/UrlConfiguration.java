@@ -4,6 +4,7 @@ import com.tngtech.keycloakmock.api.ServerConfig;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Objects;
+import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -20,6 +21,7 @@ public class UrlConfiguration {
   private final int port;
   @Nonnull private final String hostname;
   @Nonnull private final String realm;
+  @Nonnull private final Set<String> scopes;
 
   public UrlConfiguration(@Nonnull final ServerConfig serverConfig) {
     this.protocol = Objects.requireNonNull(serverConfig.getProtocol());
@@ -31,6 +33,7 @@ public class UrlConfiguration {
       this.hostname = serverConfig.getDefaultHostname() + ":" + serverConfig.getPort();
     }
     this.realm = Objects.requireNonNull(serverConfig.getDefaultRealm());
+    this.scopes = serverConfig.getDefaultScopes();
   }
 
   private UrlConfiguration(
@@ -41,6 +44,7 @@ public class UrlConfiguration {
     this.port = baseConfiguration.port;
     this.hostname = requestHost != null ? requestHost : baseConfiguration.hostname;
     this.realm = requestRealm != null ? requestRealm : baseConfiguration.realm;
+    this.scopes = baseConfiguration.scopes;
   }
 
   @Nonnull
@@ -115,5 +119,10 @@ public class UrlConfiguration {
   @Nonnull
   public String getRealm() {
     return realm;
+  }
+
+  @Nonnull
+  public Set<String> getScopes() {
+    return scopes;
   }
 }

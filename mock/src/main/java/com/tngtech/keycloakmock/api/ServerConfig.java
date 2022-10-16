@@ -3,6 +3,7 @@ package com.tngtech.keycloakmock.api;
 import com.tngtech.keycloakmock.impl.Protocol;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -14,12 +15,14 @@ public final class ServerConfig {
   private static final String DEFAULT_HOSTNAME = "localhost";
   private static final int DEFAULT_PORT = 8000;
   private static final String DEFAULT_REALM = "master";
+  private static final String DEFAULT_SCOPE = "openid";
 
   private final int port;
   @Nonnull private final Protocol protocol;
   @Nonnull private final String defaultHostname;
   @Nonnull private final String defaultRealm;
   @Nonnull private final List<String> resourcesToMapRolesTo;
+  @Nonnull private final Set<String> defaultScopes;
 
   private ServerConfig(@Nonnull final Builder builder) {
     this.port = builder.port;
@@ -27,6 +30,7 @@ public final class ServerConfig {
     this.defaultHostname = builder.defaultHostname;
     this.defaultRealm = builder.defaultRealm;
     this.resourcesToMapRolesTo = builder.resourcesToMapRolesTo;
+    this.defaultScopes = builder.defaultScopes;
   }
 
   /**
@@ -119,6 +123,16 @@ public final class ServerConfig {
     return defaultRealm;
   }
 
+  /**
+   * The default scopes used in issuer claim.
+   *
+   * @return default scopes
+   */
+  @Nonnull
+  public Set<String> getDefaultScopes() {
+    return defaultScopes;
+  }
+
   public static final class Builder {
 
     private int port = DEFAULT_PORT;
@@ -126,8 +140,11 @@ public final class ServerConfig {
     @Nonnull private String defaultHostname = DEFAULT_HOSTNAME;
     @Nonnull private String defaultRealm = DEFAULT_REALM;
     @Nonnull private final List<String> resourcesToMapRolesTo = new ArrayList<>();
+    @Nonnull private final Set<String> defaultScopes = new HashSet<>();
 
-    private Builder() {}
+    private Builder() {
+      defaultScopes.add(DEFAULT_SCOPE);
+    }
 
     /**
      * Set TLS flag.
@@ -154,31 +171,6 @@ public final class ServerConfig {
     @Nonnull
     public Builder withPort(final int port) {
       this.port = port;
-      return this;
-    }
-
-    /**
-     * Set client scopes.
-     *
-     * <p>Set of scopes to be configured
-     *
-     * @param scope as set
-     * @return builder
-     */
-    @Nonnull
-    public Builder withClientScopes(Set<String> scope) {
-      TokenConfig.addClientScopes(scope);
-      return this;
-    }
-
-    /**
-     * Resets the client scopes if already set.
-     *
-     * @return builder
-     */
-    @Nonnull
-    public Builder resetClientScopes() {
-      TokenConfig.addClientScopes(Collections.emptySet());
       return this;
     }
 
@@ -285,6 +277,20 @@ public final class ServerConfig {
     @Nonnull
     public Builder withResourceToMapRolesTo(@Nonnull String resource) {
       resourcesToMapRolesTo.add(Objects.requireNonNull(resource));
+      return this;
+    }
+
+    /**
+     * Set default client scopes.
+     *
+     * <p>Set of client scopes to be configured. Default scope is 'openid'.
+     *
+     * @param scopes as set
+     * @return builder
+     */
+    @Nonnull
+    public Builder withDefaultScopes(@Nonnull final Set<String> defaultScopes) {
+      this.defaultScopes.addAll(defaultScopes);
       return this;
     }
 
