@@ -3,8 +3,6 @@ package com.tngtech.keycloakmock.api;
 import static com.tngtech.keycloakmock.api.ServerConfig.aServerConfig;
 import static com.tngtech.keycloakmock.test.KeyHelper.loadValidKey;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
@@ -62,9 +60,9 @@ class KeycloakMockTest {
 
     Set<String> scope = extractScopeFromToken(token);
 
-    assertEquals(3, scope.size());
-    assertTrue(
-        scope.contains("openid") && scope.contains("TestScope1") && scope.contains("TestScope2"));
+    assertThat(scope.size()).isEqualTo(3);
+
+    assertThat(scope).containsExactlyInAnyOrder("openid", "TestScope1", "TestScope2");
 
     keycloakMock.stop();
   }
@@ -79,8 +77,9 @@ class KeycloakMockTest {
 
     Set<String> scope = extractScopeFromToken(token);
 
-    assertEquals(1, scope.size());
-    assertTrue(scope.contains("openid"));
+    assertThat(scope.size()).isEqualTo(1);
+
+    assertThat(scope).containsOnly("openid");
 
     keycloakMock.stop();
   }

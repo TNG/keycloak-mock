@@ -36,6 +36,7 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.util.List;
+import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.inject.Named;
 import javax.inject.Singleton;
@@ -85,6 +86,13 @@ public class ServerModule {
   @Named("resources")
   List<String> provideResources(@Nonnull ServerConfig serverConfig) {
     return serverConfig.getResourcesToMapRolesTo();
+  }
+
+  @Provides
+  @Singleton
+  @Named("scopes")
+  public Set<String> provideScopes(@Nonnull ServerConfig serverConfig) {
+    return serverConfig.getDefaultScopes();
   }
 
   @Provides

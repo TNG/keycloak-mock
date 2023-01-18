@@ -409,7 +409,8 @@ public class TokenConfig {
     /**
      * Add scope.
      *
-     * <p>The scope for which this token has been requested. Always contains "openid".
+     * <p>The scope for which this token has been requested. Always contains the scopes configured
+     * in ServerConfig.
      *
      * @param scope the scope to add
      * @return builder
@@ -425,7 +426,8 @@ public class TokenConfig {
     /**
      * Add scopes.
      *
-     * <p>The scope for which this token has been requested. Always contains "openid".
+     * <p>The scope for which this token has been requested. Always contains the scopes configured
+     * in ServerConfig.
      *
      * @param scopes the scopes to add
      * @return builder
