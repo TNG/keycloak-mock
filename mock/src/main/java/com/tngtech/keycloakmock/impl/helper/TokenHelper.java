@@ -8,6 +8,7 @@ import com.tngtech.keycloakmock.impl.UrlConfiguration;
 import com.tngtech.keycloakmock.impl.session.Session;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.inject.Inject;
@@ -22,13 +23,16 @@ public class TokenHelper {
 
   @Nonnull private final TokenGenerator tokenGenerator;
   @Nonnull private final List<String> resourcesToMapRolesTo;
+  @Nonnull private final Set<String> defaultScopes;
 
   @Inject
   TokenHelper(
       @Nonnull TokenGenerator tokenGenerator,
-      @Nonnull @Named("resources") List<String> resourcesToMapRolesTo) {
+      @Nonnull @Named("resources") List<String> resourcesToMapRolesTo,
+      @Nonnull @Named("scopes") Set<String> defaultScopes) {
     this.tokenGenerator = tokenGenerator;
     this.resourcesToMapRolesTo = resourcesToMapRolesTo;
+    this.defaultScopes = defaultScopes;
   }
 
   @Nullable
@@ -55,8 +59,16 @@ public class TokenHelper {
         builder.withResourceRoles(resource, session.getRoles());
       }
     }
+
+    addDefaultScopesIfConfigured(builder);
     // for simplicity, the access token is the same as the ID token
     return tokenGenerator.getToken(builder.build(), requestConfiguration);
+  }
+
+  private void addDefaultScopesIfConfigured(Builder builder) {
+    if (!defaultScopes.isEmpty()) {
+      builder.withScopes(defaultScopes);
+    }
   }
 
   @Nonnull

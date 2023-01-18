@@ -124,13 +124,13 @@ public final class ServerConfig {
   }
 
   /**
-   * The default scopes used in issuer claim.
+   * The default scopes used in scope claim.
    *
    * @return default scopes
    */
   @Nonnull
   public Set<String> getDefaultScopes() {
-    return defaultScopes;
+    return Collections.unmodifiableSet(defaultScopes);
   }
 
   public static final class Builder {
@@ -283,7 +283,7 @@ public final class ServerConfig {
     /**
      * Set default client scopes.
      *
-     * <p>Set of client scopes to be configured. Default scope is 'openid'.
+     * <p>Set of client scopes to be configured. Default scope 'openid' is always added.
      *
      * @param scopes as set
      * @return builder
@@ -291,6 +291,20 @@ public final class ServerConfig {
     @Nonnull
     public Builder withDefaultScopes(@Nonnull final Set<String> defaultScopes) {
       this.defaultScopes.addAll(defaultScopes);
+      return this;
+    }
+
+    /**
+     * Set default client scope.
+     *
+     * <p>A client scope to be configured. Default scope 'openid' is always added.
+     *
+     * @param scope as string
+     * @return builder
+     */
+    @Nonnull
+    public Builder withDefaultScope(@Nonnull final String defaultScope) {
+      this.defaultScopes.add(defaultScope);
       return this;
     }
 
