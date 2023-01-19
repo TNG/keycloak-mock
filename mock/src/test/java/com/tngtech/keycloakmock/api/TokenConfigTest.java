@@ -47,6 +47,7 @@ class TokenConfigTest {
     assertThat(config.getPreferredUsername()).isNull();
     assertThat(config.getRealmAccess().getRoles()).isEmpty();
     assertThat(config.getResourceAccess()).isEmpty();
+    assertThat(config.getScope()).isEmpty();
     assertThat(config.getSubject()).isEqualTo("user");
     assertThat(config.getAuthenticationContextClassReference()).isNull();
   }

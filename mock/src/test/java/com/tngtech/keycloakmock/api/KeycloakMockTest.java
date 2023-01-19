@@ -60,9 +60,7 @@ class KeycloakMockTest {
 
     Set<String> scope = extractScopeFromToken(token);
 
-    assertThat(scope.size()).isEqualTo(3);
-
-    assertThat(scope).containsExactlyInAnyOrder("openid", "TestScope1", "TestScope2");
+    assertThat(scope).hasSize(3).containsExactlyInAnyOrder("openid", "TestScope1", "TestScope2");
 
     keycloakMock.stop();
   }
@@ -77,9 +75,7 @@ class KeycloakMockTest {
 
     Set<String> scope = extractScopeFromToken(token);
 
-    assertThat(scope.size()).isEqualTo(1);
-
-    assertThat(scope).containsOnly("openid");
+    assertThat(scope).hasSize(1).containsOnly("openid");
 
     keycloakMock.stop();
   }
@@ -109,9 +105,8 @@ class KeycloakMockTest {
 
     OAuthJSONAccessTokenResponse oAuthResponse =
         client.accessToken(request, OAuth.HttpMethod.POST, OAuthJSONAccessTokenResponse.class);
-    String token = oAuthResponse.getAccessToken();
 
-    return token;
+    return oAuthResponse.getAccessToken();
   }
 
   private Set<String> extractScopeFromToken(String token) {
@@ -124,9 +119,8 @@ class KeycloakMockTest {
     JSONObject json = new JSONObject(payload);
 
     String scope = json.getString("scope");
-    Set<String> items = new HashSet<String>(Arrays.asList(scope.split(" ")));
 
-    return items;
+    return new HashSet<>(Arrays.asList(scope.split(" ")));
   }
 
   private static String getBase64Encoded(String id, String password) {
