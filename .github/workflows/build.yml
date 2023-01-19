@@ -21,7 +21,7 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
       - name: Run pre-commit check
-        uses: pre-commit/action@v2.0.3
+        uses: pre-commit/action@v3.0.0
 
   build_java8:
 
