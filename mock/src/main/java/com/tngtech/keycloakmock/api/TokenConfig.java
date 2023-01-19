@@ -426,7 +426,7 @@ public class TokenConfig {
     /**
      * Add scopes.
      *
-     * <p>The scope for which this token has been requested. Always contains the scopes configured
+     * <p>The scopes for which this token has been requested. Always contains the scopes configured
      * in ServerConfig.
      *
      * @param scopes the scopes to add
@@ -735,6 +735,13 @@ public class TokenConfig {
     }
   }
 
+  /**
+   * A container for realm or resource roles, to be used in claims {@code realm_access} or {@code
+   * resource_access}.
+   *
+   * @see Builder#withRealmRole(String)
+   * @see Builder#withResourceRole(String, String)
+   */
   public static class Access {
 
     @Nonnull private final Set<String> roles = new HashSet<>();

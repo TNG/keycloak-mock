@@ -133,6 +133,11 @@ public final class ServerConfig {
     return Collections.unmodifiableSet(defaultScopes);
   }
 
+  /**
+   * Builder for {@link ServerConfig}.
+   *
+   * <p>Use this to generate a server configuration to your needs.
+   */
   public static final class Builder {
 
     private int port = DEFAULT_PORT;
@@ -285,8 +290,10 @@ public final class ServerConfig {
      *
      * <p>Set of client scopes to be configured. Default scope 'openid' is always added.
      *
-     * @param scopes as set
+     * @param defaultScopes as set
      * @return builder
+     * @see <a href="https://openid.net/specs/openid-connect-core-1_0.html#ScopeClaims">scope
+     *     claims</a>
      */
     @Nonnull
     public Builder withDefaultScopes(@Nonnull final Set<String> defaultScopes) {
@@ -299,8 +306,10 @@ public final class ServerConfig {
      *
      * <p>A client scope to be configured. Default scope 'openid' is always added.
      *
-     * @param scope as string
+     * @param defaultScope as string
      * @return builder
+     * @see <a href="https://openid.net/specs/openid-connect-core-1_0.html#ScopeClaims">scope
+     *     claims</a>
      */
     @Nonnull
     public Builder withDefaultScope(@Nonnull final String defaultScope) {
