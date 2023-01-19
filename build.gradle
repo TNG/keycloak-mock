@@ -150,7 +150,7 @@ subprojects {
             }
         }
 
-        sonarqube {
+        sonar {
             properties {
                 property "sonar.coverage.jacoco.xmlReportPaths", "${project.projectDir}/build/reports/jacoco/test/jacocoTestReport.xml"
             }
@@ -201,7 +201,7 @@ subprojects {
     }
 }
 
-sonarqube {
+sonar {
     skipProject = !(System.getenv('SONAR_TOKEN')?.trim())
     properties {
         property "sonar.host.url", "https://sonarcloud.io"
