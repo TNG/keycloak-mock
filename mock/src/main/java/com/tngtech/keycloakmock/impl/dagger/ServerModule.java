@@ -57,21 +57,22 @@ public class ServerModule {
   @Singleton
   @Named("iframe")
   ResourceFileHandler provideIframeHandler() {
-    return new ResourceFileHandler("/login-status-iframe.html");
+    return new ResourceFileHandler(
+        "/org/keycloak/protocol/oidc/endpoints/login-status-iframe.html");
   }
 
   @Provides
   @Singleton
   @Named("cookie1")
   ResourceFileHandler provideCookie1Handler() {
-    return new ResourceFileHandler("/3p-cookies-step1.html");
+    return new ResourceFileHandler("/org/keycloak/protocol/oidc/endpoints/3p-cookies-step1.html");
   }
 
   @Provides
   @Singleton
   @Named("cookie2")
   ResourceFileHandler provideCookie2Handler() {
-    return new ResourceFileHandler("/3p-cookies-step2.html");
+    return new ResourceFileHandler("/org/keycloak/protocol/oidc/endpoints/3p-cookies-step2.html");
   }
 
   @Provides

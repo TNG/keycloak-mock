@@ -1,7 +1,7 @@
 import static groovy.io.FileType.FILES
 
 plugins {
-    id 'com.github.node-gradle.node' version '3.3.0'
+    id 'com.github.node-gradle.node' version '3.5.1'
 }
 
 def nodeDir = 'bin/nodejs'
@@ -43,7 +43,7 @@ yarn_build {
     outputs.dir("$projectDir/dist")
 }
 
-task copyNode(type: Copy) {
+tasks.register('copyNode', Copy) {
     dependsOn nodeSetup
     if (org.gradle.internal.os.OperatingSystem.current().isLinux()) {
         from "${projectDir}/${nodeDir}/node-v${nodeVersionString}-linux-x64/"
@@ -57,7 +57,7 @@ task copyNode(type: Copy) {
     }
 }
 
-task copyYarn(type: Copy) {
+tasks.register('copyYarn', Copy) {
     dependsOn yarnSetup
     from file("${projectDir}/${yarnDir}/yarn-v${yarnVersionString}/")
     into file("${projectDir}/${yarnDir}/yarn/")
@@ -66,7 +66,7 @@ task copyYarn(type: Copy) {
 yarnSetup.dependsOn copyNode
 yarn_install.dependsOn copyYarn
 
-task build {
+tasks.register('build') {
     dependsOn yarn_build
 }
 

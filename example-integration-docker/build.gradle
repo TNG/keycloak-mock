@@ -1,5 +1,5 @@
 plugins {
-  id 'com.avast.gradle.docker-compose' version '0.16.4'
+  id 'com.avast.gradle.docker-compose' version '0.16.11'
 }
 
 composeUp {
@@ -19,7 +19,7 @@ afterEvaluate {
   }
 }
 
-task e2e {
+tasks.register('e2e') {
   dependsOn composeUp
   dependsOn ':example-frontend-react:yarn_e2e'
   finalizedBy composeDown

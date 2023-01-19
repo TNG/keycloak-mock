@@ -1,11 +1,16 @@
 description = 'Base module of keycloak-mock'
 
 configurations {
-    resourceJars
+    jsResourceJar {
+        transitive = false
+    }
+    htmlResourceJar {
+        transitive = false
+    }
 }
 
 ext {
-    dagger_version = '2.42'
+    dagger_version = '2.44.2'
 }
 
 dependencies {
@@ -15,12 +20,13 @@ dependencies {
     implementation "io.vertx:vertx-web-templ-freemarker:$vertx_version"
     implementation "org.slf4j:slf4j-api:$slf4j_version"
     implementation "com.google.dagger:dagger:$dagger_version"
-    resourceJars "org.keycloak:keycloak-js-adapter:$keycloak_version"
-    testImplementation 'io.fusionauth:fusionauth-jwt:5.2.0'
+    jsResourceJar "org.keycloak:keycloak-js-adapter:$keycloak_version"
+    htmlResourceJar "org.keycloak:keycloak-services:$keycloak_version"
+    testImplementation 'io.fusionauth:fusionauth-jwt:5.2.1'
     testImplementation "io.rest-assured:rest-assured:$restassured_version"
     // required to mock RoutingContext
     testImplementation "io.vertx:vertx-codegen:$vertx_version"
-    testImplementation 'net.javacrumbs.json-unit:json-unit-assertj:2.35.0'
+    testImplementation 'net.javacrumbs.json-unit:json-unit-assertj:2.36.0'
     testImplementation "org.assertj:assertj-core:$assertj_version"
     testImplementation "org.junit.jupiter:junit-jupiter-api:$junit5_version"
     testImplementation "org.junit.jupiter:junit-jupiter-params:$junit5_version"
@@ -31,16 +37,23 @@ dependencies {
     annotationProcessor "com.google.dagger:dagger-compiler:$dagger_version"
 }
 
-processResources {
-    from files(zipTree(configurations.resourceJars.singleFile)) {
-        exclude '*.ts'
-        exclude '*.min.js'
-        exclude '*.map'
-        exclude 'css'
-        exclude 'META-INF/INDEX.LIST'
-        exclude 'META-INF/MANIFEST.MF'
+tasks.register('addResources', Copy) {
+    // make sure to fail if both JARs contain a NOTICE, then we need to merge the files somehow ...
+    duplicatesStrategy = DuplicatesStrategy.FAIL
+    from files(zipTree(configurations.jsResourceJar.singleFile)) {
+        include 'keycloak.js'
+        include 'META-INF/NOTICE'
     }
+    from files(zipTree(configurations.htmlResourceJar.singleFile)) {
+        include '/org/keycloak/protocol/oidc/endpoints/3p-cookies-step1.html'
+        include '/org/keycloak/protocol/oidc/endpoints/3p-cookies-step2.html'
+        include '/org/keycloak/protocol/oidc/endpoints/login-status-iframe.html'
+        include 'META-INF/NOTICE'
+    }
+    into 'build/resources/main'
 }
+
+processResources.dependsOn addResources
 
 test {
     useJUnitPlatform()

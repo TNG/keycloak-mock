@@ -7,3 +7,5 @@ keycloak:
   auth-server-url: http://localhost:8000/auth
   resource: client
   principal-attribute: preferred_username
+  # default has changed to 'external', and within e2e tests the docker IP is not recognized as internal
+  ssl-required: none

@@ -2,7 +2,7 @@ import com.github.jengelman.gradle.plugins.shadow.transformers.ApacheNoticeResou
 
 plugins {
     id 'application'
-    id 'com.github.gmazzo.buildconfig' version '3.0.3'
+    id 'com.github.gmazzo.buildconfig' version '3.1.0'
     id 'com.github.johnrengelman.shadow' version '7.1.2'
 }
 
@@ -29,21 +29,28 @@ shadowJar {
     }
 }
 
-task fakeJar(type: Jar) {
+tasks.register('fakeJar', Jar) {
     from file("${project.projectDir}/src/main/resources/README.md")
     classifier 'fake'
 }
 
+// dependencies as suggested by gradle
+startScripts.dependsOn(shadowJar)
+distZip.dependsOn(shadowJar)
+distTar.dependsOn(shadowJar)
+startShadowScripts.dependsOn(jar)
+
 publishing {
     publications {
         shadow(MavenPublication) {
-            publication -> project.shadow.component(publication)
-            artifact(fakeJar) {
-                classifier 'javadoc'
-            }
-            artifact(fakeJar) {
-                classifier 'sources'
-            }
+            publication ->
+                project.shadow.component(publication)
+                artifact(fakeJar) {
+                    classifier 'javadoc'
+                }
+                artifact(fakeJar) {
+                    classifier 'sources'
+                }
         }
     }
 }
@@ -53,7 +60,6 @@ signing {
 }
 
 configurations {
-    resourceJars
     all*.exclude group: 'javax.servlet'
 }
 
@@ -89,7 +95,7 @@ test {
 
 jib {
     from {
-        image = 'openjdk:11-jre-slim'
+        image = 'eclipse-temurin:17-jre'
     }
     to {
         image = 'keycloak-mock/standalone'
