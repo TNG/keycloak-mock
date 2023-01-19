@@ -37,6 +37,8 @@ jobs:
           java-version: '8'
       - name: Build with Gradle
         run: ./gradlew build
+      - name: Check Javadoc generation
+        run: ./gradlew javadoc
       - name: Run integration tests
         run: ./gradlew e2e
       - name: Publish test report
