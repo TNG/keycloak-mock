@@ -496,7 +496,7 @@ class KeycloakMockIntegrationTest {
         .config(config().redirect(redirectConfig().followRedirects(false)))
         .when()
         .get(
-            "http://localhost:8000/auth/realms/realm/protocol/openid-connect/logout?redirect_uri=redirect_uri")
+            "http://localhost:8000/auth/realms/realm/protocol/openid-connect/logout?post_logout_redirect_uri=redirect_uri")
         .then()
         .assertThat()
         .statusCode(302)

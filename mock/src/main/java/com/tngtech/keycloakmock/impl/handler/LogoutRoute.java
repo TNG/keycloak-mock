@@ -14,10 +14,20 @@ import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+/**
+ * @see <a
+ *     href="https://github.com/keycloak/keycloak-documentation/blob/main/securing_apps/topics/oidc/java/logout.adoc">Logout</a>
+ */
 @Singleton
 public class LogoutRoute implements Handler<RoutingContext> {
 
-  private static final String REDIRECT_URI = "redirect_uri";
+  /**
+   * <a href="https://github.com/keycloak/keycloak/pull/10887/">Before Keycloak 18</a>, the logout
+   * endpoint had used the {@value #LEGACY_REDIRECT_URI} query parameter.
+   */
+  private static final String LEGACY_REDIRECT_URI = "redirect_uri";
+
+  private static final String POST_LOGOUT_REDIRECT_URI = "post_logout_redirect_uri";
   @Nonnull private final SessionRepository sessionRepository;
   @Nonnull private final RedirectHelper redirectHelper;
 
@@ -30,7 +40,10 @@ public class LogoutRoute implements Handler<RoutingContext> {
 
   @Override
   public void handle(@Nonnull RoutingContext routingContext) {
-    String redirectUri = routingContext.queryParams().get(REDIRECT_URI);
+    String redirectUri = routingContext.queryParams().get(POST_LOGOUT_REDIRECT_URI);
+    if (redirectUri == null) { // for backwards compatibility:
+      redirectUri = routingContext.queryParams().get(LEGACY_REDIRECT_URI);
+    }
     UrlConfiguration requestConfiguration = routingContext.get(CTX_REQUEST_CONFIGURATION);
     invalidateSession(routingContext);
     routingContext
