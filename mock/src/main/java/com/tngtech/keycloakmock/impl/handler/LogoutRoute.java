@@ -15,8 +15,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 /**
- * @see <a
- *     href="https://github.com/keycloak/keycloak-documentation/blob/main/securing_apps/topics/oidc/java/logout.adoc">Logout</a>
+ * @see <a href="https://www.keycloak.org/docs/latest/securing_apps/index.html#logout">Logout</a>
  */
 @Singleton
 public class LogoutRoute implements Handler<RoutingContext> {
