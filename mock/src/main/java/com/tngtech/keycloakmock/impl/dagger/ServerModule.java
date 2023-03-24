@@ -91,6 +91,13 @@ public class ServerModule {
 
   @Provides
   @Singleton
+  @Named("userAliases")
+  Set<String> provideUserAliases(@Nonnull ServerConfig serverConfig) {
+    return serverConfig.getUserAliases();
+  }
+
+  @Provides
+  @Singleton
   @Named("scopes")
   public Set<String> provideScopes(@Nonnull ServerConfig serverConfig) {
     return serverConfig.getDefaultScopes();

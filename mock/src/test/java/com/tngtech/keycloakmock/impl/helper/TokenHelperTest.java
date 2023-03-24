@@ -14,6 +14,8 @@ import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import org.assertj.core.util.Sets;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -32,6 +34,7 @@ class TokenHelperTest {
   private static final String TOKEN = "token123";
   private static final List<String> ROLES = Arrays.asList("role1", "role2");
   private static final List<String> CONFIGURED_RESOURCES = Arrays.asList("resource1", "resource2");
+  private static final Set<String> USER_ALIASES = Sets.set("unusedAlias");
 
   @Mock private TokenGenerator tokenGenerator;
 
@@ -49,12 +52,16 @@ class TokenHelperTest {
     doReturn(NONCE).when(session).getNonce();
     doReturn(USER).when(session).getUsername();
     doReturn(ROLES).when(session).getRoles();
-    doReturn(TOKEN).when(tokenGenerator).getToken(configCaptor.capture(), same(urlConfiguration));
+    doReturn(TOKEN)
+        .when(tokenGenerator)
+        .getToken(configCaptor.capture(), same(urlConfiguration), same(USER_ALIASES));
   }
 
   @Test
   void token_is_correctly_generated() {
-    uut = new TokenHelper(tokenGenerator, Collections.emptyList(), Collections.emptySet());
+    uut =
+        new TokenHelper(
+            tokenGenerator, Collections.emptyList(), Collections.emptySet(), USER_ALIASES);
 
     uut.getToken(session, urlConfiguration);
 
@@ -78,7 +85,8 @@ class TokenHelperTest {
 
   @Test
   void resource_roles_are_used_if_configured() {
-    uut = new TokenHelper(tokenGenerator, CONFIGURED_RESOURCES, Collections.emptySet());
+    uut =
+        new TokenHelper(tokenGenerator, CONFIGURED_RESOURCES, Collections.emptySet(), USER_ALIASES);
 
     uut.getToken(session, urlConfiguration);
 

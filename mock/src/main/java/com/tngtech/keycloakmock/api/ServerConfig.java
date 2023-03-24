@@ -2,6 +2,7 @@ package com.tngtech.keycloakmock.api;
 
 import com.tngtech.keycloakmock.impl.Protocol;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -22,6 +23,7 @@ public final class ServerConfig {
   @Nonnull private final String defaultHostname;
   @Nonnull private final String defaultRealm;
   @Nonnull private final List<String> resourcesToMapRolesTo;
+  @Nonnull private final Set<String> userAliases;
   @Nonnull private final Set<String> defaultScopes;
 
   private ServerConfig(@Nonnull final Builder builder) {
@@ -30,6 +32,7 @@ public final class ServerConfig {
     this.defaultHostname = builder.defaultHostname;
     this.defaultRealm = builder.defaultRealm;
     this.resourcesToMapRolesTo = builder.resourcesToMapRolesTo;
+    this.userAliases = builder.userAliases;
     this.defaultScopes = builder.defaultScopes;
   }
 
@@ -76,6 +79,11 @@ public final class ServerConfig {
   @Nonnull
   public List<String> getResourcesToMapRolesTo() {
     return Collections.unmodifiableList(resourcesToMapRolesTo);
+  }
+
+  @Nonnull
+  public Set<String> getUserAliases() {
+    return Collections.unmodifiableSet(userAliases);
   }
 
   /**
@@ -145,6 +153,7 @@ public final class ServerConfig {
     @Nonnull private String defaultHostname = DEFAULT_HOSTNAME;
     @Nonnull private String defaultRealm = DEFAULT_REALM;
     @Nonnull private final List<String> resourcesToMapRolesTo = new ArrayList<>();
+    @Nonnull private final Set<String> userAliases = new HashSet<>();
     @Nonnull private final Set<String> defaultScopes = new HashSet<>();
 
     private Builder() {
@@ -282,6 +291,12 @@ public final class ServerConfig {
     @Nonnull
     public Builder withResourceToMapRolesTo(@Nonnull String resource) {
       resourcesToMapRolesTo.add(Objects.requireNonNull(resource));
+      return this;
+    }
+
+    @Nonnull
+    public Builder withUserAliases(@Nonnull Collection<String> aliases) {
+      userAliases.addAll(aliases);
       return this;
     }
 

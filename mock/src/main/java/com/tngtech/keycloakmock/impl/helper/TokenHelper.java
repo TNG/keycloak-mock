@@ -24,15 +24,18 @@ public class TokenHelper {
   @Nonnull private final TokenGenerator tokenGenerator;
   @Nonnull private final List<String> resourcesToMapRolesTo;
   @Nonnull private final Set<String> defaultScopes;
+  @Nonnull private Set<String> userAliases;
 
   @Inject
   TokenHelper(
       @Nonnull TokenGenerator tokenGenerator,
       @Nonnull @Named("resources") List<String> resourcesToMapRolesTo,
-      @Nonnull @Named("scopes") Set<String> defaultScopes) {
+      @Nonnull @Named("scopes") Set<String> defaultScopes,
+      @Nonnull @Named("userAliases") Set<String> userAliases) {
     this.tokenGenerator = tokenGenerator;
     this.resourcesToMapRolesTo = resourcesToMapRolesTo;
     this.defaultScopes = defaultScopes;
+    this.userAliases = userAliases;
   }
 
   @Nullable
@@ -62,7 +65,7 @@ public class TokenHelper {
 
     addDefaultScopesIfConfigured(builder);
     // for simplicity, the access token is the same as the ID token
-    return tokenGenerator.getToken(builder.build(), requestConfiguration);
+    return tokenGenerator.getToken(builder.build(), requestConfiguration, userAliases);
   }
 
   private void addDefaultScopesIfConfigured(Builder builder) {

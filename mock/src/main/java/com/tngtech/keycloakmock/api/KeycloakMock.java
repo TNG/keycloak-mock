@@ -71,7 +71,9 @@ public class KeycloakMock {
    */
   @Nonnull
   public String getAccessToken(@Nonnull final TokenConfig tokenConfig) {
-    return signatureComponent.tokenGenerator().getToken(tokenConfig, defaultConfiguration);
+    return signatureComponent
+        .tokenGenerator()
+        .getToken(tokenConfig, defaultConfiguration, serverConfig.getUserAliases());
   }
 
   /**

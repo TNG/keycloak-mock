@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.entry;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 
+import com.tngtech.keycloakmock.api.TokenConfig;
 import com.tngtech.keycloakmock.impl.dagger.DaggerSignatureComponent;
 import com.tngtech.keycloakmock.impl.dagger.SignatureComponent;
 import io.jsonwebtoken.Claims;
@@ -21,10 +22,12 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import org.assertj.core.util.Sets;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -53,6 +56,8 @@ class TokenGeneratorTest {
   private static final String AUTHENTICATION_CONTEXT_CLASS_REFERENCE = "acc ref";
   private static final String HOSTNAME = "hostname";
   private static final String REALM = "realm";
+  private static final String USER_ALIAS_1 = "alias1";
+  private static final String USER_ALIAS_2 = "alias2";
 
   private static SignatureComponent signatureComponent;
 
@@ -76,35 +81,39 @@ class TokenGeneratorTest {
     generator = signatureComponent.tokenGenerator();
   }
 
-  @Test
+  @ParameterizedTest
+  @ValueSource(booleans = {true, false})
   @SuppressWarnings("unchecked")
-  void config_is_correctly_applied() {
+  void config_is_correctly_applied(boolean testAliases) {
+    TokenConfig config =
+        aTokenConfig()
+            .withAudience(AUDIENCE)
+            .withAuthorizedParty(AUTHORIZED_PARTY)
+            .withSubject(SUBJECT)
+            .withScope(SCOPE)
+            .withRealmRoles(REALM_ROLES)
+            .withResourceRoles(AUDIENCE, AUDIENCE_ROLES)
+            .withResourceRole(AUTHORIZED_PARTY, PARTY_ROLE)
+            .withHostname(HOSTNAME)
+            .withRealm(REALM)
+            .withFamilyName(FAMILY)
+            .withGivenName(GIVEN)
+            .withName(NAME)
+            .withEmail(EMAIL)
+            .withPreferredUsername(USERNAME)
+            .withClaim(CLAIM_KEY, CLAIM_VALUE)
+            .withClaim("issuer", "ignored")
+            .withAuthenticationTime(AUTHENTICATION_TIME)
+            .withIssuedAt(ISSUED_AT)
+            .withNotBefore(NOT_BEFORE)
+            .withExpiration(EXPIRATION)
+            .withAuthenticationContextClassReference(AUTHENTICATION_CONTEXT_CLASS_REFERENCE)
+            .build();
+
     String token =
-        generator.getToken(
-            aTokenConfig()
-                .withAudience(AUDIENCE)
-                .withAuthorizedParty(AUTHORIZED_PARTY)
-                .withSubject(SUBJECT)
-                .withScope(SCOPE)
-                .withRealmRoles(REALM_ROLES)
-                .withResourceRoles(AUDIENCE, AUDIENCE_ROLES)
-                .withResourceRole(AUTHORIZED_PARTY, PARTY_ROLE)
-                .withHostname(HOSTNAME)
-                .withRealm(REALM)
-                .withFamilyName(FAMILY)
-                .withGivenName(GIVEN)
-                .withName(NAME)
-                .withEmail(EMAIL)
-                .withPreferredUsername(USERNAME)
-                .withClaim(CLAIM_KEY, CLAIM_VALUE)
-                .withClaim("issuer", "ignored")
-                .withAuthenticationTime(AUTHENTICATION_TIME)
-                .withIssuedAt(ISSUED_AT)
-                .withNotBefore(NOT_BEFORE)
-                .withExpiration(EXPIRATION)
-                .withAuthenticationContextClassReference(AUTHENTICATION_CONTEXT_CLASS_REFERENCE)
-                .build(),
-            urlConfiguration);
+        testAliases
+            ? generator.getToken(config, urlConfiguration, Sets.set(USER_ALIAS_1, USER_ALIAS_2))
+            : generator.getToken(config, urlConfiguration);
 
     verify(urlConfiguration).getIssuer();
     verify(urlConfiguration).forRequestContext(HOSTNAME, REALM);
@@ -135,6 +144,11 @@ class TokenGeneratorTest {
         .containsEntry("acr", AUTHENTICATION_CONTEXT_CLASS_REFERENCE)
         .containsKey("realm_access")
         .containsKey("resource_access");
+    if (testAliases) {
+      assertThat(claims)
+          .containsEntry(USER_ALIAS_1, USERNAME)
+          .containsEntry(USER_ALIAS_2, USERNAME);
+    }
     assertThat((Map<String, List<String>>) claims.get("realm_access"))
         .containsOnly(entry("roles", REALM_ROLES));
     Map<String, Map<String, List<String>>> resourceAccess =
