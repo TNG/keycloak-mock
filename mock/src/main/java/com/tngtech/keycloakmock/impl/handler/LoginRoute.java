@@ -50,7 +50,7 @@ public class LoginRoute implements Handler<RoutingContext> {
   public void handle(@Nonnull RoutingContext routingContext) {
     // if we have a stored session with a valid token, re-use it
     Optional<PersistentSession> existingSession =
-        Optional.ofNullable(routingContext.getCookie(KEYCLOAK_SESSION_COOKIE))
+        Optional.ofNullable(routingContext.request().getCookie(KEYCLOAK_SESSION_COOKIE))
             .map(Cookie::getValue)
             .map(value -> value.split("/"))
             .filter(split -> split.length > 0)
