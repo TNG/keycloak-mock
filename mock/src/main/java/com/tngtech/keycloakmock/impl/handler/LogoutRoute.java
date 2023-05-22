@@ -20,13 +20,13 @@ import javax.inject.Singleton;
 @Singleton
 public class LogoutRoute implements Handler<RoutingContext> {
 
+  private static final String LEGACY_REDIRECT_URI = "redirect_uri";
   /**
    * <a href="https://github.com/keycloak/keycloak/pull/10887/">Before Keycloak 18</a>, the logout
    * endpoint had used the {@value #LEGACY_REDIRECT_URI} query parameter.
    */
-  private static final String LEGACY_REDIRECT_URI = "redirect_uri";
-
   private static final String POST_LOGOUT_REDIRECT_URI = "post_logout_redirect_uri";
+
   @Nonnull private final SessionRepository sessionRepository;
   @Nonnull private final RedirectHelper redirectHelper;
 
