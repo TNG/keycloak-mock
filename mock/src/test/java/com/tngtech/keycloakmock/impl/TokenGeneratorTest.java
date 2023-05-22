@@ -149,4 +149,71 @@ class TokenGeneratorTest {
         .asList()
         .containsOnly(PARTY_ROLE);
   }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  void user_data_is_not_generated() {
+    String token =
+        generator.getToken(aTokenConfig().withSubject("foo.bar").build(), urlConfiguration);
+
+    Jwt<Header<?>, Claims> jwt =
+        Jwts.parserBuilder().setSigningKey(signatureComponent.publicKey()).build().parse(token);
+    assertThat(jwt.getHeader()).containsEntry("kid", "keyId");
+    Claims claims = jwt.getBody();
+
+    assertThat(claims.getSubject()).isEqualTo("foo.bar");
+    assertThat(claims)
+        .doesNotContainKeys("name", "given_name", "family_name", "email", "preferred_username");
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  void user_data_is_generated() {
+    doReturn("example.com").when(urlConfiguration).getHostname();
+    String token =
+        generator.getToken(
+            aTokenConfig().withSubjectAndGeneratedUserData("foo.bar").build(), urlConfiguration);
+
+    Jwt<Header<?>, Claims> jwt =
+        Jwts.parserBuilder().setSigningKey(signatureComponent.publicKey()).build().parse(token);
+    assertThat(jwt.getHeader()).containsEntry("kid", "keyId");
+    Claims claims = jwt.getBody();
+
+    assertThat(claims.getSubject()).isEqualTo("foo.bar");
+    assertThat(claims)
+        .containsEntry("name", "Foo Bar")
+        .containsEntry("given_name", "Foo")
+        .containsEntry("family_name", "Bar")
+        .containsEntry("email", "foo.bar@example.com")
+        .containsEntry("preferred_username", "foo.bar");
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  void explicit_user_data_takes_preference() {
+    doReturn("example.com").when(urlConfiguration).getHostname();
+    String token =
+        generator.getToken(
+            aTokenConfig()
+                .withSubjectAndGeneratedUserData("foo.bar")
+                .withGivenName("Jane")
+                .withFamilyName("Doe")
+                .withEmail("jane@doe.com")
+                .withPreferredUsername("doej")
+                .build(),
+            urlConfiguration);
+
+    Jwt<Header<?>, Claims> jwt =
+        Jwts.parserBuilder().setSigningKey(signatureComponent.publicKey()).build().parse(token);
+    assertThat(jwt.getHeader()).containsEntry("kid", "keyId");
+    Claims claims = jwt.getBody();
+
+    assertThat(claims.getSubject()).isEqualTo("foo.bar");
+    assertThat(claims)
+        .containsEntry("name", "Jane Doe")
+        .containsEntry("given_name", "Jane")
+        .containsEntry("family_name", "Doe")
+        .containsEntry("email", "jane@doe.com")
+        .containsEntry("preferred_username", "doej");
+  }
 }

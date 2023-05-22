@@ -50,6 +50,7 @@ class TokenConfigTest {
     assertThat(config.getScope()).isEmpty();
     assertThat(config.getSubject()).isEqualTo("user");
     assertThat(config.getAuthenticationContextClassReference()).isNull();
+    assertThat(config.isGenerateUserDataFromSubject()).isFalse();
   }
 
   @Test
@@ -240,6 +241,14 @@ class TokenConfigTest {
     TokenConfig config = aTokenConfig().withSubject("subject").build();
 
     assertThat(config.getSubject()).isEqualTo("subject");
+  }
+
+  @Test
+  void user_data_is_generated_from_subject() {
+    TokenConfig config = aTokenConfig().withSubjectAndGeneratedUserData("subject").build();
+
+    assertThat(config.getSubject()).isEqualTo("subject");
+    assertThat(config.isGenerateUserDataFromSubject()).isTrue();
   }
 
   @Test
