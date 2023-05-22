@@ -2,9 +2,6 @@ package com.tngtech.keycloakmock.impl;
 
 import com.tngtech.keycloakmock.api.TokenConfig;
 import com.tngtech.keycloakmock.impl.session.UserData;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Header;
-import io.jsonwebtoken.Jwt;
 import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
@@ -102,10 +99,9 @@ public class TokenGenerator {
         .compact();
   }
 
-  @SuppressWarnings("unchecked")
   public Map<String, Object> parseToken(String token) {
     JwtParser parser = Jwts.parserBuilder().setSigningKey(privateKey).build();
-    return ((Jwt<Header<?>, Claims>) parser.parse(token)).getBody();
+    return parser.parseClaimsJws(token).getBody();
   }
 
   private void setClaimIfPresent(
