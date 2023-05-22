@@ -9,6 +9,7 @@ import com.tngtech.keycloakmock.api.TokenConfig;
 import com.tngtech.keycloakmock.impl.TokenGenerator;
 import com.tngtech.keycloakmock.impl.UrlConfiguration;
 import com.tngtech.keycloakmock.impl.session.PersistentSession;
+import com.tngtech.keycloakmock.impl.session.UserData;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
@@ -28,7 +29,7 @@ class TokenHelperTest {
   private static final String CLIENT_ID = "client123";
   private static final String SESSION_ID = "sessionId123";
   private static final String NONCE = "nonce123";
-  private static final String USER = "user123";
+  private static final UserData USER = UserData.fromUsernameAndHostname("jane.user", "example.com");
   private static final String TOKEN = "token123";
   private static final List<String> ROLES = Arrays.asList("role1", "role2");
   private static final List<String> CONFIGURED_RESOURCES = Arrays.asList("resource1", "resource2");
@@ -47,7 +48,7 @@ class TokenHelperTest {
     doReturn(CLIENT_ID).when(session).getClientId();
     doReturn(SESSION_ID).when(session).getSessionId();
     doReturn(NONCE).when(session).getNonce();
-    doReturn(USER).when(session).getUsername();
+    doReturn(USER).when(session).getUserData();
     doReturn(ROLES).when(session).getRoles();
     doReturn(TOKEN).when(tokenGenerator).getToken(configCaptor.capture(), same(urlConfiguration));
   }
@@ -68,12 +69,15 @@ class TokenHelperTest {
         .containsEntry("nonce", NONCE)
         .containsEntry("session_state", SESSION_ID);
     assertThat(tokenConfig.getExpiration()).isAfter(Instant.now().plus(9, ChronoUnit.HOURS));
-    assertThat(tokenConfig.getFamilyName()).isEqualTo(USER);
+    assertThat(tokenConfig.getGivenName()).isEqualTo(USER.getGivenName());
+    assertThat(tokenConfig.getFamilyName()).isEqualTo(USER.getFamilyName());
+    assertThat(tokenConfig.getName()).isEqualTo(USER.getName());
+    assertThat(tokenConfig.getEmail()).isEqualTo(USER.getEmail());
     assertThat(tokenConfig.getIssuedAt()).isCloseTo(Instant.now(), within(1, ChronoUnit.SECONDS));
-    assertThat(tokenConfig.getPreferredUsername()).isEqualTo(USER);
+    assertThat(tokenConfig.getPreferredUsername()).isEqualTo(USER.getPreferredUsername());
     assertThat(tokenConfig.getRealmAccess().getRoles()).containsExactlyInAnyOrderElementsOf(ROLES);
     assertThat(tokenConfig.getResourceAccess()).isEmpty();
-    assertThat(tokenConfig.getSubject()).isEqualTo(USER);
+    assertThat(tokenConfig.getSubject()).isEqualTo(USER.getPreferredUsername());
   }
 
   @Test

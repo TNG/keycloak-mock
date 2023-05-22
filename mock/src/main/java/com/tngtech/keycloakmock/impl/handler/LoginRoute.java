@@ -77,7 +77,7 @@ public class LoginRoute implements Handler<RoutingContext> {
     if (existingSession.isPresent()) {
       PersistentSession oldSession = existingSession.get();
       PersistentSession newSession =
-          request.toSession(oldSession.getUsername(), oldSession.getRoles());
+          request.toSession(oldSession.getUserData(), oldSession.getRoles());
       sessionRepository.updateSession(oldSession, newSession);
       routingContext
           .response()

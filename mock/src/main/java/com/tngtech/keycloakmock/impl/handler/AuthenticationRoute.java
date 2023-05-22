@@ -8,6 +8,7 @@ import com.tngtech.keycloakmock.impl.helper.UserInputSanitizer;
 import com.tngtech.keycloakmock.impl.session.PersistentSession;
 import com.tngtech.keycloakmock.impl.session.SessionRepository;
 import com.tngtech.keycloakmock.impl.session.SessionRequest;
+import com.tngtech.keycloakmock.impl.session.UserData;
 import io.vertx.core.Handler;
 import io.vertx.ext.web.RoutingContext;
 import java.util.Arrays;
@@ -58,10 +59,12 @@ public class AuthenticationRoute implements Handler<RoutingContext> {
             .map(s -> Arrays.asList(s.split(",")))
             .orElseGet(Collections::emptyList);
 
-    PersistentSession session = request.toSession(username, roles);
-    sessionRepository.upgradeRequest(request, session);
-
     UrlConfiguration requestConfiguration = routingContext.get(CTX_REQUEST_CONFIGURATION);
+
+    PersistentSession session =
+        request.toSession(
+            UserData.fromUsernameAndHostname(username, requestConfiguration.getHostname()), roles);
+    sessionRepository.upgradeRequest(request, session);
 
     routingContext
         .response()
