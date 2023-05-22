@@ -46,15 +46,15 @@ public class LogoutRoute implements Handler<RoutingContext> {
     UrlConfiguration requestConfiguration = routingContext.get(CTX_REQUEST_CONFIGURATION);
     invalidateSession(routingContext);
     routingContext
-        .addCookie(redirectHelper.invalidateSessionCookie(requestConfiguration))
         .response()
+        .addCookie(redirectHelper.invalidateSessionCookie(requestConfiguration))
         .putHeader("location", redirectUri)
         .setStatusCode(302)
         .end();
   }
 
   private void invalidateSession(RoutingContext routingContext) {
-    Optional.ofNullable(routingContext.getCookie(KEYCLOAK_SESSION_COOKIE))
+    Optional.ofNullable(routingContext.request().getCookie(KEYCLOAK_SESSION_COOKIE))
         .map(Cookie::getValue)
         .map(s -> s.split("/"))
         .filter(s -> s.length > 0)
