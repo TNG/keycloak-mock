@@ -59,8 +59,8 @@ public class SessionRequest {
     return nonce;
   }
 
-  public PersistentSession toSession(@Nonnull String username, @Nonnull List<String> roles) {
-    return new PersistentSession(this, username, roles);
+  public PersistentSession toSession(@Nonnull UserData userData, @Nonnull List<String> roles) {
+    return new PersistentSession(this, userData, roles);
   }
 
   public static class Builder {

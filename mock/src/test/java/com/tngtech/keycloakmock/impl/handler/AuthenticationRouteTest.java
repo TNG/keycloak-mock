@@ -16,6 +16,7 @@ import com.tngtech.keycloakmock.impl.helper.RedirectHelper;
 import com.tngtech.keycloakmock.impl.session.PersistentSession;
 import com.tngtech.keycloakmock.impl.session.SessionRepository;
 import com.tngtech.keycloakmock.impl.session.SessionRequest;
+import com.tngtech.keycloakmock.impl.session.UserData;
 import io.vertx.core.http.Cookie;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
@@ -32,11 +33,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class AuthenticationRouteTest {
 
-  private static final String USER = "user123";
+  private static final String USERNAME = "jane.user";
+  private static final String HOSTNAME = "example.com";
+  private static final UserData USER = UserData.fromUsernameAndHostname(USERNAME, HOSTNAME);
   private static final String ROLES = "role1,role2,role3";
-  private static final String NONCE = "nonce123";
   private static final String SESSION_ID = "session123";
-  private static final String CLIENT_ID = "client123";
   private static final String REDIRECT_URI = "redirectUri";
 
   @Mock private SessionRepository sessionRepository;
@@ -102,12 +103,13 @@ class AuthenticationRouteTest {
   }
 
   private void setupValidRequest() {
-    doReturn(USER).when(request).getFormAttribute("username");
+    doReturn(USERNAME).when(request).getFormAttribute("username");
     doReturn(ROLES).when(request).getFormAttribute("password");
     doReturn(request).when(routingContext).request();
     doReturn(sessionRequest).when(sessionRepository).getRequest(SESSION_ID);
-    doReturn(session).when(sessionRequest).toSession(eq("user123"), anyList());
+    doReturn(session).when(sessionRequest).toSession(eq(USER), anyList());
     doReturn(urlConfiguration).when(routingContext).get(CTX_REQUEST_CONFIGURATION);
+    doReturn(HOSTNAME).when(urlConfiguration).getHostname();
     doReturn(response).when(routingContext).response();
     doReturn(response).when(response).addCookie(any(Cookie.class));
     doReturn(response).when(response).putHeader(eq("location"), anyString());

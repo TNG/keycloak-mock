@@ -12,7 +12,7 @@ public interface Session {
   String getSessionId();
 
   @Nonnull
-  String getUsername();
+  UserData getUserData();
 
   @Nonnull
   List<String> getRoles();

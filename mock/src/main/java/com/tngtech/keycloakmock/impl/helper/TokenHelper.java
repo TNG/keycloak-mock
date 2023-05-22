@@ -6,6 +6,7 @@ import com.tngtech.keycloakmock.api.TokenConfig.Builder;
 import com.tngtech.keycloakmock.impl.TokenGenerator;
 import com.tngtech.keycloakmock.impl.UrlConfiguration;
 import com.tngtech.keycloakmock.impl.session.Session;
+import com.tngtech.keycloakmock.impl.session.UserData;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -37,14 +38,18 @@ public class TokenHelper {
 
   @Nullable
   public String getToken(@Nonnull Session session, @Nonnull UrlConfiguration requestConfiguration) {
+    UserData userData = session.getUserData();
     Builder builder =
         aTokenConfig()
             .withAuthorizedParty(session.getClientId())
             // at the moment, there is no explicit way of setting an audience
             .withAudience(session.getClientId())
-            .withSubject(session.getUsername())
-            .withPreferredUsername(session.getUsername())
-            .withFamilyName(session.getUsername())
+            .withSubject(userData.getSubject())
+            .withPreferredUsername(userData.getPreferredUsername())
+            .withGivenName(userData.getGivenName())
+            .withFamilyName(userData.getFamilyName())
+            .withName(userData.getName())
+            .withEmail(userData.getEmail())
             .withClaim(SESSION_STATE, session.getSessionId())
             // we currently don't do proper authorization anyway, so we can just act as if we were
             // compliant to ISO/IEC 29115 level 1 (see KEYCLOAK-3223 / KEYCLOAK-3314)

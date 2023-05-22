@@ -108,7 +108,9 @@ public class TokenRoute implements Handler<RoutingContext> {
     UrlConfiguration requestConfiguration = routingContext.get(CTX_REQUEST_CONFIGURATION);
     String password = routingContext.request().getFormAttribute("password");
 
-    Session session = AdHocSession.fromClientIdUsernameAndPassword(clientId, username, password);
+    Session session =
+        AdHocSession.fromClientIdUsernameAndPassword(
+            clientId, requestConfiguration.getHostname(), username, password);
     String token = tokenHelper.getToken(session, requestConfiguration);
 
     routingContext
@@ -143,7 +145,8 @@ public class TokenRoute implements Handler<RoutingContext> {
     final UrlConfiguration requestConfiguration = routingContext.get(CTX_REQUEST_CONFIGURATION);
 
     final Session session =
-        AdHocSession.fromClientIdUsernameAndPassword(clientId, clientId, password);
+        AdHocSession.fromClientIdUsernameAndPassword(
+            clientId, requestConfiguration.getHostname(), clientId, password);
 
     final String token = tokenHelper.getToken(session, requestConfiguration);
 

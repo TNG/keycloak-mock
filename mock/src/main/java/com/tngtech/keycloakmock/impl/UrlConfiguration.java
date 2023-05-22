@@ -113,6 +113,11 @@ public class UrlConfiguration {
   }
 
   @Nonnull
+  public String getHostname() {
+    return hostname;
+  }
+
+  @Nonnull
   public String getRealm() {
     return realm;
   }

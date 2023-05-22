@@ -8,7 +8,7 @@ public class PersistentSession implements Session {
 
   @Nonnull private final String clientId;
   @Nonnull private final String sessionId;
-  @Nonnull private final String username;
+  @Nonnull private final UserData userData;
   @Nonnull private final List<String> roles;
   @Nullable private final String state;
   @Nonnull private final String redirectUri;
@@ -17,10 +17,10 @@ public class PersistentSession implements Session {
   @Nullable private final String nonce;
 
   PersistentSession(
-      @Nonnull SessionRequest request, @Nonnull String username, @Nonnull List<String> roles) {
+      @Nonnull SessionRequest request, @Nonnull UserData userData, @Nonnull List<String> roles) {
     this.clientId = request.getClientId();
     this.sessionId = request.getSessionId();
-    this.username = username;
+    this.userData = userData;
     this.roles = roles;
     this.state = request.getState();
     this.redirectUri = request.getRedirectUri();
@@ -43,8 +43,8 @@ public class PersistentSession implements Session {
 
   @Override
   @Nonnull
-  public String getUsername() {
-    return username;
+  public UserData getUserData() {
+    return userData;
   }
 
   @Override
