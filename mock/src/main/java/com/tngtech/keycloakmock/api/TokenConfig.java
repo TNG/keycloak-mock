@@ -27,7 +27,7 @@ import javax.annotation.Nullable;
  * <p>Example usage:
  *
  * <pre>{@code
- * TokenConfig config = TokenConfig.aTokenConfig().withSubject("subject).build();
+ * TokenConfig config = TokenConfig.aTokenConfig().withSubjectAndGeneratedUserData("subject").build();
  * }</pre>
  */
 public class TokenConfig {
@@ -43,6 +43,7 @@ public class TokenConfig {
   @Nonnull private final Instant issuedAt;
   @Nonnull private final Instant authenticationTime;
   @Nonnull private final Instant expiration;
+  private final boolean generateUserDataFromSubject;
   @Nullable private final Instant notBefore;
   @Nullable private final String hostname;
   @Nullable private final String realm;
@@ -61,6 +62,7 @@ public class TokenConfig {
     }
     authorizedParty = builder.authorizedParty;
     subject = builder.subject;
+    generateUserDataFromSubject = builder.generateUserDataFromSubject;
     scope = String.join(" ", builder.scope);
     claims = builder.claims;
     realmAccess = builder.realmRoles;
@@ -112,6 +114,10 @@ public class TokenConfig {
   @Nonnull
   public String getSubject() {
     return subject;
+  }
+
+  public boolean isGenerateUserDataFromSubject() {
+    return generateUserDataFromSubject;
   }
 
   @Nonnull
@@ -211,6 +217,7 @@ public class TokenConfig {
     @Nonnull private Instant issuedAt = Instant.now();
     @Nonnull private Instant expiration = issuedAt.plus(10, ChronoUnit.HOURS);
     @Nonnull private Instant authenticationTime = Instant.now();
+    private boolean generateUserDataFromSubject = false;
     @Nullable private Instant notBefore;
     @Nullable private String hostname;
     @Nullable private String realm;
@@ -399,10 +406,32 @@ public class TokenConfig {
      * @param subject the subject to set
      * @return builder
      * @see <a href="https://openid.net/specs/openid-connect-core-1_0.html#IDToken">ID token</a>
+     * @see #withSubjectAndGeneratedUserData(String) to also generate name, preferred username and
+     *     email.
      */
     @Nonnull
     public Builder withSubject(@Nonnull final String subject) {
       this.subject = Objects.requireNonNull(subject);
+      return this;
+    }
+
+    /**
+     * Set subject and derive name, preferred username and email.
+     *
+     * <p>Note that values explicitly set via {@link #withName(String)}, {@link
+     * #withGivenName(String)}, {@link #withFamilyName(String)}, {@link
+     * #withPreferredUsername(String)} or {@link #withEmail(String)} take preference even when using
+     * this method.
+     *
+     * @param subject the subject to set
+     * @return builder
+     * @see <a href="https://openid.net/specs/openid-connect-core-1_0.html#IDToken">ID token</a>
+     * @see #withSubject(String) to only set the subject
+     */
+    @Nonnull
+    public Builder withSubjectAndGeneratedUserData(@Nonnull final String subject) {
+      this.subject = Objects.requireNonNull(subject);
+      this.generateUserDataFromSubject = true;
       return this;
     }
 
