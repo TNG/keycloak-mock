@@ -32,6 +32,18 @@ public class Main implements Callable<Void> {
       description = "Whether to use HTTPS instead of HTTP.")
   private boolean tls;
 
+  @SuppressWarnings("FieldMayBeFinal")
+  @Option(
+          names = {"-cp", "--contextPath"},
+          description = "Keycloak context path.")
+  private String contextPath = "/auth";
+
+  @SuppressWarnings("FieldMayBeFinal")
+  @Option(
+          names = {"-ncp", "--noContextPath"},
+          description = "Keycloak context path.")
+  private boolean noContextPath;
+
   @Option(
       names = {"-r", "--mapRolesToResources"},
       description = "If set, roles will be assigned to these resources instead of the realm.",
@@ -55,10 +67,11 @@ public class Main implements Callable<Void> {
             aServerConfig()
                 .withPort(port)
                 .withTls(tls)
+                .withContextPath(noContextPath ? "" : contextPath)
                 .withResourcesToMapRolesTo(resourcesToMapRolesTo)
                 .build())
         .start();
-    LOG.info("Server is running on {}://localhost:{}", (tls ? "https" : "http"), port);
+    LOG.info("Server is running on {}://localhost:{}{}", (tls ? "https" : "http"), contextPath, port);
     return null;
   }
 }

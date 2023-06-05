@@ -31,7 +31,7 @@ import javax.annotation.Nullable;
  * }</pre>
  */
 public class TokenConfig {
-  private static final Pattern ISSUER_PATH_PATTERN = Pattern.compile("^/auth/realms/([^/]+)$");
+  private static final Pattern ISSUER_PATH_PATTERN = Pattern.compile("^.*?/realms/([^/]+)$");
 
   @Nonnull private final Set<String> audience;
   @Nonnull private final String authorizedParty;
@@ -341,7 +341,7 @@ public class TokenConfig {
             "The issuer '"
                 + issuer
                 + "' did not conform to the expected format"
-                + " 'http[s]://$HOSTNAME[:port]/auth/realms/$REALM'.");
+                + " 'http[s]://$HOSTNAME[:port][:contextPath]/realms/$REALM'.");
       }
       return matcher.group(1);
     }

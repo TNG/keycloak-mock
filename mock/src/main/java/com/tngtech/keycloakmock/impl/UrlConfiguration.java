@@ -8,7 +8,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 public class UrlConfiguration {
-  private static final String ISSUER_PATH = "/auth/realms/";
+  private static final String ISSUER_PATH = "/realms/";
   private static final String AUTHENTICATION_CALLBACK_PATH = "authenticate/";
   private static final String OUT_OF_BAND_PATH = "oob";
   private static final String ISSUER_OPEN_ID_PATH = "protocol/openid-connect/";
@@ -19,6 +19,7 @@ public class UrlConfiguration {
   @Nonnull private final Protocol protocol;
   private final int port;
   @Nonnull private final String hostname;
+  @Nonnull private final String contextPath;
   @Nonnull private final String realm;
 
   public UrlConfiguration(@Nonnull final ServerConfig serverConfig) {
@@ -30,6 +31,13 @@ public class UrlConfiguration {
     } else {
       this.hostname = serverConfig.getDefaultHostname() + ":" + serverConfig.getPort();
     }
+    if (Objects.requireNonNull(serverConfig.getContextPath()).length() == 0) {
+      this.contextPath = serverConfig.getContextPath();
+    } else {
+      this.contextPath = serverConfig.getContextPath().startsWith("/")
+        ? serverConfig.getContextPath()
+        : "/".concat(serverConfig.getContextPath());
+    }
     this.realm = Objects.requireNonNull(serverConfig.getDefaultRealm());
   }
 
@@ -40,6 +48,7 @@ public class UrlConfiguration {
     this.protocol = baseConfiguration.protocol;
     this.port = baseConfiguration.port;
     this.hostname = requestHost != null ? requestHost : baseConfiguration.hostname;
+    this.contextPath = baseConfiguration.contextPath;
     this.realm = requestRealm != null ? requestRealm : baseConfiguration.realm;
   }
 
@@ -60,12 +69,12 @@ public class UrlConfiguration {
 
   @Nonnull
   public URI getIssuer() {
-    return getBaseUrl().resolve(ISSUER_PATH + realm);
+    return getBaseUrl().resolve(contextPath + ISSUER_PATH + realm);
   }
 
   @Nonnull
   public URI getIssuerPath() {
-    return getBaseUrl().resolve(ISSUER_PATH + realm + "/");
+    return getBaseUrl().resolve(contextPath + ISSUER_PATH + realm + "/");
   }
 
   @Nonnull
