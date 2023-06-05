@@ -13,6 +13,7 @@ import javax.annotation.Nonnull;
 public final class ServerConfig {
 
   private static final String DEFAULT_HOSTNAME = "localhost";
+  private static final String DEFAULT_CONTEXT_PATH = "/auth";
   private static final int DEFAULT_PORT = 8000;
   private static final String DEFAULT_REALM = "master";
   private static final String DEFAULT_SCOPE = "openid";
@@ -20,6 +21,7 @@ public final class ServerConfig {
   private final int port;
   @Nonnull private final Protocol protocol;
   @Nonnull private final String defaultHostname;
+  @Nonnull private final String contextPath;
   @Nonnull private final String defaultRealm;
   @Nonnull private final List<String> resourcesToMapRolesTo;
   @Nonnull private final Set<String> defaultScopes;
@@ -28,6 +30,7 @@ public final class ServerConfig {
     this.port = builder.port;
     this.protocol = builder.protocol;
     this.defaultHostname = builder.defaultHostname;
+    this.contextPath = builder.contextPath;
     this.defaultRealm = builder.defaultRealm;
     this.resourcesToMapRolesTo = builder.resourcesToMapRolesTo;
     this.defaultScopes = builder.defaultScopes;
@@ -102,6 +105,18 @@ public final class ServerConfig {
   }
 
   /**
+   * Keycloak context path.
+   *
+   * @return context path
+   * @see Builder#withContextPath(String)
+   * @see Builder#withNoContextPath()
+   */
+  @Nonnull
+  public String getContextPath() {
+    return contextPath;
+  }
+
+  /**
    * The default realm used in issuer claim.
    *
    * @return default realm
@@ -143,6 +158,7 @@ public final class ServerConfig {
     private int port = DEFAULT_PORT;
     @Nonnull private Protocol protocol = Protocol.HTTP;
     @Nonnull private String defaultHostname = DEFAULT_HOSTNAME;
+    @Nonnull private String contextPath = DEFAULT_CONTEXT_PATH;
     @Nonnull private String defaultRealm = DEFAULT_REALM;
     @Nonnull private final List<String> resourcesToMapRolesTo = new ArrayList<>();
     @Nonnull private final Set<String> defaultScopes = new HashSet<>();
@@ -262,6 +278,41 @@ public final class ServerConfig {
     @Nonnull
     public Builder withResourcesToMapRolesTo(@Nonnull List<String> resources) {
       resourcesToMapRolesTo.addAll(resources);
+      return this;
+    }
+
+    /**
+     * Set context path.
+     *
+     * <p>Before quarkus based Keycloak distribution /auth prefix was obligatory.
+     * Now /auth prefix is removed and can be enabled/overridden in configuration to keep backward compatibility.</p>
+     *
+     * Default value is '/auth'
+     * To disable context path use {@link #withNoContextPath()} method.
+     *
+     * @see <a href="https://www.keycloak.org/server/all-config#category-hostname">hostname-path</a>
+     * @see <a href="https://www.keycloak.org/migration/migrating-to-quarkus#_default_context_path_changed">
+     *     Default context path changed</a>
+     *
+     * @param contextPath context path to use
+     * @return builder
+     */
+    @Nonnull
+    public Builder withContextPath(@Nonnull String contextPath) {
+      this.contextPath = contextPath;
+      return this;
+    }
+
+    /**
+     * Disabling context path.
+     *
+     * @see #withContextPath(String)
+     *
+     * @return builder
+     */
+    @Nonnull
+    public Builder withNoContextPath() {
+      this.contextPath = "";
       return this;
     }
 
