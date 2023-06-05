@@ -60,6 +60,15 @@ class Test {
     mock.stop();
   }
 
+  void quarkusKeycloakMocks() {
+    // to mock Keycloak without context path (v18.0.0+)
+    KeycloakMock mockNoContextPath = new KeycloakMock(aServerConfig().withNoContextPath().build());
+    // or to use custom one
+    KeycloakMock mockCustomContextPath = new KeycloakMock(aServerConfig().withContextPath("/context-path").build());
+    // if context path is not provided, '/auth' will be used as default due to backward compatibility reasons
+    KeycloakMock mockDefaultContextPath = new KeycloakMock(aServerConfig().build());
+    // ...
+  }
 }
 ```
 
