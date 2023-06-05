@@ -35,7 +35,8 @@ public class Main implements Callable<Void> {
   @SuppressWarnings("FieldMayBeFinal")
   @Option(
       names = {"-cp", "--contextPath"},
-      description = "Keycloak context path (default: ${DEFAULT-VALUE}).")
+      description = "Keycloak context path (default: ${DEFAULT-VALUE}). " +
+          "If present, must be prefixed with '/', eg. --contextPath=/example-path")
   private String contextPath = "/auth";
 
   @SuppressWarnings("FieldMayBeFinal")
@@ -63,15 +64,23 @@ public class Main implements Callable<Void> {
 
   @Override
   public Void call() {
+    String usedContextPath = noContextPath ? "" : contextPath;
+
     new KeycloakMock(
             aServerConfig()
                 .withPort(port)
                 .withTls(tls)
-                .withContextPath(noContextPath ? "" : contextPath)
+                .withContextPath(usedContextPath)
                 .withResourcesToMapRolesTo(resourcesToMapRolesTo)
                 .build())
         .start();
-    LOG.info("Server is running on {}://localhost:{}{}", (tls ? "https" : "http"), contextPath, port);
+
+    LOG.info("Server is running on {}://localhost:{}{}",
+        (tls ? "https" : "http"),
+        port,
+        usedContextPath
+    );
+
     return null;
   }
 }
