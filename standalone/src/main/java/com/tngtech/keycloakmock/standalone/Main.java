@@ -35,13 +35,13 @@ public class Main implements Callable<Void> {
   @SuppressWarnings("FieldMayBeFinal")
   @Option(
       names = {"-cp", "--contextPath"},
-      description = "Keycloak context path.")
+      description = "Keycloak context path (default: ${DEFAULT-VALUE}).")
   private String contextPath = "/auth";
 
   @SuppressWarnings("FieldMayBeFinal")
   @Option(
       names = {"-ncp", "--noContextPath"},
-      description = "Keycloak context path.")
+      description = "If present context path will not be used. Good for mocking Keycloak 18.0.0+.")
   private boolean noContextPath;
 
   @Option(
