@@ -284,16 +284,14 @@ public final class ServerConfig {
     /**
      * Set context path.
      *
-     * <p>Before quarkus based Keycloak distribution /auth prefix was obligatory.
-     * Now /auth prefix is removed and can be enabled/overridden in configuration to keep backward compatibility.</p>
-     *
-     * Default value is '/auth'
-     * To disable context path use {@link #withNoContextPath()} method.
+     * <p>Before quarkus based Keycloak distribution /auth prefix was obligatory. Now /auth prefix
+     * is removed and can be enabled/overridden in configuration to keep backward compatibility.
+     * Default value is '/auth' To disable context path use {@link #withNoContextPath()} method.
      *
      * @see <a href="https://www.keycloak.org/server/all-config#category-hostname">hostname-path</a>
-     * @see <a href="https://www.keycloak.org/migration/migrating-to-quarkus#_default_context_path_changed">
-     *     Default context path changed</a>
-     *
+     * @see <a
+     *     href="https://www.keycloak.org/migration/migrating-to-quarkus#_default_context_path_changed">Default
+     *     context path changed</a>
      * @param contextPath context path to use
      * @return builder
      */
@@ -307,7 +305,6 @@ public final class ServerConfig {
      * Disabling context path.
      *
      * @see #withContextPath(String)
-     *
      * @return builder
      */
     @Nonnull

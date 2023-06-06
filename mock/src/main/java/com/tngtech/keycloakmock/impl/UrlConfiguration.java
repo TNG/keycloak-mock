@@ -31,10 +31,11 @@ public class UrlConfiguration {
     } else {
       this.hostname = serverConfig.getDefaultHostname() + ":" + serverConfig.getPort();
     }
-    if (Objects.requireNonNull(serverConfig.getContextPath()).length() == 0) {
+    if (Objects.requireNonNull(serverConfig.getContextPath()).isEmpty()) {
       this.contextPath = serverConfig.getContextPath();
     } else {
-      this.contextPath = serverConfig.getContextPath().startsWith("/")
+      this.contextPath =
+          serverConfig.getContextPath().startsWith("/")
               ? serverConfig.getContextPath()
               : "/".concat(serverConfig.getContextPath());
     }
