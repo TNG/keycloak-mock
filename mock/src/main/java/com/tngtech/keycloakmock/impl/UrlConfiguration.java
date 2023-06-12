@@ -31,8 +31,9 @@ public class UrlConfiguration {
     } else {
       this.hostname = serverConfig.getDefaultHostname() + ":" + serverConfig.getPort();
     }
-    if (Objects.requireNonNull(serverConfig.getContextPath()).isEmpty()) {
-      this.contextPath = serverConfig.getContextPath();
+    if (Objects.requireNonNull(serverConfig.getContextPath()).isEmpty()
+        || "/".equals(serverConfig.getContextPath())) {
+      this.contextPath = "";
     } else {
       this.contextPath =
           serverConfig.getContextPath().startsWith("/")
