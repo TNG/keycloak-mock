@@ -302,6 +302,6 @@ class TokenConfigTest {
     assertThatThrownBy(() -> builder.withSourceToken(TOKEN_WITH_UNEXPECTED_ISSUER_URL))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("did not conform to the expected format")
-        .hasMessageContaining("'http[s]://$HOSTNAME[:port][:contextPath]/realms/$REALM'");
+        .hasMessageContaining("'http[s]://$HOSTNAME[:$PORT][/$CONTEXT_PATH]/realms/$REALM'");
   }
 }
