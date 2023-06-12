@@ -348,7 +348,7 @@ public class TokenConfig {
             "The issuer '"
                 + issuer
                 + "' did not conform to the expected format"
-                + " 'http[s]://$HOSTNAME[:port][:contextPath]/realms/$REALM'.");
+                + " 'http[s]://$HOSTNAME[:$PORT][/$CONTEXT_PATH]/realms/$REALM'.");
       }
       return matcher.group(1);
     }
