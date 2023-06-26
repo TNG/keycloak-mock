@@ -48,17 +48,30 @@ public class JwksRoute implements Handler<RoutingContext> {
     if (publicKey instanceof RSAPublicKey) {
       result.put("kty", "RSA");
       RSAPublicKey rsaKey = (RSAPublicKey) publicKey;
-      result.put("n", Base64.getUrlEncoder().encodeToString(rsaKey.getModulus().toByteArray()));
       result.put(
-          "e", Base64.getUrlEncoder().encodeToString(rsaKey.getPublicExponent().toByteArray()));
+          "n",
+          Base64.getUrlEncoder()
+              .withoutPadding()
+              .encodeToString(rsaKey.getModulus().toByteArray()));
+      result.put(
+          "e",
+          Base64.getUrlEncoder()
+              .withoutPadding()
+              .encodeToString(rsaKey.getPublicExponent().toByteArray()));
     } else if (publicKey instanceof ECPublicKey) {
       result.put("kty", "EC");
       ECPublicKey ecKey = (ECPublicKey) publicKey;
       result.put("crv", "P-" + ecKey.getParams().getOrder().bitLength());
       result.put(
-          "x", Base64.getUrlEncoder().encodeToString(ecKey.getW().getAffineX().toByteArray()));
+          "x",
+          Base64.getUrlEncoder()
+              .withoutPadding()
+              .encodeToString(ecKey.getW().getAffineX().toByteArray()));
       result.put(
-          "y", Base64.getUrlEncoder().encodeToString(ecKey.getW().getAffineY().toByteArray()));
+          "y",
+          Base64.getUrlEncoder()
+              .withoutPadding()
+              .encodeToString(ecKey.getW().getAffineY().toByteArray()));
     } else {
       throw new IllegalStateException("Invalid public key type found");
     }
