@@ -110,7 +110,10 @@ class TokenGeneratorTest {
     verify(urlConfiguration).forRequestContext(HOSTNAME, REALM);
     Jwt<Header<?>, Claims> jwt =
         Jwts.parserBuilder().setSigningKey(signatureComponent.publicKey()).build().parse(token);
-    assertThat(jwt.getHeader()).containsEntry("kid", "keyId");
+    assertThat(jwt.getHeader())
+        .containsEntry("alg", "RS256")
+        .containsEntry("kid", "keyId")
+        .containsEntry("typ", "JWT");
     Claims claims = jwt.getBody();
 
     assertThat(claims).isEqualTo(generator.parseToken(token));
@@ -158,7 +161,10 @@ class TokenGeneratorTest {
 
     Jwt<Header<?>, Claims> jwt =
         Jwts.parserBuilder().setSigningKey(signatureComponent.publicKey()).build().parse(token);
-    assertThat(jwt.getHeader()).containsEntry("kid", "keyId");
+    assertThat(jwt.getHeader())
+        .containsEntry("alg", "RS256")
+        .containsEntry("kid", "keyId")
+        .containsEntry("typ", "JWT");
     Claims claims = jwt.getBody();
 
     assertThat(claims.getSubject()).isEqualTo("foo.bar");
@@ -176,7 +182,10 @@ class TokenGeneratorTest {
 
     Jwt<Header<?>, Claims> jwt =
         Jwts.parserBuilder().setSigningKey(signatureComponent.publicKey()).build().parse(token);
-    assertThat(jwt.getHeader()).containsEntry("kid", "keyId");
+    assertThat(jwt.getHeader())
+        .containsEntry("alg", "RS256")
+        .containsEntry("kid", "keyId")
+        .containsEntry("typ", "JWT");
     Claims claims = jwt.getBody();
 
     assertThat(claims.getSubject()).isEqualTo("foo.bar");
@@ -205,7 +214,10 @@ class TokenGeneratorTest {
 
     Jwt<Header<?>, Claims> jwt =
         Jwts.parserBuilder().setSigningKey(signatureComponent.publicKey()).build().parse(token);
-    assertThat(jwt.getHeader()).containsEntry("kid", "keyId");
+    assertThat(jwt.getHeader())
+        .containsEntry("alg", "RS256")
+        .containsEntry("kid", "keyId")
+        .containsEntry("typ", "JWT");
     Claims claims = jwt.getBody();
 
     assertThat(claims.getSubject()).isEqualTo("foo.bar");
