@@ -39,7 +39,9 @@ public class TokenGenerator {
       @Nonnull TokenConfig tokenConfig, @Nonnull UrlConfiguration requestConfiguration) {
     JwtBuilder builder =
         Jwts.builder()
+            .setHeaderParam("alg", algorithm.getValue())
             .setHeaderParam("kid", keyId)
+            .setHeaderParam("typ", "JWT")
             // since the specification allows for more than one audience, but JJWT only accepts
             // one (see https://github.com/jwtk/jjwt/issues/77), use a workaround here
             .claim("aud", tokenConfig.getAudience())
