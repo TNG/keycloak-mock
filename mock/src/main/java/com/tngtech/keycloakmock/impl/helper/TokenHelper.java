@@ -7,6 +7,8 @@ import com.tngtech.keycloakmock.impl.TokenGenerator;
 import com.tngtech.keycloakmock.impl.UrlConfiguration;
 import com.tngtech.keycloakmock.impl.session.Session;
 import com.tngtech.keycloakmock.impl.session.UserData;
+
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -26,14 +28,18 @@ public class TokenHelper {
   @Nonnull private final List<String> resourcesToMapRolesTo;
   @Nonnull private final Set<String> defaultScopes;
 
+  @Nonnull private final Duration tokenLifespan;
+
   @Inject
   TokenHelper(
-      @Nonnull TokenGenerator tokenGenerator,
-      @Nonnull @Named("resources") List<String> resourcesToMapRolesTo,
-      @Nonnull @Named("scopes") Set<String> defaultScopes) {
+          @Nonnull TokenGenerator tokenGenerator,
+          @Nonnull @Named("resources") List<String> resourcesToMapRolesTo,
+          @Nonnull @Named("scopes") Set<String> defaultScopes,
+          @Nonnull @Named("tokenLifespan") Duration tokenLifespan) {
     this.tokenGenerator = tokenGenerator;
     this.resourcesToMapRolesTo = resourcesToMapRolesTo;
     this.defaultScopes = defaultScopes;
+    this.tokenLifespan = tokenLifespan;
   }
 
   @Nullable
@@ -53,7 +59,8 @@ public class TokenHelper {
             .withClaim(SESSION_STATE, session.getSessionId())
             // we currently don't do proper authorization anyway, so we can just act as if we were
             // compliant to ISO/IEC 29115 level 1 (see KEYCLOAK-3223 / KEYCLOAK-3314)
-            .withAuthenticationContextClassReference("1");
+            .withAuthenticationContextClassReference("1")
+            .witTokenLifespan(tokenLifespan);
     if (session.getNonce() != null) {
       builder.withClaim(NONCE, session.getNonce());
     }
