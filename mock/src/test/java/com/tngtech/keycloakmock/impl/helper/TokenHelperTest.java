@@ -10,6 +10,7 @@ import com.tngtech.keycloakmock.impl.TokenGenerator;
 import com.tngtech.keycloakmock.impl.UrlConfiguration;
 import com.tngtech.keycloakmock.impl.session.PersistentSession;
 import com.tngtech.keycloakmock.impl.session.UserData;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
@@ -55,7 +56,7 @@ class TokenHelperTest {
 
   @Test
   void token_is_correctly_generated() {
-    uut = new TokenHelper(tokenGenerator, Collections.emptyList(), Collections.emptySet());
+    uut = new TokenHelper(tokenGenerator, Collections.emptyList(), Collections.emptySet(), Duration.ofHours(100));
 
     uut.getToken(session, urlConfiguration);
 
@@ -68,7 +69,7 @@ class TokenHelperTest {
     assertThat(tokenConfig.getClaims())
         .containsEntry("nonce", NONCE)
         .containsEntry("session_state", SESSION_ID);
-    assertThat(tokenConfig.getExpiration()).isAfter(Instant.now().plus(9, ChronoUnit.HOURS));
+    assertThat(tokenConfig.getExpiration()).isAfter(Instant.now().plus(99, ChronoUnit.HOURS));
     assertThat(tokenConfig.getGivenName()).isEqualTo(USER.getGivenName());
     assertThat(tokenConfig.getFamilyName()).isEqualTo(USER.getFamilyName());
     assertThat(tokenConfig.getName()).isEqualTo(USER.getName());
@@ -82,7 +83,7 @@ class TokenHelperTest {
 
   @Test
   void resource_roles_are_used_if_configured() {
-    uut = new TokenHelper(tokenGenerator, CONFIGURED_RESOURCES, Collections.emptySet());
+    uut = new TokenHelper(tokenGenerator, CONFIGURED_RESOURCES, Collections.emptySet(), Duration.ofHours(10));
 
     uut.getToken(session, urlConfiguration);
 

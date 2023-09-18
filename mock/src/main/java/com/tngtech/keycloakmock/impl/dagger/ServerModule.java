@@ -35,6 +35,7 @@ import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
+import java.time.Duration;
 import java.util.List;
 import java.util.Set;
 import javax.annotation.Nonnull;
@@ -94,6 +95,13 @@ public class ServerModule {
   @Named("scopes")
   public Set<String> provideScopes(@Nonnull ServerConfig serverConfig) {
     return serverConfig.getDefaultScopes();
+  }
+
+  @Provides
+  @Singleton
+  @Named("tokenLifespan")
+  public Duration provideTokenLifespan(@Nonnull ServerConfig serverConfig) {
+    return serverConfig.getTokenLifespan();
   }
 
   @Provides

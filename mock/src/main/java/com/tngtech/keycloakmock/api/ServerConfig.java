@@ -1,6 +1,8 @@
 package com.tngtech.keycloakmock.api;
 
 import com.tngtech.keycloakmock.impl.Protocol;
+
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -17,6 +19,7 @@ public final class ServerConfig {
   private static final int DEFAULT_PORT = 8000;
   private static final String DEFAULT_REALM = "master";
   private static final String DEFAULT_SCOPE = "openid";
+  private static final Duration DEFAULT_TOKEN_LIFESPAN = Duration.ofHours(10);
 
   private final int port;
   @Nonnull private final Protocol protocol;
@@ -25,6 +28,7 @@ public final class ServerConfig {
   @Nonnull private final String defaultRealm;
   @Nonnull private final List<String> resourcesToMapRolesTo;
   @Nonnull private final Set<String> defaultScopes;
+  @Nonnull private final Duration tokenLifespan;
 
   private ServerConfig(@Nonnull final Builder builder) {
     this.port = builder.port;
@@ -34,6 +38,7 @@ public final class ServerConfig {
     this.defaultRealm = builder.defaultRealm;
     this.resourcesToMapRolesTo = builder.resourcesToMapRolesTo;
     this.defaultScopes = builder.defaultScopes;
+    this.tokenLifespan = builder.tokenLifespan;
   }
 
   /**
@@ -149,6 +154,16 @@ public final class ServerConfig {
   }
 
   /**
+   * Get access token lifespan
+   *
+   * @return token lifespan
+   */
+  @Nonnull
+  public Duration getTokenLifespan() {
+    return tokenLifespan;
+  }
+
+  /**
    * Builder for {@link ServerConfig}.
    *
    * <p>Use this to generate a server configuration to your needs.
@@ -162,6 +177,7 @@ public final class ServerConfig {
     @Nonnull private String defaultRealm = DEFAULT_REALM;
     @Nonnull private final List<String> resourcesToMapRolesTo = new ArrayList<>();
     @Nonnull private final Set<String> defaultScopes = new HashSet<>();
+    @Nonnull private Duration tokenLifespan = DEFAULT_TOKEN_LIFESPAN;
 
     private Builder() {
       defaultScopes.add(DEFAULT_SCOPE);
@@ -362,6 +378,20 @@ public final class ServerConfig {
     @Nonnull
     public Builder withDefaultScope(@Nonnull final String defaultScope) {
       this.defaultScopes.add(defaultScope);
+      return this;
+    }
+
+    /**
+     * Set default access token lifespan ("exp" filed will be set as issuedAt + tokenLifespan)
+     * By default lifespan 10 hours.
+     *
+     * @param tokenLifespan as duration
+     * @return builder
+     *
+     */
+    @Nonnull
+    public Builder withTokenLifespan(@Nonnull final Duration tokenLifespan) {
+      this.tokenLifespan = tokenLifespan;
       return this;
     }
 

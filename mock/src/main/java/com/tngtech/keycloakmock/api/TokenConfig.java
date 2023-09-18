@@ -5,6 +5,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
@@ -761,6 +762,11 @@ public class TokenConfig {
     @Nonnull
     public TokenConfig build() {
       return new TokenConfig(this);
+    }
+
+    public Builder witTokenLifespan(Duration tokenLifespan) {
+      this.expiration = issuedAt.plus(tokenLifespan);
+      return this;
     }
   }
 
