@@ -1,7 +1,6 @@
 package com.tngtech.keycloakmock.api;
 
 import com.tngtech.keycloakmock.impl.Protocol;
-
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -382,12 +381,11 @@ public final class ServerConfig {
     }
 
     /**
-     * Set default access token lifespan ("exp" filed will be set as issuedAt + tokenLifespan)
-     * By default lifespan 10 hours.
+     * Set default access token lifespan ("exp" filed will be set as issuedAt + tokenLifespan). + By
+     * default lifespan 10 hours.
      *
      * @param tokenLifespan as duration
      * @return builder
-     *
      */
     @Nonnull
     public Builder withTokenLifespan(@Nonnull final Duration tokenLifespan) {
