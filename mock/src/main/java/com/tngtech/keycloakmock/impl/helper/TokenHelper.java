@@ -7,7 +7,6 @@ import com.tngtech.keycloakmock.impl.TokenGenerator;
 import com.tngtech.keycloakmock.impl.UrlConfiguration;
 import com.tngtech.keycloakmock.impl.session.Session;
 import com.tngtech.keycloakmock.impl.session.UserData;
-
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
@@ -32,10 +31,10 @@ public class TokenHelper {
 
   @Inject
   TokenHelper(
-          @Nonnull TokenGenerator tokenGenerator,
-          @Nonnull @Named("resources") List<String> resourcesToMapRolesTo,
-          @Nonnull @Named("scopes") Set<String> defaultScopes,
-          @Nonnull @Named("tokenLifespan") Duration tokenLifespan) {
+      @Nonnull TokenGenerator tokenGenerator,
+      @Nonnull @Named("resources") List<String> resourcesToMapRolesTo,
+      @Nonnull @Named("scopes") Set<String> defaultScopes,
+      @Nonnull @Named("tokenLifespan") Duration tokenLifespan) {
     this.tokenGenerator = tokenGenerator;
     this.resourcesToMapRolesTo = resourcesToMapRolesTo;
     this.defaultScopes = defaultScopes;
