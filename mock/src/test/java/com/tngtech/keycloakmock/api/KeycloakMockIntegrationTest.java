@@ -622,8 +622,6 @@ class KeycloakMockIntegrationTest {
     assertThat(tokenConfig.getAudience()).containsExactly("client");
   }
 
-  private void getTokenAndValidateAndReturnSessionCookie() {}
-
   private static class ClientRequest {
 
     private final String redirectUri;
