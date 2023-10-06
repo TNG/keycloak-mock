@@ -4,16 +4,15 @@ import static com.tngtech.keycloakmock.test.KeyHelper.loadFromResource;
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 import static org.mockito.Mockito.verify;
 
-import io.jsonwebtoken.SignatureAlgorithm;
 import java.security.PublicKey;
 import org.junit.jupiter.api.Test;
 
 class JwksRouteTest extends HandlerTestBase {
 
   @Test
-  void rsaKeyIsCorrectlyExported() throws Exception {
+  void rsaKeyIsCorrectlyExported() {
     PublicKey key = loadFromResource("/keystore.jks", "rsa");
-    JwksRoute jwksRoute = new JwksRoute("key321", SignatureAlgorithm.RS256, key);
+    JwksRoute jwksRoute = new JwksRoute("key321", key);
 
     jwksRoute.handle(routingContext);
 
@@ -29,18 +28,17 @@ class JwksRouteTest extends HandlerTestBase {
         .element(0)
         .hasFieldOrPropertyWithValue("kid", "key321")
         .hasFieldOrPropertyWithValue("kty", "RSA")
-        .hasFieldOrPropertyWithValue("alg", "RS256")
         .hasFieldOrPropertyWithValue("use", "sig")
         .hasFieldOrPropertyWithValue(
             "n",
-            "AKzaf4nijuwtAn9ieZaz-iGXBp1pFm6dJMAxRO6ax2CV9cBFeThxrKJNFmDY7j7gKRnrgWxvgJKSd3hAm_CGmXHbTM8cPi_gsof-CsOohv7LH0UYbr0UpCIJncTiRrKQto7q_NOO4Jh1EBSLMPX7MzttEhh35Ue9txHLq3zkdkR6BR6nGS7QxEg7FzYzA4IooV59OPr-TvlDxbEpwc1wkRZDGavo-WjngAt7m_BEQtHnav3whitbrMmi_1tWY8cQbO9D4FuQTM7yvACLSv94G2TCvsjm_gGJmOJyRBkI1r-uEIfhz9-VIKlswqapKSul-Hoxv5NycucRa4xi4N39dfM")
+            "rNp_ieKO7C0Cf2J5lrP6IZcGnWkWbp0kwDFE7prHYJX1wEV5OHGsok0WYNjuPuApGeuBbG-AkpJ3eECb8IaZcdtMzxw-L-Cyh_4Kw6iG_ssfRRhuvRSkIgmdxOJGspC2jur8047gmHUQFIsw9fszO20SGHflR723EcurfOR2RHoFHqcZLtDESDsXNjMDgiihXn04-v5O-UPFsSnBzXCRFkMZq-j5aOeAC3ub8ERC0edq_fCGK1usyaL_W1ZjxxBs70PgW5BMzvK8AItK_3gbZMK-yOb-AYmY4nJEGQjWv64Qh-HP35UgqWzCpqkpK6X4ejG_k3Jy5xFrjGLg3f118w")
         .hasFieldOrPropertyWithValue("e", "AQAB");
   }
 
   @Test
-  void ecKeyIsCorrectlyExported() throws Exception {
+  void ecKeyIsCorrectlyExported() {
     PublicKey key = loadFromResource("/ec521.jks", "key");
-    JwksRoute jwksRoute = new JwksRoute("key123", SignatureAlgorithm.ES512, key);
+    JwksRoute jwksRoute = new JwksRoute("key123", key);
 
     jwksRoute.handle(routingContext);
 
@@ -56,7 +54,6 @@ class JwksRouteTest extends HandlerTestBase {
         .element(0)
         .hasFieldOrPropertyWithValue("kid", "key123")
         .hasFieldOrPropertyWithValue("kty", "EC")
-        .hasFieldOrPropertyWithValue("alg", "ES512")
         .hasFieldOrPropertyWithValue("use", "sig")
         .hasFieldOrPropertyWithValue("crv", "P-521")
         .hasFieldOrPropertyWithValue(

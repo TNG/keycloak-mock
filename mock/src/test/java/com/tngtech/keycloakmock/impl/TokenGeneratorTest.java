@@ -9,8 +9,7 @@ import static org.mockito.Mockito.verify;
 import com.tngtech.keycloakmock.impl.dagger.DaggerSignatureComponent;
 import com.tngtech.keycloakmock.impl.dagger.SignatureComponent;
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Header;
-import io.jsonwebtoken.Jwt;
+import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -108,13 +107,13 @@ class TokenGeneratorTest {
 
     verify(urlConfiguration).getIssuer();
     verify(urlConfiguration).forRequestContext(HOSTNAME, REALM);
-    Jwt<Header<?>, Claims> jwt =
-        Jwts.parserBuilder().setSigningKey(signatureComponent.publicKey()).build().parse(token);
+    Jws<Claims> jwt =
+        Jwts.parser().verifyWith(signatureComponent.publicKey()).build().parseSignedClaims(token);
     assertThat(jwt.getHeader())
         .containsEntry("alg", "RS256")
         .containsEntry("kid", "keyId")
         .containsEntry("typ", "JWT");
-    Claims claims = jwt.getBody();
+    Claims claims = jwt.getPayload();
 
     assertThat(claims).isEqualTo(generator.parseToken(token));
 
@@ -126,7 +125,7 @@ class TokenGeneratorTest {
     assertThat(claims.getIssuer()).isEqualTo(ISSUER);
     assertThat(claims.getSubject()).isEqualTo(SUBJECT);
     assertThat(claims)
-        .containsEntry("aud", Collections.singletonList(AUDIENCE))
+        .containsEntry("aud", Collections.singleton(AUDIENCE))
         .containsEntry("azp", AUTHORIZED_PARTY)
         .containsEntry("scope", SCOPE)
         .containsEntry("name", NAME)
@@ -154,18 +153,17 @@ class TokenGeneratorTest {
   }
 
   @Test
-  @SuppressWarnings("unchecked")
   void user_data_is_not_generated() {
     String token =
         generator.getToken(aTokenConfig().withSubject("foo.bar").build(), urlConfiguration);
 
-    Jwt<Header<?>, Claims> jwt =
-        Jwts.parserBuilder().setSigningKey(signatureComponent.publicKey()).build().parse(token);
+    Jws<Claims> jwt =
+        Jwts.parser().verifyWith(signatureComponent.publicKey()).build().parseSignedClaims(token);
     assertThat(jwt.getHeader())
         .containsEntry("alg", "RS256")
         .containsEntry("kid", "keyId")
         .containsEntry("typ", "JWT");
-    Claims claims = jwt.getBody();
+    Claims claims = jwt.getPayload();
 
     assertThat(claims.getSubject()).isEqualTo("foo.bar");
     assertThat(claims)
@@ -173,20 +171,19 @@ class TokenGeneratorTest {
   }
 
   @Test
-  @SuppressWarnings("unchecked")
   void user_data_is_generated() {
     doReturn("example.com").when(urlConfiguration).getHostname();
     String token =
         generator.getToken(
             aTokenConfig().withSubjectAndGeneratedUserData("foo.bar").build(), urlConfiguration);
 
-    Jwt<Header<?>, Claims> jwt =
-        Jwts.parserBuilder().setSigningKey(signatureComponent.publicKey()).build().parse(token);
+    Jws<Claims> jwt =
+        Jwts.parser().verifyWith(signatureComponent.publicKey()).build().parseSignedClaims(token);
     assertThat(jwt.getHeader())
         .containsEntry("alg", "RS256")
         .containsEntry("kid", "keyId")
         .containsEntry("typ", "JWT");
-    Claims claims = jwt.getBody();
+    Claims claims = jwt.getPayload();
 
     assertThat(claims.getSubject()).isEqualTo("foo.bar");
     assertThat(claims)
@@ -198,7 +195,6 @@ class TokenGeneratorTest {
   }
 
   @Test
-  @SuppressWarnings("unchecked")
   void explicit_user_data_takes_preference() {
     doReturn("example.com").when(urlConfiguration).getHostname();
     String token =
@@ -212,13 +208,13 @@ class TokenGeneratorTest {
                 .build(),
             urlConfiguration);
 
-    Jwt<Header<?>, Claims> jwt =
-        Jwts.parserBuilder().setSigningKey(signatureComponent.publicKey()).build().parse(token);
+    Jws<Claims> jwt =
+        Jwts.parser().verifyWith(signatureComponent.publicKey()).build().parseSignedClaims(token);
     assertThat(jwt.getHeader())
         .containsEntry("alg", "RS256")
         .containsEntry("kid", "keyId")
         .containsEntry("typ", "JWT");
-    Claims claims = jwt.getBody();
+    Claims claims = jwt.getPayload();
 
     assertThat(claims.getSubject()).isEqualTo("foo.bar");
     assertThat(claims)

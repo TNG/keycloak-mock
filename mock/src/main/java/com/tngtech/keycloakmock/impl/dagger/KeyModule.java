@@ -2,7 +2,6 @@ package com.tngtech.keycloakmock.impl.dagger;
 
 import dagger.Module;
 import dagger.Provides;
-import io.jsonwebtoken.SignatureAlgorithm;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.Key;
@@ -25,12 +24,6 @@ class KeyModule {
   @Singleton
   String provideKeyId() {
     return "keyId";
-  }
-
-  @Provides
-  @Singleton
-  SignatureAlgorithm provideSignatureAlgorithm() {
-    return SignatureAlgorithm.RS256;
   }
 
   @Provides

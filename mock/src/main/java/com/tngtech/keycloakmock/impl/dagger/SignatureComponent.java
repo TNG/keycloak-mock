@@ -2,7 +2,6 @@ package com.tngtech.keycloakmock.impl.dagger;
 
 import com.tngtech.keycloakmock.impl.TokenGenerator;
 import dagger.Component;
-import io.jsonwebtoken.SignatureAlgorithm;
 import java.security.KeyStore;
 import java.security.PublicKey;
 import javax.inject.Named;
@@ -20,8 +19,6 @@ public interface SignatureComponent {
 
   @Named("keyId")
   String keyId();
-
-  SignatureAlgorithm signatureAlgorithm();
 
   TokenGenerator tokenGenerator();
 }

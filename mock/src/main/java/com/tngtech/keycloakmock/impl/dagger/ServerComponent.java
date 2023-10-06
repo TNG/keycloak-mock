@@ -5,7 +5,6 @@ import com.tngtech.keycloakmock.impl.TokenGenerator;
 import com.tngtech.keycloakmock.impl.UrlConfiguration;
 import dagger.BindsInstance;
 import dagger.Component;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServer;
 import java.security.KeyStore;
@@ -37,9 +36,6 @@ public interface ServerComponent {
 
     @BindsInstance
     public abstract Builder keyId(@Named("keyId") String keyId);
-
-    @BindsInstance
-    public abstract Builder signatureAlgorithm(SignatureAlgorithm signatureAlgorithm);
 
     @BindsInstance
     public abstract Builder keyStore(KeyStore keyStore);

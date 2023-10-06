@@ -91,7 +91,6 @@ public class KeycloakMock {
             .serverConfig(serverConfig)
             .publicKey(signatureComponent.publicKey())
             .keyId(signatureComponent.keyId())
-            .signatureAlgorithm(signatureComponent.signatureAlgorithm())
             .keyStore(signatureComponent.keyStore())
             .tokenGenerator(signatureComponent.tokenGenerator())
             .defaultConfiguration(defaultConfiguration)
