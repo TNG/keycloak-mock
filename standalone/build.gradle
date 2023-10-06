@@ -2,8 +2,8 @@ import com.github.jengelman.gradle.plugins.shadow.transformers.ApacheNoticeResou
 
 plugins {
     id 'application'
-    id 'com.github.gmazzo.buildconfig' version '3.1.0'
-    id 'com.github.johnrengelman.shadow' version '7.1.2'
+    id 'com.github.gmazzo.buildconfig' version '4.1.2'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
 }
 
 apply plugin: 'com.google.cloud.tools.jib'
@@ -11,7 +11,7 @@ apply plugin: 'com.google.cloud.tools.jib'
 description = 'Standalone keycloak-mock server for use in frontend development'
 
 shadowJar {
-    classifier null
+    archiveClassifier = null
     manifest {
         attributes 'Main-Class': 'com.tngtech.keycloakmock.standalone.Main'
     }
@@ -31,7 +31,7 @@ shadowJar {
 
 tasks.register('fakeJar', Jar) {
     from file("${project.projectDir}/src/main/resources/README.md")
-    classifier 'fake'
+    archiveClassifier = 'fake'
 }
 
 // dependencies as suggested by gradle
