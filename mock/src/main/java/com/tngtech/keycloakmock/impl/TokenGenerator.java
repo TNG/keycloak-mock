@@ -5,9 +5,8 @@ import com.tngtech.keycloakmock.impl.session.UserData;
 import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import java.security.Key;
-import java.time.Instant;
+import java.security.PublicKey;
 import java.util.Date;
 import java.util.Map;
 import java.util.Objects;
@@ -20,18 +19,18 @@ import javax.inject.Singleton;
 
 @Singleton
 public class TokenGenerator {
+  @Nonnull private final PublicKey publicKey;
   @Nonnull private final Key privateKey;
   @Nonnull private final String keyId;
-  @Nonnull private final SignatureAlgorithm algorithm;
 
   @Inject
   TokenGenerator(
+      @Nonnull PublicKey publicKey,
       @Nonnull Key privateKey,
-      @Nonnull @Named("keyId") String keyId,
-      @Nonnull SignatureAlgorithm algorithm) {
+      @Nonnull @Named("keyId") String keyId) {
+    this.publicKey = publicKey;
     this.privateKey = privateKey;
     this.keyId = keyId;
-    this.algorithm = algorithm;
   }
 
   @Nonnull
@@ -39,24 +38,28 @@ public class TokenGenerator {
       @Nonnull TokenConfig tokenConfig, @Nonnull UrlConfiguration requestConfiguration) {
     JwtBuilder builder =
         Jwts.builder()
-            .setHeaderParam("alg", algorithm.getValue())
-            .setHeaderParam("kid", keyId)
-            .setHeaderParam("typ", "JWT")
-            // since the specification allows for more than one audience, but JJWT only accepts
-            // one (see https://github.com/jwtk/jjwt/issues/77), use a workaround here
-            .claim("aud", tokenConfig.getAudience())
-            .setIssuedAt(new Date(tokenConfig.getIssuedAt().toEpochMilli()))
+            .header()
+            .keyId(keyId)
+            .type("JWT")
+            .and()
+            .audience()
+            .add(tokenConfig.getAudience())
+            .and()
+            .issuedAt(new Date(tokenConfig.getIssuedAt().toEpochMilli()))
             .claim("auth_time", tokenConfig.getAuthenticationTime().getEpochSecond())
-            .setExpiration(new Date(tokenConfig.getExpiration().toEpochMilli()))
-            .setIssuer(
+            .expiration(new Date(tokenConfig.getExpiration().toEpochMilli()))
+            .issuer(
                 requestConfiguration
                     .forRequestContext(tokenConfig.getHostname(), tokenConfig.getRealm())
                     .getIssuer()
                     .toASCIIString())
-            .setSubject(tokenConfig.getSubject())
+            .subject(tokenConfig.getSubject())
             .claim("scope", tokenConfig.getScope())
             .claim("typ", "Bearer")
             .claim("azp", tokenConfig.getAuthorizedParty());
+    if (tokenConfig.getNotBefore() != null) {
+      builder.notBefore(new Date(tokenConfig.getNotBefore().toEpochMilli()));
+    }
     Optional<UserData> generatedUserData;
     if (tokenConfig.isGenerateUserDataFromSubject()) {
       generatedUserData =
@@ -66,7 +69,6 @@ public class TokenGenerator {
     } else {
       generatedUserData = Optional.empty();
     }
-    setClaimIfPresent(builder, "nbf", tokenConfig.getNotBefore());
     setClaimIfPresent(
         builder,
         "name",
@@ -92,25 +94,20 @@ public class TokenGenerator {
         "preferred_username",
         tokenConfig.getPreferredUsername(),
         generatedUserData.map(UserData::getPreferredUsername).orElse(null));
-    setClaimIfPresent(builder, "acr", tokenConfig.getAuthenticationContextClassReference());
     return builder
+        .claim("acr", tokenConfig.getAuthenticationContextClassReference())
         .claim("realm_access", tokenConfig.getRealmAccess())
         .claim("resource_access", tokenConfig.getResourceAccess())
-        .addClaims(tokenConfig.getClaims())
-        .signWith(privateKey, algorithm)
+        .claims()
+        .add(tokenConfig.getClaims())
+        .and()
+        .signWith(privateKey)
         .compact();
   }
 
   public Map<String, Object> parseToken(String token) {
-    JwtParser parser = Jwts.parserBuilder().setSigningKey(privateKey).build();
-    return parser.parseClaimsJws(token).getBody();
-  }
-
-  private void setClaimIfPresent(
-      @Nonnull final JwtBuilder builder, @Nonnull final String claim, @Nullable String value) {
-    if (value != null) {
-      Objects.requireNonNull(builder).claim(claim, value);
-    }
+    JwtParser parser = Jwts.parser().verifyWith(publicKey).build();
+    return parser.parseSignedClaims(token).getPayload();
   }
 
   private void setClaimIfPresent(
@@ -122,13 +119,6 @@ public class TokenGenerator {
       Objects.requireNonNull(builder).claim(claim, value);
     } else if (alternative != null) {
       Objects.requireNonNull(builder).claim(claim, alternative);
-    }
-  }
-
-  private void setClaimIfPresent(
-      @Nonnull final JwtBuilder builder, @Nonnull final String claim, @Nullable Instant value) {
-    if (value != null) {
-      Objects.requireNonNull(builder).claim(claim, value.getEpochSecond());
     }
   }
 }

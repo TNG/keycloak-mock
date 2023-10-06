@@ -9,6 +9,7 @@ import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 import java.nio.charset.StandardCharsets;
+import java.security.PublicKey;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashSet;
@@ -21,14 +22,14 @@ import org.apache.oltu.oauth2.common.OAuth;
 import org.apache.oltu.oauth2.common.exception.OAuthProblemException;
 import org.apache.oltu.oauth2.common.exception.OAuthSystemException;
 import org.apache.oltu.oauth2.common.message.types.GrantType;
-import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
 
 class KeycloakMockTest {
+  private final PublicKey publicKey = loadValidKey();
 
   @Test
-  void generated_token_uses_correct_issuer() throws Exception {
-    JwtParser jwtParser = Jwts.parserBuilder().setSigningKey(loadValidKey()).build();
+  void generated_token_uses_correct_issuer() {
+    JwtParser jwtParser = Jwts.parser().verifyWith(publicKey).build();
     KeycloakMock keycloakMock =
         new KeycloakMock(
             aServerConfig()
@@ -39,9 +40,9 @@ class KeycloakMockTest {
 
     String token = keycloakMock.getAccessToken(TokenConfig.aTokenConfig().build());
 
-    Jws<Claims> jwt = jwtParser.parseClaimsJws(token);
+    Jws<Claims> jwt = jwtParser.parseSignedClaims(token);
 
-    assertThat(jwt.getBody().getIssuer()).isEqualTo("http://somehost:123/auth/realms/realm123");
+    assertThat(jwt.getPayload().getIssuer()).isEqualTo("http://somehost:123/auth/realms/realm123");
   }
 
   @Test
@@ -110,15 +111,13 @@ class KeycloakMockTest {
   }
 
   private Set<String> extractScopeFromToken(String token) {
-    String[] chunks = token.split("\\.");
-
-    Base64.Decoder decoder = Base64.getUrlDecoder();
-
-    String payload = new String(decoder.decode(chunks[1]));
-
-    JSONObject json = new JSONObject(payload);
-
-    String scope = json.getString("scope");
+    String scope =
+        Jwts.parser()
+            .verifyWith(publicKey)
+            .build()
+            .parseSignedClaims(token)
+            .getPayload()
+            .get("scope", String.class);
 
     return new HashSet<>(Arrays.asList(scope.split(" ")));
   }

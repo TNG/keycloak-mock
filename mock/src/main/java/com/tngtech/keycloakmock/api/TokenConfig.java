@@ -5,10 +5,12 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -243,11 +245,15 @@ public class TokenConfig {
     @Nonnull
     @SuppressWarnings("unchecked")
     public Builder withSourceToken(@Nonnull final String originalToken) {
-      int i = originalToken.lastIndexOf('.');
-      String untrustedJwtString = originalToken.substring(0, i + 1);
+      String[] split = originalToken.split("\\.", 3);
+      String noneHeader =
+          Base64.getUrlEncoder()
+              .encodeToString("{\"alg\":\"NONE\"}".getBytes(StandardCharsets.UTF_8));
+      String untrustedJwtString = noneHeader + "." + split[1] + ".";
       Claims untrustedClaims;
       try {
-        untrustedClaims = Jwts.parserBuilder().build().parseClaimsJwt(untrustedJwtString).getBody();
+        untrustedClaims =
+            Jwts.parser().unsecured().build().parseUnsecuredClaims(untrustedJwtString).getPayload();
       } catch (ClaimJwtException e) {
         // ignoring expiry exceptions
         untrustedClaims = e.getClaims();

@@ -56,8 +56,8 @@ class KeycloakMockIntegrationTest {
   private KeycloakMock keycloakMock = null;
 
   @BeforeAll
-  static void setupJwtsParser() throws Exception {
-    jwtParser = Jwts.parserBuilder().setSigningKey(loadValidKey()).build();
+  static void setupJwtsParser() {
+    jwtParser = Jwts.parser().verifyWith(loadValidKey()).build();
   }
 
   @BeforeAll
@@ -418,8 +418,8 @@ class KeycloakMockIntegrationTest {
   }
 
   private void validateToken(String accessToken, String nonce) {
-    Jws<Claims> jwt = jwtParser.parseClaimsJws(accessToken);
-    assertThat(jwt.getBody().getIssuer()).isEqualTo("http://localhost:8000/auth/realms/realm");
+    Jws<Claims> jwt = jwtParser.parseSignedClaims(accessToken);
+    assertThat(jwt.getPayload().getIssuer()).isEqualTo("http://localhost:8000/auth/realms/realm");
     TokenConfig tokenConfig = TokenConfig.aTokenConfig().withSourceToken(accessToken).build();
     assertThat(tokenConfig.getPreferredUsername()).isEqualTo("username");
     assertThat(tokenConfig.getRealmAccess().getRoles())
@@ -525,8 +525,8 @@ class KeycloakMockIntegrationTest {
 
     String accessToken = extractableResponse.body().jsonPath().getString("access_token");
 
-    Jws<Claims> jwt = jwtParser.parseClaimsJws(accessToken);
-    assertThat(jwt.getBody().getIssuer()).isEqualTo("http://localhost:8000/auth/realms/realm");
+    Jws<Claims> jwt = jwtParser.parseSignedClaims(accessToken);
+    assertThat(jwt.getPayload().getIssuer()).isEqualTo("http://localhost:8000/auth/realms/realm");
     TokenConfig tokenConfig = TokenConfig.aTokenConfig().withSourceToken(accessToken).build();
     assertThat(tokenConfig.getPreferredUsername()).isEqualTo("username");
     assertThat(tokenConfig.getRealmAccess().getRoles())
@@ -556,8 +556,8 @@ class KeycloakMockIntegrationTest {
 
     String accessToken = extractableResponse.body().jsonPath().getString("access_token");
 
-    Jws<Claims> jwt = jwtParser.parseClaimsJws(accessToken);
-    assertThat(jwt.getBody().getIssuer()).isEqualTo("http://localhost:8000/auth/realms/realm");
+    Jws<Claims> jwt = jwtParser.parseSignedClaims(accessToken);
+    assertThat(jwt.getPayload().getIssuer()).isEqualTo("http://localhost:8000/auth/realms/realm");
     TokenConfig tokenConfig = TokenConfig.aTokenConfig().withSourceToken(accessToken).build();
     assertThat(tokenConfig.getPreferredUsername()).isEqualTo("username");
     assertThat(tokenConfig.getRealmAccess().getRoles())
@@ -585,8 +585,8 @@ class KeycloakMockIntegrationTest {
 
     String accessToken = extractableResponse.body().jsonPath().getString("access_token");
 
-    Jws<Claims> jwt = jwtParser.parseClaimsJws(accessToken);
-    assertThat(jwt.getBody().getIssuer()).isEqualTo("http://localhost:8000/auth/realms/realm");
+    Jws<Claims> jwt = jwtParser.parseSignedClaims(accessToken);
+    assertThat(jwt.getPayload().getIssuer()).isEqualTo("http://localhost:8000/auth/realms/realm");
     TokenConfig tokenConfig = TokenConfig.aTokenConfig().withSourceToken(accessToken).build();
     assertThat(tokenConfig.getPreferredUsername()).isEqualTo("client");
     assertThat(tokenConfig.getRealmAccess().getRoles())
@@ -613,8 +613,8 @@ class KeycloakMockIntegrationTest {
 
     String accessToken = extractableResponse.body().jsonPath().getString("access_token");
 
-    Jws<Claims> jwt = jwtParser.parseClaimsJws(accessToken);
-    assertThat(jwt.getBody().getIssuer()).isEqualTo("http://localhost:8000/auth/realms/realm");
+    Jws<Claims> jwt = jwtParser.parseSignedClaims(accessToken);
+    assertThat(jwt.getPayload().getIssuer()).isEqualTo("http://localhost:8000/auth/realms/realm");
     TokenConfig tokenConfig = TokenConfig.aTokenConfig().withSourceToken(accessToken).build();
     assertThat(tokenConfig.getPreferredUsername()).isEqualTo("client");
     assertThat(tokenConfig.getRealmAccess().getRoles())
