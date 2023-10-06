@@ -80,7 +80,7 @@ public class ServerModule {
   @Singleton
   @Named("keycloakJs")
   ResourceFileHandler provideKeycloakJsHandler() {
-    return new ResourceFileHandler("/keycloak.js");
+    return new ResourceFileHandler("/package/dist/keycloak.js");
   }
 
   @Provides

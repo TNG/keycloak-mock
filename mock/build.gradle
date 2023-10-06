@@ -20,7 +20,7 @@ dependencies {
     implementation "io.vertx:vertx-web-templ-freemarker:$vertx_version"
     implementation "org.slf4j:slf4j-api:$slf4j_version"
     implementation "com.google.dagger:dagger:$dagger_version"
-    jsResourceJar "org.keycloak:keycloak-js-adapter:$keycloak_version"
+    jsResourceJar "org.keycloak:keycloak-js-adapter:$keycloak_version@tar.gz"
     htmlResourceJar "org.keycloak:keycloak-services:$keycloak_version"
     testImplementation 'io.fusionauth:fusionauth-jwt:5.2.1'
     testImplementation "io.rest-assured:rest-assured:$restassured_version"
@@ -40,15 +40,15 @@ dependencies {
 tasks.register('addResources', Copy) {
     // make sure to fail if both JARs contain a NOTICE, then we need to merge the files somehow ...
     duplicatesStrategy = DuplicatesStrategy.FAIL
-    from files(zipTree(configurations.jsResourceJar.singleFile)) {
-        include 'keycloak.js'
-        include 'META-INF/NOTICE'
+    from files(tarTree(configurations.jsResourceJar.singleFile)) {
+        include '/package/dist/keycloak.js'
+        include '/META-INF/NOTICE'
     }
     from files(zipTree(configurations.htmlResourceJar.singleFile)) {
         include '/org/keycloak/protocol/oidc/endpoints/3p-cookies-step1.html'
         include '/org/keycloak/protocol/oidc/endpoints/3p-cookies-step2.html'
         include '/org/keycloak/protocol/oidc/endpoints/login-status-iframe.html'
-        include 'META-INF/NOTICE'
+        include '/META-INF/NOTICE'
     }
     into 'build/resources/main'
 }

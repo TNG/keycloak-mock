@@ -229,7 +229,10 @@ class KeycloakMockIntegrationTest {
 
   private static Stream<Arguments> resourcesWithContent() {
     return Stream.of(
-        of("/realms/test/protocol/openid-connect/login-status-iframe.html", HTML, "getCookie()"),
+        of(
+            "/realms/test/protocol/openid-connect/login-status-iframe.html",
+            HTML,
+            "getSessionCookie()"),
         of("/realms/test/protocol/openid-connect/3p-cookies/step1.html", HTML, "step2.html"),
         of("/realms/test/protocol/openid-connect/3p-cookies/step2.html", HTML, "\"supported\""),
         of("/js/keycloak.js", JSON, "function Keycloak"));
