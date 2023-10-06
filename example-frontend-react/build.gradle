@@ -1,7 +1,7 @@
 import static groovy.io.FileType.FILES
 
 plugins {
-    id 'com.github.node-gradle.node' version '3.5.1'
+    id 'com.github.node-gradle.node' version '7.0.1'
 }
 
 def nodeDir = 'bin/nodejs'

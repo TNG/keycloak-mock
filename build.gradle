@@ -14,7 +14,7 @@ plugins {
 }
 
 wrapper {
-    gradleVersion = '7.6'
+    gradleVersion = '8.4'
     distributionType = Wrapper.DistributionType.ALL
 }
 
@@ -79,14 +79,14 @@ subprojects {
         if ('standalone' != project.name) {
             tasks.register('javadocJar', Jar) {
                 from javadoc
-                classifier 'javadoc'
+                archiveClassifier = 'javadoc'
                 metaInf {
                     from "${rootDir}/NOTICE", "${rootDir}/LICENSE"
                 }
             }
             tasks.register('sourceJar', Jar) {
                 from sourceSets.main.allSource
-                classifier 'sources'
+                archiveClassifier = 'sources'
                 metaInf {
                     from "${rootDir}/NOTICE", "${rootDir}/LICENSE"
                 }
