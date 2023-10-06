@@ -6,15 +6,11 @@ plugins {
 
 def nodeDir = 'bin/nodejs'
 def yarnDir = 'bin/yarn'
-def nodeVersionString = '16.15.0'
-def yarnVersionString = '1.22.18'
+def nodeVersionString = '18.18.0'
 
 node {
     // Version of node to use.
     version = nodeVersionString
-
-    // Version of Yarn to use.
-    yarnVersion = yarnVersionString
 
     // Base URL for fetching node distributions (change if you have a mirror).
     distBaseUrl = 'https://nodejs.org/dist'
@@ -57,14 +53,7 @@ tasks.register('copyNode', Copy) {
     }
 }
 
-tasks.register('copyYarn', Copy) {
-    dependsOn yarnSetup
-    from file("${projectDir}/${yarnDir}/yarn-v${yarnVersionString}/")
-    into file("${projectDir}/${yarnDir}/yarn/")
-}
-
 yarnSetup.dependsOn copyNode
-yarn_install.dependsOn copyYarn
 
 tasks.register('build') {
     dependsOn yarn_build
