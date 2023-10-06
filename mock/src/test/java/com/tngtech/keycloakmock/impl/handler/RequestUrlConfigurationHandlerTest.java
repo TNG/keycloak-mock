@@ -16,12 +16,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class RequestUrlConfigurationHandlerTest {
   private static final String REQUEST_HOST = "requestHost";
   private static final String REQUEST_REALM = "requestRealm";
-  @Mock protected RoutingContext routingContext;
-  private RequestUrlConfigurationHandler requestUrlConfigurationHandler;
+
+  @Mock private RoutingContext routingContext;
   @Mock private HttpServerRequest httpServerRequest;
-
   @Mock private UrlConfiguration baseConfiguration;
-
   @Mock private UrlConfiguration requestConfiguration;
 
   @Test
@@ -32,9 +30,9 @@ class RequestUrlConfigurationHandlerTest {
     doReturn(requestConfiguration)
         .when(baseConfiguration)
         .forRequestContext(REQUEST_HOST, REQUEST_REALM);
-    requestUrlConfigurationHandler = new RequestUrlConfigurationHandler(baseConfiguration);
+    RequestUrlConfigurationHandler uut = new RequestUrlConfigurationHandler(baseConfiguration);
 
-    requestUrlConfigurationHandler.handle(routingContext);
+    uut.handle(routingContext);
 
     verify(routingContext).put(CTX_REQUEST_CONFIGURATION, requestConfiguration);
   }

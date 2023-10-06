@@ -7,7 +7,6 @@ import static org.mockito.Mockito.verify;
 
 import com.tngtech.keycloakmock.impl.UrlConfiguration;
 import com.tngtech.keycloakmock.test.ConfigurationResponse;
-import io.vertx.core.http.HttpServerRequest;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Arrays;
@@ -25,8 +24,6 @@ class WellKnownRouteTest extends HandlerTestBase {
   private static final String END_SESSION_ENDPOINT = "endSessionEndpoint";
   private static final String JWKS_URI = "jwksUri";
   private static final String TOKEN_ENDPOINT = "tokenEndpoint";
-
-  @Mock private HttpServerRequest request;
 
   @Mock private UrlConfiguration urlConfiguration;
 
