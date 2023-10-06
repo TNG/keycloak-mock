@@ -7,10 +7,10 @@ buildscript {
 }
 
 plugins {
-    id 'com.github.ben-manes.versions' version '0.44.0'
-    id 'com.google.cloud.tools.jib' version '3.3.1' apply false
-    id 'org.sonarqube' version '3.5.0.2730'
-    id 'pl.allegro.tech.build.axion-release' version '1.14.3'
+    id 'com.github.ben-manes.versions' version '0.48.0'
+    id 'com.google.cloud.tools.jib' version '3.4.0' apply false
+    id 'org.sonarqube' version '4.4.1.3373'
+    id 'pl.allegro.tech.build.axion-release' version '1.15.5'
 }
 
 wrapper {
@@ -208,5 +208,6 @@ sonar {
         property "sonar.organization", "tng"
         property "sonar.projectKey", "TNG_keycloak-mock"
         property "sonar.cpd.exclusions", "mock-junit/**"
+        property "sonar.gradle.skipCompile", "true"
     }
 }
