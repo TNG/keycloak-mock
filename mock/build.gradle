@@ -10,7 +10,7 @@ configurations {
 }
 
 ext {
-    dagger_version = '2.44.2'
+    dagger_version = '2.48.1'
 }
 
 dependencies {
@@ -22,11 +22,11 @@ dependencies {
     implementation "com.google.dagger:dagger:$dagger_version"
     jsResourceJar "org.keycloak:keycloak-js-adapter:$keycloak_version@tar.gz"
     htmlResourceJar "org.keycloak:keycloak-services:$keycloak_version"
-    testImplementation 'io.fusionauth:fusionauth-jwt:5.2.1'
+    testImplementation 'io.fusionauth:fusionauth-jwt:5.3.0'
     testImplementation "io.rest-assured:rest-assured:$restassured_version"
     // required to mock RoutingContext
     testImplementation "io.vertx:vertx-codegen:$vertx_version"
-    testImplementation 'net.javacrumbs.json-unit:json-unit-assertj:2.36.0'
+    testImplementation 'net.javacrumbs.json-unit:json-unit-assertj:3.2.2'
     testImplementation "org.assertj:assertj-core:$assertj_version"
     testImplementation "org.junit.jupiter:junit-jupiter-api:$junit5_version"
     testImplementation "org.junit.jupiter:junit-jupiter-params:$junit5_version"

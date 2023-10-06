@@ -1,7 +1,7 @@
 buildscript {
     ext {
         // spring boot 3 is not (yet) supported by the Keycloak spring boot starter
-        springBootVersion = '2.7.7'
+        springBootVersion = '2.7.16'
     }
     repositories {
         mavenCentral()
