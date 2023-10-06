@@ -4,8 +4,8 @@
   "private": true,
   "license": "Apache-2.0",
   "dependencies": {
-    "axios": "^1.2.3",
-    "keycloak-js": "^20.0.3",
+    "axios": "^1.5.1",
+    "keycloak-js": "^22.0.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-scripts": "5.0.1"
@@ -29,7 +29,7 @@
     "not op_mini all"
   ],
   "devDependencies": {
-    "cypress": "^12.3.0",
-    "cypress-keycloak": "^2.0.0"
+    "cypress": "^13.2.0",
+    "cypress-keycloak": "^2.0.1"
   }
 }

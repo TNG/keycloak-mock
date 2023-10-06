@@ -5,7 +5,7 @@ import App from './App';
 import Keycloak from 'keycloak-js';
 import axios from 'axios';
 
-const kc = Keycloak('/keycloak.json');
+const kc = new Keycloak('/keycloak.json');
 
 kc.init({onLoad: 'login-required', promiseType: 'native', enableLogging: true})
   .then(authenticated => {
