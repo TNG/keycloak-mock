@@ -1,5 +1,7 @@
 package com.tngtech.keycloakmock.impl;
 
+import static java.util.Optional.ofNullable;
+
 import com.tngtech.keycloakmock.api.TokenConfig;
 import com.tngtech.keycloakmock.impl.session.UserData;
 import io.jsonwebtoken.JwtBuilder;
@@ -9,10 +11,7 @@ import java.security.Key;
 import java.security.PublicKey;
 import java.util.Date;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
@@ -60,40 +59,31 @@ public class TokenGenerator {
     if (tokenConfig.getNotBefore() != null) {
       builder.notBefore(new Date(tokenConfig.getNotBefore().toEpochMilli()));
     }
-    Optional<UserData> generatedUserData;
     if (tokenConfig.isGenerateUserDataFromSubject()) {
-      generatedUserData =
-          Optional.of(
-              UserData.fromUsernameAndHostname(
-                  tokenConfig.getSubject(), requestConfiguration.getHostname()));
+      UserData generatedUserData =
+          UserData.fromUsernameAndHostname(
+              tokenConfig.getSubject(), requestConfiguration.getHostname());
+      builder
+          .claim("name", ofNullable(tokenConfig.getName()).orElse(generatedUserData.getName()))
+          .claim(
+              "given_name",
+              ofNullable(tokenConfig.getGivenName()).orElse(generatedUserData.getGivenName()))
+          .claim(
+              "family_name",
+              ofNullable(tokenConfig.getFamilyName()).orElse(generatedUserData.getFamilyName()))
+          .claim("email", ofNullable(tokenConfig.getEmail()).orElse(generatedUserData.getEmail()))
+          .claim(
+              "preferred_username",
+              ofNullable(tokenConfig.getPreferredUsername())
+                  .orElse(generatedUserData.getPreferredUsername()));
     } else {
-      generatedUserData = Optional.empty();
+      builder
+          .claim("name", tokenConfig.getName())
+          .claim("given_name", tokenConfig.getGivenName())
+          .claim("family_name", tokenConfig.getFamilyName())
+          .claim("email", tokenConfig.getEmail())
+          .claim("preferred_username", tokenConfig.getPreferredUsername());
     }
-    setClaimIfPresent(
-        builder,
-        "name",
-        tokenConfig.getName(),
-        generatedUserData.map(UserData::getName).orElse(null));
-    setClaimIfPresent(
-        builder,
-        "given_name",
-        tokenConfig.getGivenName(),
-        generatedUserData.map(UserData::getGivenName).orElse(null));
-    setClaimIfPresent(
-        builder,
-        "family_name",
-        tokenConfig.getFamilyName(),
-        generatedUserData.map(UserData::getFamilyName).orElse(null));
-    setClaimIfPresent(
-        builder,
-        "email",
-        tokenConfig.getEmail(),
-        generatedUserData.map(UserData::getEmail).orElse(null));
-    setClaimIfPresent(
-        builder,
-        "preferred_username",
-        tokenConfig.getPreferredUsername(),
-        generatedUserData.map(UserData::getPreferredUsername).orElse(null));
     return builder
         .claim("acr", tokenConfig.getAuthenticationContextClassReference())
         .claim("realm_access", tokenConfig.getRealmAccess())
@@ -108,17 +98,5 @@ public class TokenGenerator {
   public Map<String, Object> parseToken(String token) {
     JwtParser parser = Jwts.parser().verifyWith(publicKey).build();
     return parser.parseSignedClaims(token).getPayload();
-  }
-
-  private void setClaimIfPresent(
-      @Nonnull final JwtBuilder builder,
-      @Nonnull final String claim,
-      @Nullable String value,
-      @Nullable String alternative) {
-    if (value != null) {
-      Objects.requireNonNull(builder).claim(claim, value);
-    } else if (alternative != null) {
-      Objects.requireNonNull(builder).claim(claim, alternative);
-    }
   }
 }
