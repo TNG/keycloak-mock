@@ -1,18 +1,20 @@
 package com.tngtech.keycloakmock.impl;
 
 import static com.tngtech.keycloakmock.api.TokenConfig.aTokenConfig;
+import static com.tngtech.keycloakmock.test.KeyHelper.loadValidKey;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 
 import com.tngtech.keycloakmock.impl.dagger.DaggerSignatureComponent;
-import com.tngtech.keycloakmock.impl.dagger.SignatureComponent;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.security.PublicKey;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
@@ -20,7 +22,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -53,17 +54,11 @@ class TokenGeneratorTest {
   private static final String HOSTNAME = "hostname";
   private static final String REALM = "realm";
 
-  private static SignatureComponent signatureComponent;
+  private final PublicKey publicKey = loadValidKey();
 
   @Mock private UrlConfiguration urlConfiguration;
 
-  private TokenGenerator generator;
-
-  @BeforeAll
-  static void initKey() {
-    signatureComponent =
-        DaggerSignatureComponent.builder().defaultScopes(Collections.emptyList()).build();
-  }
+  private TokenGenerator uut;
 
   @BeforeEach
   void setup() throws URISyntaxException {
@@ -72,15 +67,23 @@ class TokenGeneratorTest {
         .forRequestContext(
             ArgumentMatchers.nullable(String.class), ArgumentMatchers.nullable(String.class));
     doReturn(new URI(ISSUER)).when(urlConfiguration).getIssuer();
-    // this is a bit awkward, as the token generator is a singleton within the component
-    generator = signatureComponent.tokenGenerator();
+  }
+
+  private TokenGenerator setupUut(List<String> defaultScopes, Duration defaultLifespan) {
+    return DaggerSignatureComponent.builder()
+        .defaultScopes(defaultScopes)
+        .defaultTokenLifespan(defaultLifespan)
+        .build()
+        .tokenGenerator();
   }
 
   @Test
   @SuppressWarnings("unchecked")
   void config_is_correctly_applied() {
+    uut = setupUut(Collections.emptyList(), Duration.ofHours(10));
+
     String token =
-        generator.getToken(
+        uut.getToken(
             aTokenConfig()
                 .withAudience(AUDIENCE)
                 .withAuthorizedParty(AUTHORIZED_PARTY)
@@ -108,15 +111,14 @@ class TokenGeneratorTest {
 
     verify(urlConfiguration).getIssuer();
     verify(urlConfiguration).forRequestContext(HOSTNAME, REALM);
-    Jws<Claims> jwt =
-        Jwts.parser().verifyWith(signatureComponent.publicKey()).build().parseSignedClaims(token);
+    Jws<Claims> jwt = Jwts.parser().verifyWith(publicKey).build().parseSignedClaims(token);
     assertThat(jwt.getHeader())
         .containsEntry("alg", "RS256")
         .containsEntry("kid", "keyId")
         .containsEntry("typ", "JWT");
     Claims claims = jwt.getPayload();
 
-    assertThat(claims).isEqualTo(generator.parseToken(token));
+    assertThat(claims).isEqualTo(uut.parseToken(token));
 
     assertThat(claims.getExpiration()).isInSameSecondWindowAs(new Date(EXPIRATION.toEpochMilli()));
     assertThat(claims.getIssuedAt()).isInSameSecondWindowAs(new Date(ISSUED_AT.toEpochMilli()));
@@ -156,16 +158,12 @@ class TokenGeneratorTest {
 
   @Test
   void user_data_is_not_generated() {
-    String token =
-        generator.getToken(aTokenConfig().withSubject("foo.bar").build(), urlConfiguration);
+    uut = setupUut(Collections.emptyList(), Duration.ofHours(10));
 
-    Jws<Claims> jwt =
-        Jwts.parser().verifyWith(signatureComponent.publicKey()).build().parseSignedClaims(token);
-    assertThat(jwt.getHeader())
-        .containsEntry("alg", "RS256")
-        .containsEntry("kid", "keyId")
-        .containsEntry("typ", "JWT");
-    Claims claims = jwt.getPayload();
+    String token = uut.getToken(aTokenConfig().withSubject("foo.bar").build(), urlConfiguration);
+
+    Claims claims =
+        Jwts.parser().verifyWith(publicKey).build().parseSignedClaims(token).getPayload();
 
     assertThat(claims.getSubject()).isEqualTo("foo.bar");
     assertThat(claims)
@@ -174,18 +172,15 @@ class TokenGeneratorTest {
 
   @Test
   void user_data_is_generated() {
+    uut = setupUut(Collections.emptyList(), Duration.ofHours(10));
+
     doReturn("example.com").when(urlConfiguration).getHostname();
     String token =
-        generator.getToken(
+        uut.getToken(
             aTokenConfig().withSubjectAndGeneratedUserData("foo.bar").build(), urlConfiguration);
 
-    Jws<Claims> jwt =
-        Jwts.parser().verifyWith(signatureComponent.publicKey()).build().parseSignedClaims(token);
-    assertThat(jwt.getHeader())
-        .containsEntry("alg", "RS256")
-        .containsEntry("kid", "keyId")
-        .containsEntry("typ", "JWT");
-    Claims claims = jwt.getPayload();
+    Claims claims =
+        Jwts.parser().verifyWith(publicKey).build().parseSignedClaims(token).getPayload();
 
     assertThat(claims.getSubject()).isEqualTo("foo.bar");
     assertThat(claims)
@@ -198,9 +193,11 @@ class TokenGeneratorTest {
 
   @Test
   void explicit_user_data_takes_preference() {
+    uut = setupUut(Collections.emptyList(), Duration.ofHours(10));
+
     doReturn("example.com").when(urlConfiguration).getHostname();
     String token =
-        generator.getToken(
+        uut.getToken(
             aTokenConfig()
                 .withSubjectAndGeneratedUserData("foo.bar")
                 .withGivenName("Jane")
@@ -210,13 +207,8 @@ class TokenGeneratorTest {
                 .build(),
             urlConfiguration);
 
-    Jws<Claims> jwt =
-        Jwts.parser().verifyWith(signatureComponent.publicKey()).build().parseSignedClaims(token);
-    assertThat(jwt.getHeader())
-        .containsEntry("alg", "RS256")
-        .containsEntry("kid", "keyId")
-        .containsEntry("typ", "JWT");
-    Claims claims = jwt.getPayload();
+    Claims claims =
+        Jwts.parser().verifyWith(publicKey).build().parseSignedClaims(token).getPayload();
 
     assertThat(claims.getSubject()).isEqualTo("foo.bar");
     assertThat(claims)
@@ -225,5 +217,77 @@ class TokenGeneratorTest {
         .containsEntry("family_name", "Doe")
         .containsEntry("email", "jane@doe.com")
         .containsEntry("preferred_username", "doej");
+  }
+
+  @Test
+  void default_scopes_are_used() {
+    uut = setupUut(Arrays.asList("scope1", "scope2", "scope3"), Duration.ofHours(10));
+
+    String token = uut.getToken(aTokenConfig().build(), urlConfiguration);
+
+    Claims claims =
+        Jwts.parser().verifyWith(publicKey).build().parseSignedClaims(token).getPayload();
+
+    assertThat(claims).containsEntry("scope", "openid scope1 scope2 scope3");
+  }
+
+  @Test
+  void default_scopes_are_overridden() {
+    uut = setupUut(Arrays.asList("scope1", "scope2", "scope3"), Duration.ofHours(10));
+
+    String token =
+        uut.getToken(
+            aTokenConfig().withScope("test1").withScopes(Arrays.asList("test2", "test3")).build(),
+            urlConfiguration);
+
+    Claims claims =
+        Jwts.parser().verifyWith(publicKey).build().parseSignedClaims(token).getPayload();
+
+    assertThat(claims).containsEntry("scope", "openid test1 test2 test3");
+  }
+
+  @Test
+  void duplicate_scopes_are_removed() {
+    uut = setupUut(Collections.emptyList(), Duration.ofHours(10));
+
+    String token =
+        uut.getToken(
+            aTokenConfig().withScope("test1").withScopes(Arrays.asList("openid", "test1")).build(),
+            urlConfiguration);
+
+    Claims claims =
+        Jwts.parser().verifyWith(publicKey).build().parseSignedClaims(token).getPayload();
+
+    assertThat(claims).containsEntry("scope", "openid test1");
+  }
+
+  @Test
+  void default_lifespan_is_used() {
+    uut = setupUut(Collections.emptyList(), Duration.ofHours(5));
+
+    String token = uut.getToken(aTokenConfig().build(), urlConfiguration);
+
+    Claims claims =
+        Jwts.parser().verifyWith(publicKey).build().parseSignedClaims(token).getPayload();
+
+    assertThat(claims.getExpiration())
+        .isAfter(Instant.now().plus(4, ChronoUnit.HOURS).plus(59, ChronoUnit.MINUTES))
+        .isBefore(Instant.now().plus(5, ChronoUnit.HOURS));
+  }
+
+  @Test
+  void default_lifespan_is_overridden_with_token_lifespan() {
+    uut = setupUut(Collections.emptyList(), Duration.ofHours(5));
+
+    String token =
+        uut.getToken(
+            aTokenConfig().withTokenLifespan(Duration.ofHours(20)).build(), urlConfiguration);
+
+    Claims claims =
+        Jwts.parser().verifyWith(publicKey).build().parseSignedClaims(token).getPayload();
+
+    assertThat(claims.getExpiration())
+        .isAfter(Instant.now().plus(19, ChronoUnit.HOURS).plus(59, ChronoUnit.MINUTES))
+        .isBefore(Instant.now().plus(20, ChronoUnit.HOURS));
   }
 }

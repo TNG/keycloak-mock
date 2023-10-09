@@ -5,6 +5,7 @@ import dagger.BindsInstance;
 import dagger.Component;
 import java.security.KeyStore;
 import java.security.PublicKey;
+import java.time.Duration;
 import java.util.List;
 import javax.inject.Named;
 import javax.inject.Singleton;
@@ -28,6 +29,9 @@ public interface SignatureComponent {
   abstract class Builder {
     @BindsInstance
     public abstract Builder defaultScopes(@Named("scopes") List<String> defaultScopes);
+
+    @BindsInstance
+    public abstract Builder defaultTokenLifespan(Duration defaultTokenLifespan);
 
     public abstract SignatureComponent build();
   }
