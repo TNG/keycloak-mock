@@ -10,7 +10,6 @@ import com.tngtech.keycloakmock.impl.session.UserData;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.inject.Inject;
@@ -25,7 +24,6 @@ public class TokenHelper {
 
   @Nonnull private final TokenGenerator tokenGenerator;
   @Nonnull private final List<String> resourcesToMapRolesTo;
-  @Nonnull private final Set<String> defaultScopes;
 
   @Nonnull private final Duration tokenLifespan;
 
@@ -33,11 +31,9 @@ public class TokenHelper {
   TokenHelper(
       @Nonnull TokenGenerator tokenGenerator,
       @Nonnull @Named("resources") List<String> resourcesToMapRolesTo,
-      @Nonnull @Named("scopes") Set<String> defaultScopes,
       @Nonnull @Named("tokenLifespan") Duration tokenLifespan) {
     this.tokenGenerator = tokenGenerator;
     this.resourcesToMapRolesTo = resourcesToMapRolesTo;
-    this.defaultScopes = defaultScopes;
     this.tokenLifespan = tokenLifespan;
   }
 
@@ -71,15 +67,8 @@ public class TokenHelper {
       }
     }
 
-    addDefaultScopesIfConfigured(builder);
     // for simplicity, the access token is the same as the ID token
     return tokenGenerator.getToken(builder.build(), requestConfiguration);
-  }
-
-  private void addDefaultScopesIfConfigured(Builder builder) {
-    if (!defaultScopes.isEmpty()) {
-      builder.withScopes(defaultScopes);
-    }
   }
 
   @Nonnull

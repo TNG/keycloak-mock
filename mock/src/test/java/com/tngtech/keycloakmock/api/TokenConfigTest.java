@@ -47,7 +47,7 @@ class TokenConfigTest {
     assertThat(config.getPreferredUsername()).isNull();
     assertThat(config.getRealmAccess().getRoles()).isEmpty();
     assertThat(config.getResourceAccess()).isEmpty();
-    assertThat(config.getScope()).isEmpty();
+    assertThat(config.getScopes()).isEmpty();
     assertThat(config.getSubject()).isEqualTo("user");
     assertThat(config.getAuthenticationContextClassReference()).isNull();
     assertThat(config.isGenerateUserDataFromSubject()).isFalse();
@@ -233,7 +233,7 @@ class TokenConfigTest {
             .withScope("scope3")
             .build();
 
-    assertThat(config.getScope().split(" ")).containsOnly("scope1", "scope2", "scope3");
+    assertThat(config.getScopes()).containsOnly("scope1", "scope2", "scope3");
   }
 
   @Test
@@ -281,8 +281,7 @@ class TokenConfigTest {
     assertThat(config.getResourceAccess()).containsOnlyKeys("account");
     assertThat(config.getResourceAccess().get("account").getRoles())
         .containsExactlyInAnyOrder("manage-account", "manage-account-links", "view-profile");
-    assertThat(config.getScope().split(" "))
-        .containsExactlyInAnyOrder("openid", "email", "profile");
+    assertThat(config.getScopes()).containsExactlyInAnyOrder("openid", "email", "profile");
     assertThat(config.getSubject()).isEqualTo("fbcaa40a-9480-4ead-adf2-8f6085f6f75d");
     assertThat(config.getHostname()).isEqualTo("localhost");
     assertThat(config.getRealm()).isEqualTo("realm");

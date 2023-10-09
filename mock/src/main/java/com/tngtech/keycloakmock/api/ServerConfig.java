@@ -3,11 +3,10 @@ package com.tngtech.keycloakmock.api;
 import com.tngtech.keycloakmock.impl.Protocol;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 import javax.annotation.Nonnull;
 
 /** Server configuration to use. */
@@ -26,7 +25,7 @@ public final class ServerConfig {
   @Nonnull private final String contextPath;
   @Nonnull private final String defaultRealm;
   @Nonnull private final List<String> resourcesToMapRolesTo;
-  @Nonnull private final Set<String> defaultScopes;
+  @Nonnull private final List<String> defaultScopes;
   @Nonnull private final Duration tokenLifespan;
 
   private ServerConfig(@Nonnull final Builder builder) {
@@ -148,8 +147,8 @@ public final class ServerConfig {
    * @return default scopes
    */
   @Nonnull
-  public Set<String> getDefaultScopes() {
-    return Collections.unmodifiableSet(defaultScopes);
+  public List<String> getDefaultScopes() {
+    return Collections.unmodifiableList(defaultScopes);
   }
 
   /**
@@ -175,7 +174,7 @@ public final class ServerConfig {
     @Nonnull private String contextPath = DEFAULT_CONTEXT_PATH;
     @Nonnull private String defaultRealm = DEFAULT_REALM;
     @Nonnull private final List<String> resourcesToMapRolesTo = new ArrayList<>();
-    @Nonnull private final Set<String> defaultScopes = new HashSet<>();
+    @Nonnull private final List<String> defaultScopes = new ArrayList<>();
     @Nonnull private Duration tokenLifespan = DEFAULT_TOKEN_LIFESPAN;
 
     private Builder() {
@@ -353,13 +352,13 @@ public final class ServerConfig {
      *
      * <p>Set of client scopes to be configured. Default scope 'openid' is always added.
      *
-     * @param defaultScopes as set
+     * @param defaultScopes the scopes to add
      * @return builder
      * @see <a href="https://openid.net/specs/openid-connect-core-1_0.html#ScopeClaims">scope
      *     claims</a>
      */
     @Nonnull
-    public Builder withDefaultScopes(@Nonnull final Set<String> defaultScopes) {
+    public Builder withDefaultScopes(@Nonnull final Collection<String> defaultScopes) {
       this.defaultScopes.addAll(defaultScopes);
       return this;
     }

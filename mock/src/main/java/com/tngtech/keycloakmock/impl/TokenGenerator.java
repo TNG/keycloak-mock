@@ -10,7 +10,10 @@ import io.jsonwebtoken.Jwts;
 import java.security.Key;
 import java.security.PublicKey;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -21,15 +24,18 @@ public class TokenGenerator {
   @Nonnull private final PublicKey publicKey;
   @Nonnull private final Key privateKey;
   @Nonnull private final String keyId;
+  @Nonnull private final List<String> defaultScopes;
 
   @Inject
   TokenGenerator(
       @Nonnull PublicKey publicKey,
       @Nonnull Key privateKey,
-      @Nonnull @Named("keyId") String keyId) {
+      @Nonnull @Named("keyId") String keyId,
+      @Nonnull @Named("scopes") List<String> defaultScopes) {
     this.publicKey = publicKey;
     this.privateKey = privateKey;
     this.keyId = keyId;
+    this.defaultScopes = defaultScopes;
   }
 
   @Nonnull
@@ -53,7 +59,7 @@ public class TokenGenerator {
                     .getIssuer()
                     .toASCIIString())
             .subject(tokenConfig.getSubject())
-            .claim("scope", tokenConfig.getScope())
+            .claim("scope", encodeGivenOrDefaultScopes(tokenConfig.getScopes()))
             .claim("typ", "Bearer")
             .claim("azp", tokenConfig.getAuthorizedParty());
     if (tokenConfig.getNotBefore() != null) {
@@ -95,7 +101,19 @@ public class TokenGenerator {
         .compact();
   }
 
-  public Map<String, Object> parseToken(String token) {
+  private String encodeGivenOrDefaultScopes(List<String> scopes) {
+    if (scopes.isEmpty()) {
+      return Stream.concat(Stream.of("openid"), defaultScopes.stream())
+          .distinct()
+          .collect(Collectors.joining(" "));
+    } else {
+      return Stream.concat(Stream.of("openid"), scopes.stream())
+          .distinct()
+          .collect(Collectors.joining(" "));
+    }
+  }
+
+  public Map<String, Object> parseToken(@Nonnull String token) {
     JwtParser parser = Jwts.parser().verifyWith(publicKey).build();
     return parser.parseSignedClaims(token).getPayload();
   }
