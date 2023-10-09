@@ -59,7 +59,8 @@ public class KeycloakMock {
   public KeycloakMock(@Nonnull final ServerConfig serverConfig) {
     this.serverConfig = serverConfig;
     this.defaultConfiguration = new UrlConfiguration(serverConfig);
-    this.signatureComponent = DaggerSignatureComponent.create();
+    this.signatureComponent =
+        DaggerSignatureComponent.builder().defaultScopes(serverConfig.getDefaultScopes()).build();
   }
 
   /**

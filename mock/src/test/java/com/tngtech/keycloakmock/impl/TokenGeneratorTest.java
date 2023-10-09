@@ -61,7 +61,8 @@ class TokenGeneratorTest {
 
   @BeforeAll
   static void initKey() {
-    signatureComponent = DaggerSignatureComponent.create();
+    signatureComponent =
+        DaggerSignatureComponent.builder().defaultScopes(Collections.emptyList()).build();
   }
 
   @BeforeEach
@@ -127,7 +128,8 @@ class TokenGeneratorTest {
     assertThat(claims)
         .containsEntry("aud", Collections.singleton(AUDIENCE))
         .containsEntry("azp", AUTHORIZED_PARTY)
-        .containsEntry("scope", SCOPE)
+        // openid is always added to the scope
+        .containsEntry("scope", "openid " + SCOPE)
         .containsEntry("name", NAME)
         .containsEntry("given_name", GIVEN)
         .containsEntry("family_name", FAMILY)

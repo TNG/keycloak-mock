@@ -31,7 +31,6 @@ dependencies {
     testImplementation "org.junit.jupiter:junit-jupiter-api:$junit5_version"
     testImplementation "org.junit.jupiter:junit-jupiter-params:$junit5_version"
     testImplementation "org.mockito:mockito-junit-jupiter:$mockito_version"
-    testImplementation 'org.apache.oltu.oauth2:org.apache.oltu.oauth2.client:1.0.2'
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junit5_version"
     testRuntimeOnly "org.slf4j:slf4j-simple:$slf4j_version"
     annotationProcessor "com.google.dagger:dagger-compiler:$dagger_version"

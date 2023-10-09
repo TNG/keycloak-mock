@@ -9,6 +9,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collection;
@@ -39,7 +40,7 @@ public class TokenConfig {
   @Nonnull private final Set<String> audience;
   @Nonnull private final String authorizedParty;
   @Nonnull private final String subject;
-  @Nonnull private final String scope;
+  @Nonnull private final List<String> scopes;
   @Nonnull private final Map<String, Object> claims;
   @Nonnull private final Access realmAccess;
   @Nonnull private final Map<String, Access> resourceAccess;
@@ -66,7 +67,7 @@ public class TokenConfig {
     authorizedParty = builder.authorizedParty;
     subject = builder.subject;
     generateUserDataFromSubject = builder.generateUserDataFromSubject;
-    scope = String.join(" ", builder.scope);
+    scopes = builder.scopes;
     claims = builder.claims;
     realmAccess = builder.realmRoles;
     resourceAccess = builder.resourceAccess;
@@ -124,8 +125,8 @@ public class TokenConfig {
   }
 
   @Nonnull
-  public String getScope() {
-    return scope;
+  public List<String> getScopes() {
+    return scopes;
   }
 
   @Nonnull
@@ -213,7 +214,7 @@ public class TokenConfig {
     @Nonnull private final Set<String> audience = new HashSet<>();
     @Nonnull private String authorizedParty = "client";
     @Nonnull private String subject = "user";
-    @Nonnull private final Set<String> scope = new HashSet<>();
+    @Nonnull private final List<String> scopes = new ArrayList<>();
     @Nonnull private final Map<String, Object> claims = new HashMap<>();
     @Nonnull private final Access realmRoles = new Access();
     @Nonnull private final Map<String, Access> resourceAccess = new HashMap<>();
@@ -445,8 +446,8 @@ public class TokenConfig {
     /**
      * Add scope.
      *
-     * <p>The scope for which this token has been requested. Always contains the scopes configured
-     * in ServerConfig.
+     * <p>The scope for which this token has been requested. If not set, the default scopes
+     * configured in {@link ServerConfig} will be used.
      *
      * @param scope the scope to add
      * @return builder
@@ -455,15 +456,15 @@ public class TokenConfig {
      */
     @Nonnull
     public Builder withScope(@Nonnull final String scope) {
-      this.scope.add(scope);
+      this.scopes.add(scope);
       return this;
     }
 
     /**
      * Add scopes.
      *
-     * <p>The scopes for which this token has been requested. Always contains the scopes configured
-     * in ServerConfig.
+     * <p>The scopes for which this token has been requested. If not set, the default scopes
+     * configured in {@link ServerConfig} will be used.
      *
      * @param scopes the scopes to add
      * @return builder
@@ -472,7 +473,7 @@ public class TokenConfig {
      */
     @Nonnull
     public Builder withScopes(@Nonnull final Collection<String> scopes) {
-      this.scope.addAll(scopes);
+      this.scopes.addAll(scopes);
       return this;
     }
 

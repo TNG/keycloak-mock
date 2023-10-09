@@ -56,9 +56,7 @@ class TokenHelperTest {
 
   @Test
   void token_is_correctly_generated() {
-    uut =
-        new TokenHelper(
-            tokenGenerator, Collections.emptyList(), Collections.emptySet(), Duration.ofHours(100));
+    uut = new TokenHelper(tokenGenerator, Collections.emptyList(), Duration.ofHours(100));
 
     uut.getToken(session, urlConfiguration);
 
@@ -85,9 +83,7 @@ class TokenHelperTest {
 
   @Test
   void resource_roles_are_used_if_configured() {
-    uut =
-        new TokenHelper(
-            tokenGenerator, CONFIGURED_RESOURCES, Collections.emptySet(), Duration.ofHours(10));
+    uut = new TokenHelper(tokenGenerator, CONFIGURED_RESOURCES, Duration.ofHours(10));
 
     uut.getToken(session, urlConfiguration);
 

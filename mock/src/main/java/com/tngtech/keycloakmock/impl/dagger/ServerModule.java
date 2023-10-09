@@ -37,7 +37,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.time.Duration;
 import java.util.List;
-import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.inject.Named;
 import javax.inject.Singleton;
@@ -93,14 +92,14 @@ public class ServerModule {
   @Provides
   @Singleton
   @Named("scopes")
-  public Set<String> provideScopes(@Nonnull ServerConfig serverConfig) {
+  List<String> provideScopes(@Nonnull ServerConfig serverConfig) {
     return serverConfig.getDefaultScopes();
   }
 
   @Provides
   @Singleton
   @Named("tokenLifespan")
-  public Duration provideTokenLifespan(@Nonnull ServerConfig serverConfig) {
+  Duration provideTokenLifespan(@Nonnull ServerConfig serverConfig) {
     return serverConfig.getTokenLifespan();
   }
 
