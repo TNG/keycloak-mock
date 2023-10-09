@@ -3,8 +3,10 @@ package com.tngtech.keycloakmock.standalone;
 import static com.tngtech.keycloakmock.api.ServerConfig.aServerConfig;
 
 import com.tngtech.keycloakmock.api.KeycloakMock;
+import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.Callable;
 import javax.annotation.Nonnull;
 import org.slf4j.Logger;
@@ -40,18 +42,34 @@ public class Main implements Callable<Void> {
               + "If present, must be prefixed with '/', eg. --contextPath=/example-path")
   private String contextPath = "/auth";
 
-  @SuppressWarnings("FieldMayBeFinal")
   @Option(
       names = {"-ncp", "--noContextPath"},
       description = "If present context path will not be used. Good for mocking Keycloak 18.0.0+.")
   private boolean noContextPath;
 
+  @SuppressWarnings("FieldMayBeFinal")
   @Option(
       names = {"-r", "--mapRolesToResources"},
       description = "If set, roles will be assigned to these resources instead of the realm.",
       paramLabel = "RESOURCE",
       split = ",")
-  private final List<String> resourcesToMapRolesTo = Collections.emptyList();
+  private List<String> resourcesToMapRolesTo = Collections.emptyList();
+
+  @SuppressWarnings("FieldMayBeFinal")
+  @Option(
+      names = {"-sc", "--scopes"},
+      description = "Scopes to add to generated token (default: ${DEFAULT-VALUE}).",
+      paramLabel = "SCOPE",
+      split = ",")
+  private List<String> scopes = Collections.singletonList("openid");
+
+  @SuppressWarnings("FieldMayBeFinal")
+  @Option(
+      names = {"-tl", "--tokenLifespan"},
+      description =
+          "Lifespan of generated tokens (default: ${DEFAULT-VALUE}). Valid values are e.g. '10h',"
+              + " '15m', '3m45s'.")
+  private String tokenLifespan = "10h";
 
   public static void main(@Nonnull final String[] args) {
     if (System.getProperty("org.slf4j.simpleLogger.logFile") == null) {
@@ -73,6 +91,8 @@ public class Main implements Callable<Void> {
                 .withTls(tls)
                 .withContextPath(usedContextPath)
                 .withResourcesToMapRolesTo(resourcesToMapRolesTo)
+                .withDefaultScopes(scopes)
+                .withDefaultTokenLifespan(getParsedLifespan())
                 .build())
         .start();
 
@@ -83,5 +103,10 @@ public class Main implements Callable<Void> {
         usedContextPath);
 
     return null;
+  }
+
+  private Duration getParsedLifespan() {
+    // simple trick: just interpret the given string as the suffix part of a Duration string
+    return Duration.parse("PT" + tokenLifespan.toUpperCase(Locale.ROOT));
   }
 }
