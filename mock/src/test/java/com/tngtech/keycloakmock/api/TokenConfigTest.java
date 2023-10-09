@@ -35,8 +35,7 @@ class TokenConfigTest {
     assertThat(config.getAuthorizedParty()).isEqualTo("client");
     assertThat(config.getClaims()).isEmpty();
     assertThat(config.getEmail()).isNull();
-    assertThat(config.getExpiration())
-        .isCloseTo(now.plus(10, ChronoUnit.HOURS), within(1, ChronoUnit.SECONDS));
+    assertThat(config.getExpiration()).isNull();
     assertThat(config.getFamilyName()).isNull();
     assertThat(config.getGivenName()).isNull();
     assertThat(config.getIssuedAt()).isBetween(now.minusSeconds(1), now);
@@ -267,8 +266,7 @@ class TokenConfigTest {
             entry("allowed-origins", Collections.singletonList("http://localhost:3000")),
             entry("email_verified", false));
     assertThat(config.getEmail()).isEqualTo("user@keycloak");
-    assertThat(config.getExpiration())
-        .isCloseTo(now.plus(10, ChronoUnit.HOURS), within(1, ChronoUnit.SECONDS));
+    assertThat(config.getExpiration()).isNull();
     assertThat(config.getFamilyName()).isEqualTo("User");
     assertThat(config.getGivenName()).isEqualTo("Peter");
     assertThat(config.getIssuedAt()).isBetween(now.minusSeconds(1), now);

@@ -8,7 +8,6 @@ import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
@@ -46,9 +45,9 @@ public class TokenConfig {
   @Nonnull private final Map<String, Access> resourceAccess;
   @Nonnull private final Instant issuedAt;
   @Nonnull private final Instant authenticationTime;
-  @Nonnull private final Instant expiration;
   private final boolean generateUserDataFromSubject;
   @Nullable private final Instant notBefore;
+  @Nullable private final Instant expiration;
   @Nullable private final String hostname;
   @Nullable private final String realm;
   @Nullable private final String name;
@@ -73,10 +72,10 @@ public class TokenConfig {
     resourceAccess = builder.resourceAccess;
     issuedAt = builder.issuedAt;
     authenticationTime = builder.authenticationTime;
-    expiration = builder.expiration;
     hostname = builder.hostname;
     realm = builder.realm;
     notBefore = builder.notBefore;
+    expiration = builder.expiration;
     givenName = builder.givenName;
     familyName = builder.familyName;
     if (builder.name != null) {
@@ -154,14 +153,14 @@ public class TokenConfig {
     return authenticationTime;
   }
 
-  @Nonnull
-  public Instant getExpiration() {
-    return expiration;
-  }
-
   @Nullable
   public Instant getNotBefore() {
     return notBefore;
+  }
+
+  @Nullable
+  public Instant getExpiration() {
+    return expiration;
   }
 
   @Nullable
@@ -219,10 +218,10 @@ public class TokenConfig {
     @Nonnull private final Access realmRoles = new Access();
     @Nonnull private final Map<String, Access> resourceAccess = new HashMap<>();
     @Nonnull private Instant issuedAt = Instant.now();
-    @Nonnull private Instant expiration = issuedAt.plus(10, ChronoUnit.HOURS);
     @Nonnull private Instant authenticationTime = Instant.now();
     private boolean generateUserDataFromSubject = false;
     @Nullable private Instant notBefore;
+    @Nullable private Instant expiration;
     @Nullable private String hostname;
     @Nullable private String realm;
     @Nullable private String givenName;
@@ -654,13 +653,38 @@ public class TokenConfig {
     /**
      * Set expiration date.
      *
+     * <p>As an alternative, you can also set the token lifespan instead using {@link
+     * #withTokenLifespan(Duration)}.
+     *
+     * <p>If no expiration is configured, the default token lifespan configured in {@link
+     * ServerConfig.Builder#withDefaultTokenLifespan(Duration)} will be used.
+     *
      * @param expiration the instant when the token expires
      * @return builder
      * @see <a href="https://openid.net/specs/openid-connect-core-1_0.html#IDToken">ID token</a>
+     * @see #withTokenLifespan(Duration)
      */
     @Nonnull
     public Builder withExpiration(@Nonnull final Instant expiration) {
       this.expiration = Objects.requireNonNull(expiration);
+      return this;
+    }
+
+    /**
+     * Set lifespan of generated token.
+     *
+     * <p>This is an alternative option to setting the expiration directly via {@link
+     * #withExpiration(Instant)}. The expiration will be calculated as issuedAt + tokenLifespan.
+     *
+     * <p>If no token lifespan is configured, the default token lifespan configured in {@link
+     * ServerConfig.Builder#withDefaultTokenLifespan(Duration)} will be used.
+     *
+     * @param tokenLifespan duration the token should be valid
+     * @return builder
+     * @see #withExpiration(Instant)
+     */
+    public Builder withTokenLifespan(Duration tokenLifespan) {
+      this.expiration = issuedAt.plus(tokenLifespan);
       return this;
     }
 
@@ -769,11 +793,6 @@ public class TokenConfig {
     @Nonnull
     public TokenConfig build() {
       return new TokenConfig(this);
-    }
-
-    public Builder witTokenLifespan(Duration tokenLifespan) {
-      this.expiration = issuedAt.plus(tokenLifespan);
-      return this;
     }
   }
 

@@ -100,7 +100,7 @@ public class ServerModule {
   @Singleton
   @Named("tokenLifespan")
   Duration provideTokenLifespan(@Nonnull ServerConfig serverConfig) {
-    return serverConfig.getTokenLifespan();
+    return serverConfig.getDefaultTokenLifespan();
   }
 
   @Provides

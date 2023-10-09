@@ -26,7 +26,7 @@ public final class ServerConfig {
   @Nonnull private final String defaultRealm;
   @Nonnull private final List<String> resourcesToMapRolesTo;
   @Nonnull private final List<String> defaultScopes;
-  @Nonnull private final Duration tokenLifespan;
+  @Nonnull private final Duration defaultTokenLifespan;
 
   private ServerConfig(@Nonnull final Builder builder) {
     this.port = builder.port;
@@ -36,7 +36,7 @@ public final class ServerConfig {
     this.defaultRealm = builder.defaultRealm;
     this.resourcesToMapRolesTo = builder.resourcesToMapRolesTo;
     this.defaultScopes = builder.defaultScopes;
-    this.tokenLifespan = builder.tokenLifespan;
+    this.defaultTokenLifespan = builder.defaultTokenLifespan;
   }
 
   /**
@@ -152,13 +152,13 @@ public final class ServerConfig {
   }
 
   /**
-   * Get access token lifespan
+   * Get default access token lifespan.
    *
-   * @return token lifespan
+   * @return default token lifespan
    */
   @Nonnull
-  public Duration getTokenLifespan() {
-    return tokenLifespan;
+  public Duration getDefaultTokenLifespan() {
+    return defaultTokenLifespan;
   }
 
   /**
@@ -175,7 +175,7 @@ public final class ServerConfig {
     @Nonnull private String defaultRealm = DEFAULT_REALM;
     @Nonnull private final List<String> resourcesToMapRolesTo = new ArrayList<>();
     @Nonnull private final List<String> defaultScopes = new ArrayList<>();
-    @Nonnull private Duration tokenLifespan = DEFAULT_TOKEN_LIFESPAN;
+    @Nonnull private Duration defaultTokenLifespan = DEFAULT_TOKEN_LIFESPAN;
 
     private Builder() {
       defaultScopes.add(DEFAULT_SCOPE);
@@ -380,15 +380,17 @@ public final class ServerConfig {
     }
 
     /**
-     * Set default access token lifespan ("exp" filed will be set as issuedAt + tokenLifespan). + By
-     * default lifespan 10 hours.
+     * Set default access token lifespan.
+     *
+     * <p>Token expiry 'exp' will be set as 'issuedAt' + 'tokenLifespan'. The default lifespan is 10
+     * hours.
      *
      * @param tokenLifespan as duration
      * @return builder
      */
     @Nonnull
-    public Builder withTokenLifespan(@Nonnull final Duration tokenLifespan) {
-      this.tokenLifespan = tokenLifespan;
+    public Builder withDefaultTokenLifespan(@Nonnull final Duration tokenLifespan) {
+      this.defaultTokenLifespan = tokenLifespan;
       return this;
     }
 

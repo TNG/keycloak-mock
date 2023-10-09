@@ -9,6 +9,7 @@ import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 import java.security.Key;
 import java.security.PublicKey;
+import java.time.Duration;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -25,17 +26,20 @@ public class TokenGenerator {
   @Nonnull private final Key privateKey;
   @Nonnull private final String keyId;
   @Nonnull private final List<String> defaultScopes;
+  @Nonnull private final Duration defaultTokenLifespan;
 
   @Inject
   TokenGenerator(
       @Nonnull PublicKey publicKey,
       @Nonnull Key privateKey,
       @Nonnull @Named("keyId") String keyId,
-      @Nonnull @Named("scopes") List<String> defaultScopes) {
+      @Nonnull @Named("scopes") List<String> defaultScopes,
+      @Nonnull Duration defaultTokenLifespan) {
     this.publicKey = publicKey;
     this.privateKey = privateKey;
     this.keyId = keyId;
     this.defaultScopes = defaultScopes;
+    this.defaultTokenLifespan = defaultTokenLifespan;
   }
 
   @Nonnull
@@ -52,7 +56,6 @@ public class TokenGenerator {
             .and()
             .issuedAt(new Date(tokenConfig.getIssuedAt().toEpochMilli()))
             .claim("auth_time", tokenConfig.getAuthenticationTime().getEpochSecond())
-            .expiration(new Date(tokenConfig.getExpiration().toEpochMilli()))
             .issuer(
                 requestConfiguration
                     .forRequestContext(tokenConfig.getHostname(), tokenConfig.getRealm())
@@ -64,6 +67,12 @@ public class TokenGenerator {
             .claim("azp", tokenConfig.getAuthorizedParty());
     if (tokenConfig.getNotBefore() != null) {
       builder.notBefore(new Date(tokenConfig.getNotBefore().toEpochMilli()));
+    }
+    if (tokenConfig.getExpiration() != null) {
+      builder.expiration(new Date(tokenConfig.getExpiration().toEpochMilli()));
+    } else {
+      builder.expiration(
+          new Date(tokenConfig.getIssuedAt().plus(defaultTokenLifespan).toEpochMilli()));
     }
     if (tokenConfig.isGenerateUserDataFromSubject()) {
       UserData generatedUserData =
