@@ -14,6 +14,7 @@ import com.tngtech.keycloakmock.impl.handler.OptionalBasicAuthHandler;
 import com.tngtech.keycloakmock.impl.handler.OutOfBandLoginRoute;
 import com.tngtech.keycloakmock.impl.handler.RequestUrlConfigurationHandler;
 import com.tngtech.keycloakmock.impl.handler.ResourceFileHandler;
+import com.tngtech.keycloakmock.impl.handler.TokenIntrospectionRoute;
 import com.tngtech.keycloakmock.impl.handler.TokenRoute;
 import com.tngtech.keycloakmock.impl.handler.WellKnownRoute;
 import dagger.Lazy;
@@ -148,7 +149,8 @@ public class ServerModule {
       @Nonnull LogoutRoute logoutRoute,
       @Nonnull DelegationRoute delegationRoute,
       @Nonnull OutOfBandLoginRoute outOfBandLoginRoute,
-      @Nonnull @Named("keycloakJs") ResourceFileHandler keycloakJsRoute) {
+      @Nonnull @Named("keycloakJs") ResourceFileHandler keycloakJsRoute,
+      @Nonnull TokenIntrospectionRoute tokenIntrospectionRoute) {
     UrlConfiguration routing = defaultConfiguration.forRequestContext(null, ":realm");
     Router router = Router.router(vertx);
     router
@@ -180,6 +182,10 @@ public class ServerModule {
     router.get(routing.getOpenIdPath("delegated").getPath()).handler(delegationRoute);
     router.get(routing.getOutOfBandLoginLoginEndpoint().getPath()).handler(outOfBandLoginRoute);
     router.route("/auth/js/keycloak.js").handler(keycloakJsRoute);
+    router
+        .post(routing.getTokenIntrospectionEndPoint().getPath())
+        .handler(BodyHandler.create())
+        .handler(tokenIntrospectionRoute);
     return router;
   }
 

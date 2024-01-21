@@ -24,6 +24,7 @@ class WellKnownRouteTest extends HandlerTestBase {
   private static final String END_SESSION_ENDPOINT = "endSessionEndpoint";
   private static final String JWKS_URI = "jwksUri";
   private static final String TOKEN_ENDPOINT = "tokenEndpoint";
+  private static final String TOKEN_INTROSPECTION_ENDPOINT = "tokenIntrospectionEndpoint";
 
   @Mock private UrlConfiguration urlConfiguration;
 
@@ -37,6 +38,9 @@ class WellKnownRouteTest extends HandlerTestBase {
     doReturn(new URI(END_SESSION_ENDPOINT)).when(urlConfiguration).getEndSessionEndpoint();
     doReturn(new URI(JWKS_URI)).when(urlConfiguration).getJwksUri();
     doReturn(new URI(TOKEN_ENDPOINT)).when(urlConfiguration).getTokenEndpoint();
+    doReturn(new URI(TOKEN_INTROSPECTION_ENDPOINT))
+        .when(urlConfiguration)
+        .getTokenIntrospectionEndPoint();
 
     wellKnownRoute.handle(routingContext);
 
@@ -57,6 +61,7 @@ class WellKnownRouteTest extends HandlerTestBase {
         Arrays.asList("code", "code id_token", "id_token", "token id_token");
     response.subject_types_supported = Collections.singletonList("public");
     response.id_token_signing_alg_values_supported = Collections.singletonList("RS256");
+    response.introspection_endpoint = TOKEN_INTROSPECTION_ENDPOINT;
     return response;
   }
 }

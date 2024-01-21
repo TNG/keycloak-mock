@@ -11,4 +11,6 @@ public class ConfigurationResponse {
   public List<String> subject_types_supported;
   public List<String> id_token_signing_alg_values_supported;
   public String end_session_endpoint;
+
+  public String introspection_endpoint;
 }

@@ -16,6 +16,9 @@ public class UrlConfiguration {
   private static final String OPEN_ID_JWKS_PATH = "certs";
   private static final String OPEN_ID_AUTHORIZATION_PATH = "auth";
   private static final String OPEN_ID_END_SESSION_PATH = "logout";
+
+  private static final String TOKEN_INTROSPECTION_PATH = "/introspect";
+
   @Nonnull private final Protocol protocol;
   private final int port;
   @Nonnull private final String hostname;
@@ -131,5 +134,10 @@ public class UrlConfiguration {
   @Nonnull
   public String getRealm() {
     return realm;
+  }
+
+  @Nonnull
+  public URI getTokenIntrospectionEndPoint() {
+    return getOpenIdPath(OPEN_ID_TOKEN_PATH + TOKEN_INTROSPECTION_PATH);
   }
 }
