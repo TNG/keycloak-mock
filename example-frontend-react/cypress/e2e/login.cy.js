@@ -20,7 +20,7 @@ describe('Keycloak mock standalone', () => {
     it('works', () => {
       cy.visit('http://localhost:8080/index.html')
 
-      cy.contains('Hello user123')
+      cy.contains('Hello User123')
     })
   })
 })
