@@ -10,7 +10,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.boot.test.web.server.LocalServerPort;
 
 @SpringBootTest(
     classes = ExampleBackendApplication.class,
@@ -61,11 +61,25 @@ class AuthenticationJUnit5Test {
   }
 
   @Test
-  void authentication_with_role_works() {
+  void authentication_with_realm_role_works() {
     RestAssured.given()
         .auth()
         .preemptive()
         .oauth2(mock.getAccessToken(aTokenConfig().withRealmRole("vip").build()))
+        .when()
+        .get("/api/vip")
+        .then()
+        .statusCode(200)
+        .and()
+        .body(equalTo("you may feel very special here"));
+  }
+
+  @Test
+  void authentication_with_resource_role_works() {
+    RestAssured.given()
+        .auth()
+        .preemptive()
+        .oauth2(mock.getAccessToken(aTokenConfig().withResourceRole("server", "vip").build()))
         .when()
         .get("/api/vip")
         .then()
