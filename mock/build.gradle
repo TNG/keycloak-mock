@@ -18,8 +18,9 @@ dependencies {
     implementation "io.jsonwebtoken:jjwt-jackson:$jjwt_version"
     implementation "io.vertx:vertx-web:$vertx_version"
     implementation "io.vertx:vertx-web-templ-freemarker:$vertx_version"
-    implementation "org.slf4j:slf4j-api:$slf4j_version"
+    implementation "com.google.code.findbugs:jsr305:$jsr305_version"
     implementation "com.google.dagger:dagger:$dagger_version"
+    implementation "org.slf4j:slf4j-api:$slf4j_version"
     jsResourceJar "org.keycloak:keycloak-js-adapter:$keycloak_version@tar.gz"
     htmlResourceJar "org.keycloak:keycloak-services:$keycloak_version"
     testImplementation 'io.fusionauth:fusionauth-jwt:5.3.3'
@@ -28,10 +29,9 @@ dependencies {
     testImplementation "io.vertx:vertx-codegen:$vertx_version"
     testImplementation 'net.javacrumbs.json-unit:json-unit-assertj:3.4.0'
     testImplementation "org.assertj:assertj-core:$assertj_version"
-    testImplementation "org.junit.jupiter:junit-jupiter-api:$junit5_version"
-    testImplementation "org.junit.jupiter:junit-jupiter-params:$junit5_version"
+    testImplementation "org.junit.jupiter:junit-jupiter-api"
+    testImplementation "org.junit.jupiter:junit-jupiter-params"
     testImplementation "org.mockito:mockito-junit-jupiter:$mockito_version"
-    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junit5_version"
     testRuntimeOnly "org.slf4j:slf4j-simple:$slf4j_version"
     annotationProcessor "com.google.dagger:dagger-compiler:$dagger_version"
 }
@@ -53,13 +53,3 @@ tasks.register('addResources', Copy) {
 }
 
 processResources.dependsOn addResources
-
-test {
-    useJUnitPlatform()
-    testLogging {
-        events "passed", "skipped", "failed"
-    }
-    beforeTest { descriptor ->
-        logger.lifecycle("Running test: ${descriptor}")
-    }
-}

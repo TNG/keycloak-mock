@@ -2,19 +2,8 @@ description = 'JUnit5 helper for keycloak-mock'
 
 dependencies {
     api project(':mock')
+    implementation "com.google.code.findbugs:jsr305:$jsr305_version"
     implementation "org.junit.jupiter:junit-jupiter-api:$junit5_version"
-    implementation "org.junit.jupiter:junit-jupiter-migrationsupport:$junit5_version"
     testImplementation "io.rest-assured:rest-assured:$restassured_version"
     testImplementation "org.assertj:assertj-core:$assertj_version"
-    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junit5_version"
-}
-
-test {
-    useJUnitPlatform()
-    testLogging {
-        events "passed", "skipped", "failed"
-    }
-    beforeTest { descriptor ->
-        logger.lifecycle("Running test: ${descriptor}")
-    }
 }

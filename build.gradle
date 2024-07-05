@@ -44,6 +44,7 @@ allprojects {
 ext {
     assertj_version = '3.26.0'
     jjwt_version = '0.12.6'
+    jsr305_version = '3.0.2'
     junit4_version = '4.13.2'
     junit5_version = '5.10.3'
     keycloak_version = '25.0.1'
@@ -63,13 +64,56 @@ ext {
 }
 
 subprojects {
-    if (release_projects.contains(project.name)) {
-        apply plugin: 'jacoco'
+    if (release_projects.contains(project.name) || project.name == 'example-backend') {
         if ('standalone' == project.name) {
             apply plugin: 'java'
         } else {
             apply plugin: 'java-library'
         }
+        apply plugin: 'jvm-test-suite'
+        apply plugin: 'jacoco'
+
+        test {
+            useJUnitPlatform()
+            javaLauncher = javaToolchains.launcherFor {
+                languageVersion = JavaLanguageVersion.of(21)
+            }
+            testLogging {
+                events "passed", "skipped", "failed"
+            }
+            finalizedBy jacocoTestReport
+        }
+
+        tasks.named('compileTestJava') {
+            javaCompiler = javaToolchains.compilerFor {
+                languageVersion.set(JavaLanguageVersion.of(21))
+            }
+        }
+
+        dependencies {
+            testImplementation platform("org.junit:junit-bom:$junit5_version")
+
+            testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+            testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
+            testRuntimeOnly 'org.junit.vintage:junit-vintage-engine'
+        }
+
+        jacocoTestReport {
+            reports {
+                xml.required = true
+                csv.required = false
+                html.required = false
+            }
+        }
+
+        sonar {
+            properties {
+                property "sonar.coverage.jacoco.xmlReportPaths", "${project.projectDir}/build/reports/jacoco/test/jacocoTestReport.xml"
+            }
+        }
+    }
+
+    if (release_projects.contains(project.name)) {
         apply plugin: 'maven-publish'
         apply plugin: 'signing'
 
@@ -78,17 +122,6 @@ subprojects {
             targetCompatibility = JavaVersion.VERSION_1_8
             toolchain {
                 languageVersion = JavaLanguageVersion.of(8)
-            }
-        }
-
-        tasks.named('compileTestJava') {
-            javaCompiler = javaToolchains.compilerFor {
-                languageVersion.set(JavaLanguageVersion.of(21))
-            }
-        }
-        tasks.withType(Test).configureEach {
-            javaLauncher = javaToolchains.launcherFor {
-                languageVersion = JavaLanguageVersion.of(21)
             }
         }
 
@@ -112,10 +145,6 @@ subprojects {
                     from "${rootDir}/NOTICE", "${rootDir}/LICENSE"
                 }
             }
-        }
-
-        dependencies {
-            implementation 'com.google.code.findbugs:jsr305:3.0.2'
         }
 
         publishing {
@@ -152,24 +181,6 @@ subprojects {
 
         tasks.withType(Sign).configureEach {
             onlyIf { project.hasProperty('sonatypeUsername') }
-        }
-
-        test {
-            finalizedBy jacocoTestReport
-        }
-
-        jacocoTestReport {
-            reports {
-                xml.required = true
-                csv.required = false
-                html.required = false
-            }
-        }
-
-        sonar {
-            properties {
-                property "sonar.coverage.jacoco.xmlReportPaths", "${project.projectDir}/build/reports/jacoco/test/jacocoTestReport.xml"
-            }
         }
 
         afterEvaluate {
