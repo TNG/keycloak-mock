@@ -2,16 +2,8 @@ description = 'JUnit4 helper for keycloak-mock'
 
 dependencies {
     api project(':mock')
+    implementation "com.google.code.findbugs:jsr305:$jsr305_version"
     implementation "junit:junit:$junit4_version"
     testImplementation "io.rest-assured:rest-assured:$restassured_version"
     testImplementation "org.assertj:assertj-core:$assertj_version"
-}
-
-test {
-    testLogging {
-        events "passed", "skipped", "failed"
-    }
-    beforeTest { descriptor ->
-        logger.lifecycle("Running test: ${descriptor}")
-    }
 }

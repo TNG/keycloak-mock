@@ -12,9 +12,7 @@ buildscript {
 
 apply plugin: 'com.google.cloud.tools.jib'
 apply plugin: 'io.spring.dependency-management'
-apply plugin: 'java'
 apply plugin: 'org.springframework.boot'
-apply plugin: 'jacoco'
 
 ext['junit-jupiter.version'] = junit5_version
 
@@ -22,8 +20,8 @@ dependencies {
     // Using multiple engines in a single project may lead to different JUnit
     // Platform artifact versions being pulled in via transitive dependencies.
     // Gradle allows you to enforce usage of fixed set of versions that match.
-    // https://docs.gradle.org/current/userguide/managing_transitive_dependencies.html#sec:bom_import
-    implementation(enforcedPlatform("org.junit:junit-bom:$junit5_version")) {
+    // https://docs.gradle.org/current/userguide/platforms.html#sub:bom_import
+    testImplementation(enforcedPlatform("org.junit:junit-bom:$junit5_version")) {
         because 'enforce matching Platform, Jupiter, and Vintage versions'
     }
 
@@ -39,20 +37,8 @@ dependencies {
     testImplementation "io.rest-assured:json-path:$restassured_version"
     testImplementation "io.rest-assured:xml-path:$restassured_version"
     testImplementation "junit:junit:$junit4_version"
-    testImplementation "org.junit.jupiter:junit-jupiter:$junit5_version"
+    testImplementation 'org.junit.jupiter:junit-jupiter'
     testImplementation "org.assertj:assertj-core:$assertj_version"
-    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junit5_version"
-    testRuntimeOnly "org.junit.vintage:junit-vintage-engine:$junit5_version"
-}
-
-test {
-    useJUnitPlatform()
-    testLogging {
-        events "passed", "skipped", "failed"
-    }
-    beforeTest { descriptor ->
-        logger.lifecycle("Running test: ${descriptor}")
-    }
 }
 
 jib {
