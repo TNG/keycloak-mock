@@ -2,6 +2,7 @@ package com.tngtech.keycloakmock.impl.handler;
 
 import static com.tngtech.keycloakmock.test.KeyHelper.loadFromResource;
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
+import static org.assertj.core.api.InstanceOfAssertFactories.LIST;
 import static org.mockito.Mockito.verify;
 
 import java.security.PublicKey;
@@ -23,7 +24,7 @@ class JwksRouteTest extends HandlerTestBase {
         .isObject()
         .containsOnlyKeys("keys")
         .extractingByKey("keys")
-        .asList()
+        .asInstanceOf(LIST)
         .hasSize(1)
         .element(0)
         .hasFieldOrPropertyWithValue("kid", "key321")
@@ -49,7 +50,7 @@ class JwksRouteTest extends HandlerTestBase {
         .isObject()
         .containsOnlyKeys("keys")
         .extractingByKey("keys")
-        .asList()
+        .asInstanceOf(LIST)
         .hasSize(1)
         .element(0)
         .hasFieldOrPropertyWithValue("kid", "key123")

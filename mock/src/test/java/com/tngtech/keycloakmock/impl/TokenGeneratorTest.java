@@ -4,6 +4,7 @@ import static com.tngtech.keycloakmock.api.TokenConfig.aTokenConfig;
 import static com.tngtech.keycloakmock.test.KeyHelper.loadValidKey;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
+import static org.assertj.core.api.InstanceOfAssertFactories.LIST;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 
@@ -152,11 +153,11 @@ class TokenGeneratorTest {
     assertThat(resourceAccess).containsOnlyKeys(AUDIENCE, AUTHORIZED_PARTY);
     assertThat(resourceAccess.get(AUDIENCE))
         .extractingByKey("roles")
-        .asList()
+        .asInstanceOf(LIST)
         .containsExactlyInAnyOrderElementsOf(AUDIENCE_ROLES);
     assertThat(resourceAccess.get(AUTHORIZED_PARTY))
         .extractingByKey("roles")
-        .asList()
+        .asInstanceOf(LIST)
         .containsOnly(PARTY_ROLE);
   }
 
