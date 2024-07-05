@@ -18,7 +18,6 @@ import javax.inject.Singleton;
 @Singleton
 public class TokenHelper {
 
-  private static final String SESSION_STATE = "session_state";
   private static final String NONCE = "nonce";
 
   @Nonnull private final TokenGenerator tokenGenerator;
@@ -46,7 +45,7 @@ public class TokenHelper {
             .withFamilyName(userData.getFamilyName())
             .withName(userData.getName())
             .withEmail(userData.getEmail())
-            .withClaim(SESSION_STATE, session.getSessionId())
+            .withSessionId(session.getSessionId())
             // we currently don't do proper authorization anyway, so we can just act as if we were
             // compliant to ISO/IEC 29115 level 1 (see KEYCLOAK-3223 / KEYCLOAK-3314)
             .withAuthenticationContextClassReference("1");

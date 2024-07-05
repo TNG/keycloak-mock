@@ -262,7 +262,6 @@ class TokenConfigTest {
         .containsOnly(
             entry("jti", "9cfe2b60-1db9-4a12-b9dc-dcabfd16e945"),
             entry("nonce", "aef8cf1b-127d-4650-8081-0db24af2d0e7"),
-            entry("session_state", "05270907-d7e2-4b75-8341-5bdd94eab763"),
             entry("allowed-origins", Collections.singletonList("http://localhost:3000")),
             entry("email_verified", false));
     assertThat(config.getEmail()).isEqualTo("user@keycloak");
@@ -280,6 +279,7 @@ class TokenConfigTest {
     assertThat(config.getResourceAccess().get("account").getRoles())
         .containsExactlyInAnyOrder("manage-account", "manage-account-links", "view-profile");
     assertThat(config.getScopes()).containsExactlyInAnyOrder("openid", "email", "profile");
+    assertThat(config.getSessionId()).isNotEqualTo("05270907-d7e2-4b75-8341-5bdd94eab763");
     assertThat(config.getSubject()).isEqualTo("fbcaa40a-9480-4ead-adf2-8f6085f6f75d");
     assertThat(config.getHostname()).isEqualTo("localhost");
     assertThat(config.getRealm()).isEqualTo("realm");

@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
@@ -43,6 +44,7 @@ public class TokenConfig {
   @Nonnull private final Map<String, Object> claims;
   @Nonnull private final Access realmAccess;
   @Nonnull private final Map<String, Access> resourceAccess;
+  @Nonnull private final String sessionId;
   @Nonnull private final Instant issuedAt;
   @Nonnull private final Instant authenticationTime;
   private final boolean generateUserDataFromSubject;
@@ -70,6 +72,7 @@ public class TokenConfig {
     claims = builder.claims;
     realmAccess = builder.realmRoles;
     resourceAccess = builder.resourceAccess;
+    sessionId = builder.sessionId;
     issuedAt = builder.issuedAt;
     authenticationTime = builder.authenticationTime;
     hostname = builder.hostname;
@@ -141,6 +144,11 @@ public class TokenConfig {
   @Nonnull
   public Map<String, Access> getResourceAccess() {
     return Collections.unmodifiableMap(resourceAccess);
+  }
+
+  @Nonnull
+  public String getSessionId() {
+    return sessionId;
   }
 
   @Nonnull
@@ -217,6 +225,7 @@ public class TokenConfig {
     @Nonnull private final Map<String, Object> claims = new HashMap<>();
     @Nonnull private final Access realmRoles = new Access();
     @Nonnull private final Map<String, Access> resourceAccess = new HashMap<>();
+    @Nonnull private String sessionId = UUID.randomUUID().toString();
     @Nonnull private Instant issuedAt = Instant.now();
     @Nonnull private Instant authenticationTime = Instant.now();
     private boolean generateUserDataFromSubject = false;
@@ -319,6 +328,10 @@ public class TokenConfig {
             } catch (URISyntaxException e) {
               throw new IllegalArgumentException("Issuer '" + issuer + "' is not a valid URL", e);
             }
+            break;
+          case "sid":
+          case "session_state":
+            // ignoring session information
             break;
           case "iat":
           case "nbf":
@@ -592,6 +605,24 @@ public class TokenConfig {
     }
 
     /**
+     * Add a session ID.
+     *
+     * <p>Claim to identify the session ID of the current login session to be used for back-channel
+     * logout.
+     *
+     * @param sessionId the session ID of the current login session.
+     * @return builder
+     * @see <a
+     *     href="https://openid.net/specs/openid-connect-backchannel-1_0.html#rfc.section.2.1">Indicating
+     *     OP Support for Back-Channel Logout</a>
+     */
+    @Nonnull
+    public Builder withSessionId(@Nonnull final String sessionId) {
+      this.sessionId = Objects.requireNonNull(sessionId);
+      return this;
+    }
+
+    /**
      * Add generic claims.
      *
      * <p>Use this method to add elements to the token cannot be set using more specialized methods.
@@ -683,7 +714,7 @@ public class TokenConfig {
      * @return builder
      * @see #withExpiration(Instant)
      */
-    public Builder withTokenLifespan(Duration tokenLifespan) {
+    public Builder withTokenLifespan(@Nonnull final Duration tokenLifespan) {
       this.expiration = issuedAt.plus(tokenLifespan);
       return this;
     }

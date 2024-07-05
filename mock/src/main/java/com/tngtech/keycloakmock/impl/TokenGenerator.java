@@ -64,7 +64,9 @@ public class TokenGenerator {
             .subject(tokenConfig.getSubject())
             .claim("scope", encodeGivenOrDefaultScopes(tokenConfig.getScopes()))
             .claim("typ", "Bearer")
-            .claim("azp", tokenConfig.getAuthorizedParty());
+            .claim("azp", tokenConfig.getAuthorizedParty())
+            .claim("sid", tokenConfig.getSessionId())
+            .claim("session_state", tokenConfig.getSessionId());
     if (tokenConfig.getNotBefore() != null) {
       builder.notBefore(new Date(tokenConfig.getNotBefore().toEpochMilli()));
     }
