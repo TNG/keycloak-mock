@@ -65,9 +65,8 @@ class TokenHelperTest {
     assertThat(tokenConfig.getAuthenticationContextClassReference()).isEqualTo("1");
     assertThat(tokenConfig.getAuthenticationTime())
         .isCloseTo(Instant.now(), within(1, ChronoUnit.SECONDS));
-    assertThat(tokenConfig.getClaims())
-        .containsEntry("nonce", NONCE)
-        .containsEntry("session_state", SESSION_ID);
+    assertThat(tokenConfig.getSessionId()).isEqualTo(SESSION_ID);
+    assertThat(tokenConfig.getClaims()).containsEntry("nonce", NONCE);
     assertThat(tokenConfig.getExpiration()).isNull();
     assertThat(tokenConfig.getGivenName()).isEqualTo(USER.getGivenName());
     assertThat(tokenConfig.getFamilyName()).isEqualTo(USER.getFamilyName());

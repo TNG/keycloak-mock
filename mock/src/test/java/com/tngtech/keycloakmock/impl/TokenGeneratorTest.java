@@ -53,6 +53,7 @@ class TokenGeneratorTest {
   private static final String AUTHENTICATION_CONTEXT_CLASS_REFERENCE = "acc ref";
   private static final String HOSTNAME = "hostname";
   private static final String REALM = "realm";
+  private static final String SESSION_ID = "session ID";
 
   private final PublicKey publicKey = loadValidKey();
 
@@ -106,6 +107,7 @@ class TokenGeneratorTest {
                 .withNotBefore(NOT_BEFORE)
                 .withExpiration(EXPIRATION)
                 .withAuthenticationContextClassReference(AUTHENTICATION_CONTEXT_CLASS_REFERENCE)
+                .withSessionId(SESSION_ID)
                 .build(),
             urlConfiguration);
 
@@ -139,6 +141,8 @@ class TokenGeneratorTest {
         .containsEntry("preferred_username", USERNAME)
         .containsEntry(CLAIM_KEY, CLAIM_VALUE)
         .containsEntry("acr", AUTHENTICATION_CONTEXT_CLASS_REFERENCE)
+        .containsEntry("sid", SESSION_ID)
+        .containsEntry("session_state", SESSION_ID)
         .containsKey("realm_access")
         .containsKey("resource_access");
     assertThat((Map<String, List<String>>) claims.get("realm_access"))
