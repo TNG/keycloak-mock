@@ -156,6 +156,9 @@ class UrlConfigurationTest {
         .hasToString("http://localhost:8000/auth/realms/master/protocol/openid-connect/certs");
     assertThat(urlConfiguration.getTokenEndpoint())
         .hasToString("http://localhost:8000/auth/realms/master/protocol/openid-connect/token");
+    assertThat(urlConfiguration.getTokenIntrospectionEndPoint())
+        .hasToString(
+            "http://localhost:8000/auth/realms/master/protocol/openid-connect/token/introspect");
   }
 
   @Test
@@ -174,6 +177,9 @@ class UrlConfigurationTest {
         .hasToString("http://localhost:8000/realms/master/protocol/openid-connect/certs");
     assertThat(urlConfiguration.getTokenEndpoint())
         .hasToString("http://localhost:8000/realms/master/protocol/openid-connect/token");
+    assertThat(urlConfiguration.getTokenIntrospectionEndPoint())
+        .hasToString(
+            "http://localhost:8000/realms/master/protocol/openid-connect/token/introspect");
   }
 
   @Test
@@ -198,6 +204,10 @@ class UrlConfigurationTest {
     assertThat(urlConfiguration.getTokenEndpoint())
         .hasToString(
             "http://localhost:8000/custom/context/path/realms/master/protocol/openid-connect/token");
+
+    assertThat(urlConfiguration.getTokenIntrospectionEndPoint())
+        .hasToString(
+            "http://localhost:8000/custom/context/path/realms/master/protocol/openid-connect/token/introspect");
   }
 
   @Test
