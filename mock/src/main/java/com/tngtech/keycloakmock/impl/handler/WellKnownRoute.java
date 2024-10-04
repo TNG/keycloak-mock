@@ -44,7 +44,8 @@ public class WellKnownRoute implements Handler<RoutingContext> {
         .put("subject_types_supported", new JsonArray(Collections.singletonList("public")))
         .put(
             "id_token_signing_alg_values_supported",
-            new JsonArray(Collections.singletonList("RS256")));
+            new JsonArray(Collections.singletonList("RS256")))
+        .put("introspection_endpoint", requestConfiguration.getTokenIntrospectionEndPoint());
     return result;
   }
 }
