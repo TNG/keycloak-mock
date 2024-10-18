@@ -2,8 +2,8 @@ import com.github.jengelman.gradle.plugins.shadow.transformers.ApacheNoticeResou
 
 plugins {
     id 'application'
-    id 'com.github.gmazzo.buildconfig' version '5.3.5'
-    id 'com.github.johnrengelman.shadow' version '8.1.1'
+    id 'com.github.gmazzo.buildconfig' version '5.5.0'
+    id 'com.gradleup.shadow' version '8.3.3'
 }
 
 apply plugin: 'com.google.cloud.tools.jib'
@@ -72,10 +72,6 @@ dependencies {
 
 application {
     mainClass = 'com.tngtech.keycloakmock.standalone.Main'
-}
-
-shadow {
-    mainClassName = application.mainClass.get()
 }
 
 buildConfig {
