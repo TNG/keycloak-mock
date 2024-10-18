@@ -4,7 +4,6 @@ import com.tngtech.keycloakmock.api.ServerConfig;
 import com.tngtech.keycloakmock.impl.UrlConfiguration;
 import com.tngtech.keycloakmock.impl.handler.AuthenticationRoute;
 import com.tngtech.keycloakmock.impl.handler.CommonHandler;
-import com.tngtech.keycloakmock.impl.handler.DelegationRoute;
 import com.tngtech.keycloakmock.impl.handler.FailureHandler;
 import com.tngtech.keycloakmock.impl.handler.IFrameRoute;
 import com.tngtech.keycloakmock.impl.handler.JwksRoute;
@@ -145,7 +144,6 @@ public class ServerModule {
       @Nonnull @Named("cookie1") ResourceFileHandler thirdPartyCookies1Route,
       @Nonnull @Named("cookie2") ResourceFileHandler thirdPartyCookies2Route,
       @Nonnull LogoutRoute logoutRoute,
-      @Nonnull DelegationRoute delegationRoute,
       @Nonnull OutOfBandLoginRoute outOfBandLoginRoute,
       @Nonnull @Named("keycloakJs") ResourceFileHandler keycloakJsRoute) {
     UrlConfiguration routing = defaultConfiguration.forRequestContext(null, ":realm");
@@ -179,7 +177,6 @@ public class ServerModule {
         .method(HttpMethod.GET)
         .method(HttpMethod.POST)
         .handler(logoutRoute);
-    router.get(routing.getOpenIdPath("delegated").getPath()).handler(delegationRoute);
     router.get(routing.getOutOfBandLoginLoginEndpoint().getPath()).handler(outOfBandLoginRoute);
     router.route("/auth/js/keycloak.js").handler(keycloakJsRoute);
     return router;
