@@ -1,7 +1,5 @@
 package com.tngtech.keycloakmock.impl.handler;
 
-import static com.tngtech.keycloakmock.impl.handler.RequestUrlConfigurationHandler.CTX_REQUEST_CONFIGURATION;
-
 import com.tngtech.keycloakmock.impl.UrlConfiguration;
 import com.tngtech.keycloakmock.impl.helper.TokenHelper;
 import com.tngtech.keycloakmock.impl.session.AdHocSession;
@@ -27,11 +25,16 @@ public class TokenRoute implements Handler<RoutingContext> {
 
   @Nonnull private final SessionRepository sessionRepository;
   @Nonnull private final TokenHelper tokenHelper;
+  @Nonnull private final UrlConfiguration baseConfiguration;
 
   @Inject
-  TokenRoute(@Nonnull SessionRepository sessionRepository, @Nonnull TokenHelper tokenHelper) {
+  TokenRoute(
+      @Nonnull SessionRepository sessionRepository,
+      @Nonnull TokenHelper tokenHelper,
+      @Nonnull UrlConfiguration baseConfiguration) {
     this.sessionRepository = sessionRepository;
     this.tokenHelper = tokenHelper;
+    this.baseConfiguration = baseConfiguration;
   }
 
   @Override
@@ -58,7 +61,7 @@ public class TokenRoute implements Handler<RoutingContext> {
   private void handleAuthorizationCodeFlow(RoutingContext routingContext) {
     // here again we use the equality of authorization code and session ID
     String sessionId = routingContext.request().getFormAttribute(CODE);
-    UrlConfiguration requestConfiguration = routingContext.get(CTX_REQUEST_CONFIGURATION);
+    UrlConfiguration requestConfiguration = baseConfiguration.forRequestContext(routingContext);
     String token =
         Optional.ofNullable(sessionRepository.getSession(sessionId))
             .map(s -> tokenHelper.getToken(s, requestConfiguration))
@@ -105,7 +108,7 @@ public class TokenRoute implements Handler<RoutingContext> {
       routingContext.fail(400);
       return;
     }
-    UrlConfiguration requestConfiguration = routingContext.get(CTX_REQUEST_CONFIGURATION);
+    UrlConfiguration requestConfiguration = baseConfiguration.forRequestContext(routingContext);
     String password = routingContext.request().getFormAttribute("password");
 
     Session session =
@@ -142,7 +145,8 @@ public class TokenRoute implements Handler<RoutingContext> {
       return;
     }
 
-    final UrlConfiguration requestConfiguration = routingContext.get(CTX_REQUEST_CONFIGURATION);
+    final UrlConfiguration requestConfiguration =
+        baseConfiguration.forRequestContext(routingContext);
 
     final Session session =
         AdHocSession.fromClientIdUsernameAndPassword(

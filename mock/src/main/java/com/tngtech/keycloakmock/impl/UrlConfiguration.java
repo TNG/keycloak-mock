@@ -1,6 +1,7 @@
 package com.tngtech.keycloakmock.impl;
 
 import com.tngtech.keycloakmock.api.ServerConfig;
+import io.vertx.ext.web.RoutingContext;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Objects;
@@ -58,6 +59,13 @@ public class UrlConfiguration {
   public UrlConfiguration forRequestContext(
       @Nullable final String requestHost, @Nullable final String requestRealm) {
     return new UrlConfiguration(this, requestHost, requestRealm);
+  }
+
+  @Nonnull
+  public UrlConfiguration forRequestContext(RoutingContext routingContext) {
+    String requestHostname = routingContext.request().getHeader("Host");
+    String requestRealm = routingContext.pathParam("realm");
+    return new UrlConfiguration(this, requestHostname, requestRealm);
   }
 
   @Nonnull

@@ -2,8 +2,12 @@ package com.tngtech.keycloakmock.impl;
 
 import static com.tngtech.keycloakmock.api.ServerConfig.aServerConfig;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import com.tngtech.keycloakmock.api.ServerConfig;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.ext.web.RoutingContext;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -114,6 +118,22 @@ class UrlConfigurationTest {
       String requestHost, String requestRealm, String expected) {
     urlConfiguration =
         new UrlConfiguration(aServerConfig().build()).forRequestContext(requestHost, requestRealm);
+
+    assertThat(urlConfiguration.getIssuer()).hasToString(expected);
+  }
+
+  @ParameterizedTest
+  @MethodSource("request_host_and_realm_and_expected")
+  void context_parameters_are_extracted_correctly(
+      String requestHost, String requestRealm, String expected) {
+    RoutingContext routingContext = mock();
+    HttpServerRequest httpServerRequest = mock();
+    when(routingContext.request()).thenReturn(httpServerRequest);
+    when(httpServerRequest.getHeader("Host")).thenReturn(requestHost);
+    when(routingContext.pathParam("realm")).thenReturn(requestRealm);
+
+    urlConfiguration =
+        new UrlConfiguration(aServerConfig().build()).forRequestContext(routingContext);
 
     assertThat(urlConfiguration.getIssuer()).hasToString(expected);
   }

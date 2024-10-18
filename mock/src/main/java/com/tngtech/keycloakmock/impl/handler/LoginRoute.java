@@ -1,6 +1,5 @@
 package com.tngtech.keycloakmock.impl.handler;
 
-import static com.tngtech.keycloakmock.impl.handler.RequestUrlConfigurationHandler.CTX_REQUEST_CONFIGURATION;
 import static com.tngtech.keycloakmock.impl.helper.RedirectHelper.KEYCLOAK_SESSION_COOKIE;
 
 import com.tngtech.keycloakmock.impl.UrlConfiguration;
@@ -35,15 +34,18 @@ public class LoginRoute implements Handler<RoutingContext> {
   @Nonnull private final SessionRepository sessionRepository;
   @Nonnull private final RedirectHelper redirectHelper;
   @Nonnull private final TemplateEngine engine;
+  @Nonnull private final UrlConfiguration baseConfiguration;
 
   @Inject
   LoginRoute(
       @Nonnull SessionRepository sessionRepository,
       @Nonnull RedirectHelper redirectHelper,
-      @Nonnull TemplateEngine engine) {
+      @Nonnull TemplateEngine engine,
+      @Nonnull UrlConfiguration baseConfiguration) {
     this.sessionRepository = sessionRepository;
     this.redirectHelper = redirectHelper;
     this.engine = engine;
+    this.baseConfiguration = baseConfiguration;
   }
 
   @Override
@@ -73,7 +75,7 @@ public class LoginRoute implements Handler<RoutingContext> {
             .setResponseMode(routingContext.queryParams().get(RESPONSE_MODE))
             .build();
 
-    UrlConfiguration requestConfiguration = routingContext.get(CTX_REQUEST_CONFIGURATION);
+    UrlConfiguration requestConfiguration = baseConfiguration.forRequestContext(routingContext);
     if (existingSession.isPresent()) {
       PersistentSession oldSession = existingSession.get();
       PersistentSession newSession =
