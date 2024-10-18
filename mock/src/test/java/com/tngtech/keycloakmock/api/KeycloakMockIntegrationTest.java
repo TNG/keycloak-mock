@@ -27,6 +27,7 @@ import io.jsonwebtoken.Jwts;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.http.Cookie;
+import io.restassured.http.Method;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
@@ -305,7 +306,23 @@ class KeycloakMockIntegrationTest {
     openLoginPageAgainAndExpectToBeLoggedInAlready(secondRequest, keycloakSession);
 
     // logout
-    logoutAndExpectSessionCookieReset();
+    logoutAndExpectSessionCookieReset(Method.GET);
+  }
+
+  @Test
+  void mock_server_logout_with_POST_works() throws Exception {
+    keycloakMock = new KeycloakMock();
+    keycloakMock.start();
+
+    // open login page to create session (implicit flow)
+    ClientRequest firstRequest = new ClientRequest("redirect-uri", "state", "nonce", "id_token");
+    String callbackUrl = openLoginPageAndGetCallbackUrl(firstRequest);
+
+    // simulate login
+    loginAndValidateAndReturnSessionCookie(firstRequest, callbackUrl);
+
+    // logout
+    logoutAndExpectSessionCookieReset(Method.POST);
   }
 
   @Test
@@ -326,7 +343,7 @@ class KeycloakMockIntegrationTest {
     validateRefreshTokenFlow(refreshToken, firstRequest.getNonce());
 
     // logout
-    logoutAndExpectSessionCookieReset();
+    logoutAndExpectSessionCookieReset(Method.GET);
   }
 
   private String openLoginPageAndGetCallbackUrl(ClientRequest request) {
@@ -494,11 +511,12 @@ class KeycloakMockIntegrationTest {
     return components[2];
   }
 
-  private void logoutAndExpectSessionCookieReset() {
+  private void logoutAndExpectSessionCookieReset(Method method) {
     RestAssured.given()
         .config(config().redirect(redirectConfig().followRedirects(false)))
         .when()
-        .get(
+        .request(
+            method,
             "http://localhost:8000/auth/realms/realm/protocol/openid-connect/logout?post_logout_redirect_uri=redirect_uri")
         .then()
         .assertThat()
