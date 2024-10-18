@@ -12,7 +12,6 @@ import com.tngtech.keycloakmock.impl.handler.LoginRoute;
 import com.tngtech.keycloakmock.impl.handler.LogoutRoute;
 import com.tngtech.keycloakmock.impl.handler.OptionalBasicAuthHandler;
 import com.tngtech.keycloakmock.impl.handler.OutOfBandLoginRoute;
-import com.tngtech.keycloakmock.impl.handler.RequestUrlConfigurationHandler;
 import com.tngtech.keycloakmock.impl.handler.ResourceFileHandler;
 import com.tngtech.keycloakmock.impl.handler.TokenRoute;
 import com.tngtech.keycloakmock.impl.handler.WellKnownRoute;
@@ -134,7 +133,6 @@ public class ServerModule {
   Router provideRouter(
       @Nonnull UrlConfiguration defaultConfiguration,
       @Nonnull Vertx vertx,
-      @Nonnull RequestUrlConfigurationHandler requestUrlConfigurationHandler,
       @Nonnull CommonHandler commonHandler,
       @Nonnull FailureHandler failureHandler,
       @Nonnull JwksRoute jwksRoute,
@@ -154,7 +152,6 @@ public class ServerModule {
     Router router = Router.router(vertx);
     router
         .route()
-        .handler(requestUrlConfigurationHandler)
         .handler(commonHandler)
         .failureHandler(failureHandler)
         .failureHandler(ErrorHandler.create(vertx));

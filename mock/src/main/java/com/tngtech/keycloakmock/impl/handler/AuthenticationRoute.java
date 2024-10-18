@@ -1,7 +1,5 @@
 package com.tngtech.keycloakmock.impl.handler;
 
-import static com.tngtech.keycloakmock.impl.handler.RequestUrlConfigurationHandler.CTX_REQUEST_CONFIGURATION;
-
 import com.tngtech.keycloakmock.impl.UrlConfiguration;
 import com.tngtech.keycloakmock.impl.helper.RedirectHelper;
 import com.tngtech.keycloakmock.impl.helper.UserInputSanitizer;
@@ -30,12 +28,16 @@ public class AuthenticationRoute implements Handler<RoutingContext> {
 
   @Nonnull private final SessionRepository sessionRepository;
   @Nonnull private final RedirectHelper redirectHelper;
+  @Nonnull private final UrlConfiguration baseConfiguration;
 
   @Inject
   AuthenticationRoute(
-      @Nonnull SessionRepository sessionRepository, @Nonnull RedirectHelper redirectHelper) {
+      @Nonnull SessionRepository sessionRepository,
+      @Nonnull RedirectHelper redirectHelper,
+      @Nonnull UrlConfiguration baseConfiguration) {
     this.sessionRepository = sessionRepository;
     this.redirectHelper = redirectHelper;
+    this.baseConfiguration = baseConfiguration;
   }
 
   @Override
@@ -59,7 +61,7 @@ public class AuthenticationRoute implements Handler<RoutingContext> {
             .map(s -> Arrays.asList(s.split(",")))
             .orElseGet(Collections::emptyList);
 
-    UrlConfiguration requestConfiguration = routingContext.get(CTX_REQUEST_CONFIGURATION);
+    UrlConfiguration requestConfiguration = baseConfiguration.forRequestContext(routingContext);
 
     PersistentSession session =
         request.toSession(
