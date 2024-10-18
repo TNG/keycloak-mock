@@ -21,6 +21,7 @@ import dagger.Module;
 import dagger.Provides;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.net.JksOptions;
@@ -176,7 +177,11 @@ public class ServerModule {
     router
         .get(routing.getOpenIdPath("3p-cookies/step2.html").getPath())
         .handler(thirdPartyCookies2Route);
-    router.get(routing.getEndSessionEndpoint().getPath()).handler(logoutRoute);
+    router
+        .route(routing.getEndSessionEndpoint().getPath())
+        .method(HttpMethod.GET)
+        .method(HttpMethod.POST)
+        .handler(logoutRoute);
     router.get(routing.getOpenIdPath("delegated").getPath()).handler(delegationRoute);
     router.get(routing.getOutOfBandLoginLoginEndpoint().getPath()).handler(outOfBandLoginRoute);
     router.route("/auth/js/keycloak.js").handler(keycloakJsRoute);
