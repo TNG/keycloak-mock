@@ -79,7 +79,7 @@ public class ServerModule {
   @Singleton
   @Named("keycloakJs")
   ResourceFileHandler provideKeycloakJsHandler() {
-    return new ResourceFileHandler("/package/dist/keycloak.js");
+    return new ResourceFileHandler("/package/lib/keycloak.js");
   }
 
   @Provides
@@ -123,7 +123,7 @@ public class ServerModule {
     if (defaultConfiguration.getProtocol().isTls()) {
       options
           .setSsl(true)
-          .setKeyStoreOptions(new JksOptions().setValue(keyStoreBuffer.get()).setPassword(""));
+          .setKeyCertOptions(new JksOptions().setValue(keyStoreBuffer.get()).setPassword(""));
     }
     return options;
   }
