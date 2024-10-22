@@ -32,14 +32,14 @@ You can create and start the mock directly from the `mock` artifact using Maven
     <groupId>com.tngtech.keycloakmock</groupId>
     <artifactId>mock</artifactId>
     <scope>test</scope>
-    <version>0.16.0</version>
+    <version>0.17.0</version>
 </dependency>
 ```
 
 or Gradle
 
 ```gradle
-testImplementation 'com.tngtech.keycloakmock:mock:0.16.0'
+testImplementation 'com.tngtech.keycloakmock:mock:0.17.0'
 ```
 
 like this:
@@ -124,7 +124,7 @@ In addition to generating and signing tokens programmatically, the mock also off
 
 * user login (using implicit or authorization code flow, including support for redirect
   to `http://localhost` and `urn:ietf:wg:oauth:2.0:oob` for desktop applications)
-  ** instead of a password, you can enter the roles of the user
+  * instead of a password, you can enter the roles of the user
 * client credentials authentication
 * resource owner password credentials authentication (both for public and confidential clients)
 
