@@ -1,5 +1,6 @@
 package com.tngtech.keycloakmock.impl.dagger;
 
+import com.tngtech.keycloakmock.api.LoginRoleMapping;
 import com.tngtech.keycloakmock.api.ServerConfig;
 import com.tngtech.keycloakmock.impl.UrlConfiguration;
 import com.tngtech.keycloakmock.impl.handler.AuthenticationRoute;
@@ -34,8 +35,7 @@ import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
-import java.time.Duration;
-import java.util.List;
+import java.util.Collection;
 import javax.annotation.Nonnull;
 import javax.inject.Named;
 import javax.inject.Singleton;
@@ -83,27 +83,6 @@ public class ServerModule {
 
   @Provides
   @Singleton
-  @Named("resources")
-  List<String> provideResources(@Nonnull ServerConfig serverConfig) {
-    return serverConfig.getResourcesToMapRolesTo();
-  }
-
-  @Provides
-  @Singleton
-  @Named("scopes")
-  List<String> provideScopes(@Nonnull ServerConfig serverConfig) {
-    return serverConfig.getDefaultScopes();
-  }
-
-  @Provides
-  @Singleton
-  @Named("tokenLifespan")
-  Duration provideTokenLifespan(@Nonnull ServerConfig serverConfig) {
-    return serverConfig.getDefaultTokenLifespan();
-  }
-
-  @Provides
-  @Singleton
   Buffer keystoreBuffer(@Nonnull KeyStore keyStore) {
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     try {
@@ -129,6 +108,7 @@ public class ServerModule {
 
   @Provides
   @Singleton
+  @SuppressWarnings("java:S107")
   Router provideRouter(
       @Nonnull UrlConfiguration defaultConfiguration,
       @Nonnull Vertx vertx,
@@ -190,5 +170,18 @@ public class ServerModule {
         .createHttpServer(options)
         .requestHandler(router)
         .exceptionHandler(t -> LOG.error("Exception while processing request", t));
+  }
+
+  @Provides
+  @Singleton
+  LoginRoleMapping provideLoginRoleMapping(@Nonnull ServerConfig serverConfig) {
+    return serverConfig.getLoginRoleMapping();
+  }
+
+  @Provides
+  @Singleton
+  @Named("audiences")
+  Collection<String> provideDefaultAudiences(@Nonnull ServerConfig serverConfig) {
+    return serverConfig.getDefaultAudiences();
   }
 }

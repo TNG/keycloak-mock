@@ -30,7 +30,7 @@ class TokenConfigTest {
     TokenConfig config = aTokenConfig().build();
     Instant now = Instant.now();
 
-    assertThat(config.getAudience()).containsExactly("server");
+    assertThat(config.getAudience()).isEmpty();
     assertThat(config.getAuthenticationTime()).isBetween(now.minusSeconds(1), now);
     assertThat(config.getAuthorizedParty()).isEqualTo("client");
     assertThat(config.getClaims()).isEmpty();

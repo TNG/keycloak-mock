@@ -19,10 +19,12 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import org.assertj.core.util.Sets;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -71,9 +73,13 @@ class TokenGeneratorTest {
     doReturn(new URI(ISSUER)).when(urlConfiguration).getIssuer();
   }
 
-  private TokenGenerator setupUut(List<String> defaultScopes, Duration defaultLifespan) {
+  private TokenGenerator setupUut(
+      Collection<String> defaultScopes,
+      Collection<String> defaultAudiences,
+      Duration defaultLifespan) {
     return DaggerSignatureComponent.builder()
         .defaultScopes(defaultScopes)
+        .defaultAudiences(defaultAudiences)
         .defaultTokenLifespan(defaultLifespan)
         .build()
         .tokenGenerator();
@@ -82,7 +88,7 @@ class TokenGeneratorTest {
   @Test
   @SuppressWarnings("unchecked")
   void config_is_correctly_applied() {
-    uut = setupUut(Collections.emptyList(), Duration.ofHours(10));
+    uut = setupUut(Collections.emptyList(), Collections.emptyList(), Duration.ofHours(10));
 
     String token =
         uut.getToken(
@@ -131,7 +137,7 @@ class TokenGeneratorTest {
     assertThat(claims.getIssuer()).isEqualTo(ISSUER);
     assertThat(claims.getSubject()).isEqualTo(SUBJECT);
     assertThat(claims)
-        .containsEntry("aud", Collections.singleton(AUDIENCE))
+        .containsEntry("aud", Sets.set(AUDIENCE))
         .containsEntry("azp", AUTHORIZED_PARTY)
         // openid is always added to the scope
         .containsEntry("scope", "openid " + SCOPE)
@@ -163,7 +169,7 @@ class TokenGeneratorTest {
 
   @Test
   void user_data_is_not_generated() {
-    uut = setupUut(Collections.emptyList(), Duration.ofHours(10));
+    uut = setupUut(Collections.emptyList(), Collections.emptyList(), Duration.ofHours(10));
 
     String token = uut.getToken(aTokenConfig().withSubject("foo.bar").build(), urlConfiguration);
 
@@ -177,7 +183,7 @@ class TokenGeneratorTest {
 
   @Test
   void user_data_is_generated() {
-    uut = setupUut(Collections.emptyList(), Duration.ofHours(10));
+    uut = setupUut(Collections.emptyList(), Collections.emptyList(), Duration.ofHours(10));
 
     doReturn("example.com").when(urlConfiguration).getHostname();
     String token =
@@ -198,7 +204,7 @@ class TokenGeneratorTest {
 
   @Test
   void explicit_user_data_takes_preference() {
-    uut = setupUut(Collections.emptyList(), Duration.ofHours(10));
+    uut = setupUut(Collections.emptyList(), Collections.emptyList(), Duration.ofHours(10));
 
     doReturn("example.com").when(urlConfiguration).getHostname();
     String token =
@@ -226,7 +232,11 @@ class TokenGeneratorTest {
 
   @Test
   void default_scopes_are_used() {
-    uut = setupUut(Arrays.asList("scope1", "scope2", "scope3"), Duration.ofHours(10));
+    uut =
+        setupUut(
+            Arrays.asList("scope1", "scope2", "scope3"),
+            Collections.emptyList(),
+            Duration.ofHours(10));
 
     String token = uut.getToken(aTokenConfig().build(), urlConfiguration);
 
@@ -238,7 +248,11 @@ class TokenGeneratorTest {
 
   @Test
   void default_scopes_are_overridden() {
-    uut = setupUut(Arrays.asList("scope1", "scope2", "scope3"), Duration.ofHours(10));
+    uut =
+        setupUut(
+            Arrays.asList("scope1", "scope2", "scope3"),
+            Collections.emptyList(),
+            Duration.ofHours(10));
 
     String token =
         uut.getToken(
@@ -253,7 +267,7 @@ class TokenGeneratorTest {
 
   @Test
   void duplicate_scopes_are_removed() {
-    uut = setupUut(Collections.emptyList(), Duration.ofHours(10));
+    uut = setupUut(Collections.emptyList(), Collections.emptyList(), Duration.ofHours(10));
 
     String token =
         uut.getToken(
@@ -268,7 +282,7 @@ class TokenGeneratorTest {
 
   @Test
   void default_lifespan_is_used() {
-    uut = setupUut(Collections.emptyList(), Duration.ofHours(5));
+    uut = setupUut(Collections.emptyList(), Collections.emptyList(), Duration.ofHours(5));
 
     String token = uut.getToken(aTokenConfig().build(), urlConfiguration);
 
@@ -282,7 +296,7 @@ class TokenGeneratorTest {
 
   @Test
   void default_lifespan_is_overridden_with_token_lifespan() {
-    uut = setupUut(Collections.emptyList(), Duration.ofHours(5));
+    uut = setupUut(Collections.emptyList(), Collections.emptyList(), Duration.ofHours(5));
 
     String token =
         uut.getToken(
@@ -294,5 +308,36 @@ class TokenGeneratorTest {
     assertThat(claims.getExpiration())
         .isAfter(Instant.now().plus(19, ChronoUnit.HOURS).plus(59, ChronoUnit.MINUTES))
         .isBefore(Instant.now().plus(20, ChronoUnit.HOURS));
+  }
+
+  @Test
+  void default_audiences_are_used() {
+    String audience1 = "audience1";
+    String audience2 = "audience2";
+
+    uut = setupUut(Collections.emptyList(), Sets.set(audience1, audience2), Duration.ofHours(10));
+
+    String token = uut.getToken(aTokenConfig().build(), urlConfiguration);
+
+    Claims claims =
+        Jwts.parser().verifyWith(publicKey).build().parseSignedClaims(token).getPayload();
+
+    assertThat(claims.getAudience()).containsExactlyInAnyOrder(audience1, audience2);
+  }
+
+  @Test
+  void token_audience_overrides_defaults() {
+    String audience1 = "audience1";
+    String audience2 = "audience2";
+
+    uut = setupUut(Collections.emptyList(), Sets.set(audience1, audience2), Duration.ofHours(10));
+
+    String token =
+        uut.getToken(aTokenConfig().withAudience("look-only-at-me").build(), urlConfiguration);
+
+    Claims claims =
+        Jwts.parser().verifyWith(publicKey).build().parseSignedClaims(token).getPayload();
+
+    assertThat(claims.getAudience()).containsExactlyInAnyOrder("look-only-at-me");
   }
 }

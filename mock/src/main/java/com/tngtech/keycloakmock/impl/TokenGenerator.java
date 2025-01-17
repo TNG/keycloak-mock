@@ -10,6 +10,7 @@ import io.jsonwebtoken.Jwts;
 import java.security.Key;
 import java.security.PublicKey;
 import java.time.Duration;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -25,7 +26,8 @@ public class TokenGenerator {
   @Nonnull private final PublicKey publicKey;
   @Nonnull private final Key privateKey;
   @Nonnull private final String keyId;
-  @Nonnull private final List<String> defaultScopes;
+  @Nonnull private final Collection<String> defaultAudiences;
+  @Nonnull private final Collection<String> defaultScopes;
   @Nonnull private final Duration defaultTokenLifespan;
 
   @Inject
@@ -33,12 +35,14 @@ public class TokenGenerator {
       @Nonnull PublicKey publicKey,
       @Nonnull Key privateKey,
       @Nonnull @Named("keyId") String keyId,
-      @Nonnull @Named("scopes") List<String> defaultScopes,
-      @Nonnull Duration defaultTokenLifespan) {
+      @Nonnull @Named("audiences") Collection<String> defaultAudiences,
+      @Nonnull @Named("scopes") Collection<String> defaultScopes,
+      @Nonnull @Named("tokenLifespan") Duration defaultTokenLifespan) {
     this.publicKey = publicKey;
     this.privateKey = privateKey;
     this.keyId = keyId;
     this.defaultScopes = defaultScopes;
+    this.defaultAudiences = defaultAudiences;
     this.defaultTokenLifespan = defaultTokenLifespan;
   }
 
@@ -52,7 +56,7 @@ public class TokenGenerator {
             .type("JWT")
             .and()
             .audience()
-            .add(tokenConfig.getAudience())
+            .add(tokenConfig.getAudience().isEmpty() ? defaultAudiences : tokenConfig.getAudience())
             .and()
             .issuedAt(new Date(tokenConfig.getIssuedAt().toEpochMilli()))
             .claim("auth_time", tokenConfig.getAuthenticationTime().getEpochSecond())

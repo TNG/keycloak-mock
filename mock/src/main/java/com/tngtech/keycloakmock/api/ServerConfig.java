@@ -24,9 +24,10 @@ public final class ServerConfig {
   @Nonnull private final String defaultHostname;
   @Nonnull private final String contextPath;
   @Nonnull private final String defaultRealm;
-  @Nonnull private final List<String> resourcesToMapRolesTo;
+  @Nonnull private final List<String> defaultAudiences;
   @Nonnull private final List<String> defaultScopes;
   @Nonnull private final Duration defaultTokenLifespan;
+  @Nonnull private final LoginRoleMapping loginRoleMapping;
 
   private ServerConfig(@Nonnull final Builder builder) {
     this.port = builder.port;
@@ -34,9 +35,14 @@ public final class ServerConfig {
     this.defaultHostname = builder.defaultHostname;
     this.contextPath = builder.contextPath;
     this.defaultRealm = builder.defaultRealm;
-    this.resourcesToMapRolesTo = builder.resourcesToMapRolesTo;
+    if (builder.defaultAudiences.isEmpty()) {
+      this.defaultAudiences = Collections.singletonList("server");
+    } else {
+      this.defaultAudiences = builder.defaultAudiences;
+    }
     this.defaultScopes = builder.defaultScopes;
     this.defaultTokenLifespan = builder.defaultTokenLifespan;
+    this.loginRoleMapping = builder.loginRoleMapping;
   }
 
   /**
@@ -69,19 +75,13 @@ public final class ServerConfig {
   }
 
   /**
-   * The resources for which roles will be set.
+   * The audiences to add to the token by default.
    *
-   * <p>If this list is empty, a login via the built-in login page will take the comma-separated
-   * roles from the password field and assign it as realm roles. If it contains at least one
-   * resource, the roles will be mapped only to this resource.
-   *
-   * @return the list of resources to which roles are mapped
-   * @see <a href="https://www.keycloak.org/docs/latest/server_admin/#realm-roles">Realm Roles</a>
-   * @see <a href="https://www.keycloak.org/docs/latest/server_admin/#client-roles">Client Roles</a>
+   * @return the list of default audiences
    */
   @Nonnull
-  public List<String> getResourcesToMapRolesTo() {
-    return Collections.unmodifiableList(resourcesToMapRolesTo);
+  public List<String> getDefaultAudiences() {
+    return Collections.unmodifiableList(defaultAudiences);
   }
 
   /**
@@ -162,6 +162,16 @@ public final class ServerConfig {
   }
 
   /**
+   * Get mapping logic for roles passed through login page.
+   *
+   * @return login role mapping
+   */
+  @Nonnull
+  public LoginRoleMapping getLoginRoleMapping() {
+    return loginRoleMapping;
+  }
+
+  /**
    * Builder for {@link ServerConfig}.
    *
    * <p>Use this to generate a server configuration to your needs.
@@ -173,9 +183,10 @@ public final class ServerConfig {
     @Nonnull private String defaultHostname = DEFAULT_HOSTNAME;
     @Nonnull private String contextPath = DEFAULT_CONTEXT_PATH;
     @Nonnull private String defaultRealm = DEFAULT_REALM;
-    @Nonnull private final List<String> resourcesToMapRolesTo = new ArrayList<>();
+    @Nonnull private final List<String> defaultAudiences = new ArrayList<>();
     @Nonnull private final List<String> defaultScopes = new ArrayList<>();
     @Nonnull private Duration defaultTokenLifespan = DEFAULT_TOKEN_LIFESPAN;
+    @Nonnull private LoginRoleMapping loginRoleMapping = LoginRoleMapping.TO_REALM;
 
     private Builder() {
       defaultScopes.add(DEFAULT_SCOPE);
@@ -276,22 +287,41 @@ public final class ServerConfig {
     }
 
     /**
-     * Set resources for which roles will be set.
+     * Add default audiences.
      *
-     * <p>If this list is empty, a login via the built-in login page will take the comma-separated
-     * roles from the password field and assign it as realm roles. If it contains at least one
-     * resource, the roles will be mapped only to this resource.
+     * <p>The audience that is issued in tokens if no explicit audience is configured for the token.
      *
-     * @param resources the list of resources to which roles will be mapped
+     * <p>If no default audience is set, it will default to 'server'.
+     *
+     * @param audiences the audiences to add
      * @return builder
-     * @see #withResourceToMapRolesTo(String)
-     * @see <a href="https://www.keycloak.org/docs/latest/server_admin/#realm-roles">Realm Roles</a>
-     * @see <a href="https://www.keycloak.org/docs/latest/server_admin/#client-roles">Client
-     *     Roles</a>
+     * @see #withDefaultAudience(String)
+     * @see TokenConfig.Builder#withAudience(String)
+     * @see TokenConfig.Builder#withAudiences(Collection)
      */
     @Nonnull
-    public Builder withResourcesToMapRolesTo(@Nonnull List<String> resources) {
-      resourcesToMapRolesTo.addAll(resources);
+    public Builder withDefaultAudiences(@Nonnull Collection<String> audiences) {
+      defaultAudiences.addAll(audiences);
+      return this;
+    }
+
+    /**
+     * Add a default audience.
+     *
+     * <p>The audience that is issued in tokens if no explicit audience is configured for the token.
+     *
+     * <p>If no default audience is set, it will default to 'server'.
+     *
+     * @param resource an audience to add
+     * @return builder
+     * @see #withDefaultAudiences(Collection) (Collection)
+     * @see TokenConfig.Builder#withAudience(String)
+     * @see TokenConfig.Builder#withAudiences(Collection)
+     */
+    @SuppressWarnings("unused")
+    @Nonnull
+    public Builder withDefaultAudience(@Nonnull String resource) {
+      defaultAudiences.add(Objects.requireNonNull(resource));
       return this;
     }
 
@@ -324,26 +354,6 @@ public final class ServerConfig {
     @Nonnull
     public Builder withNoContextPath() {
       this.contextPath = "";
-      return this;
-    }
-
-    /**
-     * Add a resource for which roles will be set.
-     *
-     * <p>If no resource is set, a login via the built-in login page will take the comma-separated
-     * roles from the password field and assign it as realm roles. If at least one resource is
-     * configured, the roles will be mapped only to this resource.
-     *
-     * @param resource a resource to which roles will be mapped
-     * @return builder
-     * @see #withResourcesToMapRolesTo(List)
-     * @see <a href="https://www.keycloak.org/docs/latest/server_admin/#realm-roles">Realm Roles</a>
-     * @see <a href="https://www.keycloak.org/docs/latest/server_admin/#client-roles">Client
-     *     Roles</a>
-     */
-    @Nonnull
-    public Builder withResourceToMapRolesTo(@Nonnull String resource) {
-      resourcesToMapRolesTo.add(Objects.requireNonNull(resource));
       return this;
     }
 
@@ -391,6 +401,26 @@ public final class ServerConfig {
     @Nonnull
     public Builder withDefaultTokenLifespan(@Nonnull final Duration tokenLifespan) {
       this.defaultTokenLifespan = tokenLifespan;
+      return this;
+    }
+
+    /**
+     * Set the role mapping to use for the login route.
+     *
+     * <p>When using the login flow, the roles can only be given as a list. This setting allows
+     * specifying where they should be applied.
+     *
+     * <p>The default setting is {@link LoginRoleMapping#TO_REALM}.
+     *
+     * <p>This setting only applies when using the login flow via Browser, not when generating
+     * tokens programmatically.
+     *
+     * @param loginRoleMapping the role mapping
+     * @return builder
+     */
+    @Nonnull
+    public Builder withLoginRoleMapping(@Nonnull final LoginRoleMapping loginRoleMapping) {
+      this.loginRoleMapping = loginRoleMapping;
       return this;
     }
 

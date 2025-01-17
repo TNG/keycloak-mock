@@ -60,11 +60,7 @@ public class TokenConfig {
   @Nullable private final String authenticationContextClassReference;
 
   private TokenConfig(@Nonnull final Builder builder) {
-    if (builder.audience.isEmpty()) {
-      audience = Collections.singleton("server");
-    } else {
-      audience = builder.audience;
-    }
+    audience = builder.audience;
     authorizedParty = builder.authorizedParty;
     subject = builder.subject;
     generateUserDataFromSubject = builder.generateUserDataFromSubject;
@@ -376,10 +372,14 @@ public class TokenConfig {
     /**
      * Add an audience.
      *
-     * <p>An audience is an identifier of a recipient of the token.
+     * <p>An audience is an identifier of a recipient of the token. If no audience is set explicitly
+     * here or in the {@link ServerConfig}, then the default value 'server' will be used.
      *
      * @param audience the audience to add
      * @return builder
+     * @see #withAudience(String)
+     * @see ServerConfig.Builder#withDefaultAudience(String)
+     * @see ServerConfig.Builder#withDefaultAudiences(Collection)
      * @see <a href="https://openid.net/specs/openid-connect-core-1_0.html#IDToken">ID token</a>
      */
     @Nonnull
@@ -391,10 +391,14 @@ public class TokenConfig {
     /**
      * Add a collection of audiences.
      *
-     * <p>An audience is an identifier of a recipient of the token.
+     * <p>An audience is an identifier of a recipient of the token. If no audience is set explicitly
+     * here or in the {@link ServerConfig}, then the default value 'server' will be used.
      *
      * @param audiences the audiences to add
      * @return builder
+     * @see #withAudiences(Collection)
+     * @see ServerConfig.Builder#withDefaultAudience(String)
+     * @see ServerConfig.Builder#withDefaultAudiences(Collection)
      * @see <a href="https://openid.net/specs/openid-connect-core-1_0.html#IDToken">ID token</a>
      */
     @Nonnull
@@ -568,6 +572,9 @@ public class TokenConfig {
      *
      * <p>Resource roles only apply to a specific client or resource.
      *
+     * <p>Resources which have at least one role will automatically be added as audience to the
+     * token.
+     *
      * @param resource the resource or client for which to add the roles
      * @param roles the roles to add
      * @return builder
@@ -588,6 +595,9 @@ public class TokenConfig {
      * Add a resource role.
      *
      * <p>Resource roles only apply to a specific client or resource.
+     *
+     * <p>Resources which have at least one role will automatically be added as audience to the
+     * token.
      *
      * @param resource the resource or client for which to add the roles
      * @param role the role to add
