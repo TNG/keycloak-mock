@@ -5,6 +5,7 @@ import com.tngtech.keycloakmock.api.ServerConfig;
 import com.tngtech.keycloakmock.impl.UrlConfiguration;
 import com.tngtech.keycloakmock.impl.handler.AuthenticationRoute;
 import com.tngtech.keycloakmock.impl.handler.CommonHandler;
+import com.tngtech.keycloakmock.impl.handler.DocumentationRoute;
 import com.tngtech.keycloakmock.impl.handler.FailureHandler;
 import com.tngtech.keycloakmock.impl.handler.IFrameRoute;
 import com.tngtech.keycloakmock.impl.handler.JwksRoute;
@@ -83,6 +84,13 @@ public class ServerModule {
 
   @Provides
   @Singleton
+  @Named("stylesheet")
+  ResourceFileHandler provideStylesheetHandler() {
+    return new ResourceFileHandler("/style.css");
+  }
+
+  @Provides
+  @Singleton
   Buffer keystoreBuffer(@Nonnull KeyStore keyStore) {
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     try {
@@ -125,7 +133,9 @@ public class ServerModule {
       @Nonnull @Named("cookie2") ResourceFileHandler thirdPartyCookies2Route,
       @Nonnull LogoutRoute logoutRoute,
       @Nonnull OutOfBandLoginRoute outOfBandLoginRoute,
-      @Nonnull @Named("keycloakJs") ResourceFileHandler keycloakJsRoute) {
+      @Nonnull @Named("keycloakJs") ResourceFileHandler keycloakJsRoute,
+      @Nonnull @Named("stylesheet") ResourceFileHandler stylesheetRoute,
+      @Nonnull DocumentationRoute documentationRoute) {
     UrlConfiguration routing = defaultConfiguration.forRequestContext(null, ":realm");
     Router router = Router.router(vertx);
     router
@@ -133,32 +143,58 @@ public class ServerModule {
         .handler(commonHandler)
         .failureHandler(failureHandler)
         .failureHandler(ErrorHandler.create(vertx));
-    router.get(routing.getJwksUri().getPath()).handler(jwksRoute);
-    router.get(routing.getIssuerPath().resolve(".well-known/*").getPath()).handler(wellKnownRoute);
-    router.get(routing.getAuthorizationEndpoint().getPath()).handler(loginRoute);
+    router.get(routing.getJwksUri().getPath()).setName("key signing data").handler(jwksRoute);
+    router
+        .get(routing.getIssuerPath().resolve(".well-known/*").getPath())
+        .setName("configuration discovery data")
+        .handler(wellKnownRoute);
+    router
+        .get(routing.getAuthorizationEndpoint().getPath())
+        .setName("login page")
+        .handler(loginRoute);
     router
         .post(routing.getAuthenticationCallbackEndpoint(":sessionId").getPath())
+        .setName("custom authentication endpoint used by login page")
         .handler(BodyHandler.create())
         .handler(authenticationRoute);
     router
         .post(routing.getTokenEndpoint().getPath())
+        .setName("token endpoint")
         .handler(BodyHandler.create())
         .handler(basicAuthHandler)
         .handler(tokenRoute);
-    router.get(routing.getOpenIdPath("login-status-iframe.html*").getPath()).handler(iframeRoute);
+    router
+        .get(routing.getOpenIdPath("login-status-iframe.html*").getPath())
+        .setName("Keycloak login iframe")
+        .handler(iframeRoute);
     router
         .get(routing.getOpenIdPath("3p-cookies/step1.html").getPath())
+        .setName("keycloak third party cookies - step 1")
         .handler(thirdPartyCookies1Route);
     router
         .get(routing.getOpenIdPath("3p-cookies/step2.html").getPath())
+        .setName("Keycloak third party cookies - step 2")
         .handler(thirdPartyCookies2Route);
     router
         .route(routing.getEndSessionEndpoint().getPath())
+        .setName("logout endpoint")
         .method(HttpMethod.GET)
         .method(HttpMethod.POST)
         .handler(logoutRoute);
-    router.get(routing.getOutOfBandLoginLoginEndpoint().getPath()).handler(outOfBandLoginRoute);
-    router.route(routing.getContextPath("/js/keycloak.js").getPath()).handler(keycloakJsRoute);
+    router
+        .get(routing.getOutOfBandLoginLoginEndpoint().getPath())
+        .setName("out-of-band login endpoint")
+        .handler(outOfBandLoginRoute);
+    router
+        .get(routing.getContextPath("/js/keycloak.js").getPath())
+        .setName("provided keycloak.js")
+        .handler(keycloakJsRoute);
+    router.get("/style.css").handler(stylesheetRoute);
+    router
+        .get("/docs")
+        .setName("documentation endpoint")
+        .produces("text/html")
+        .handler(documentationRoute);
     return router;
   }
 

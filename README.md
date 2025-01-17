@@ -152,6 +152,11 @@ You can even use it as a replacement in end-to-end tests, as the server is e.g. 
 `cypress-keycloak`. Have a look at the [example-frontend-react](example-frontend-react) project on
 this can be set up.
 
+## Server Method documentation
+
+You can get a list of all implemented endpoints of the mock at `http://localhost:8000/docs`. This is mainly meant for
+checking if a specific endpoint you want to use is supported by the mock (yet).
+
 ## License
 
 This project is licensed under the Apache 2.0 license (see [LICENSE](LICENSE)).
