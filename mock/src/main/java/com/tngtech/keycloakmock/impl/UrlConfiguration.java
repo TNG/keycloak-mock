@@ -78,13 +78,18 @@ public class UrlConfiguration {
   }
 
   @Nonnull
+  public URI getContextPath(String path) {
+    return getBaseUrl().resolve(contextPath + path);
+  }
+
+  @Nonnull
   public URI getIssuer() {
-    return getBaseUrl().resolve(contextPath + ISSUER_PATH + realm);
+    return getContextPath(ISSUER_PATH + realm);
   }
 
   @Nonnull
   public URI getIssuerPath() {
-    return getBaseUrl().resolve(contextPath + ISSUER_PATH + realm + "/");
+    return getContextPath(ISSUER_PATH + realm + "/");
   }
 
   @Nonnull
