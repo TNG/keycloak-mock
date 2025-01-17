@@ -107,11 +107,9 @@ public class Main implements Callable<Void> {
                 .build())
         .start();
 
-    LOG.info(
-        "Server is running on {}://localhost:{}{}",
-        (tls ? "https" : "http"),
-        port,
-        usedContextPath);
+    String url = (tls ? "https" : "http") + "://localhost:" + port;
+    LOG.info("Server is running on {}{}", url, usedContextPath);
+    LOG.info("A documentation of all endpoints is available at {}/docs", url);
 
     return null;
   }

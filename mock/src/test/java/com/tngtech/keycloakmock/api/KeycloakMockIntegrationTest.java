@@ -2,7 +2,9 @@ package com.tngtech.keycloakmock.api;
 
 import static com.tngtech.keycloakmock.api.ServerConfig.aServerConfig;
 import static com.tngtech.keycloakmock.test.KeyHelper.loadValidKey;
+import static io.restassured.RestAssured.enableLoggingOfRequestAndResponseIfValidationFails;
 import static io.restassured.RestAssured.given;
+import static io.restassured.RestAssured.when;
 import static io.restassured.config.RedirectConfig.redirectConfig;
 import static io.restassured.config.RestAssuredConfig.config;
 import static io.restassured.http.ContentType.HTML;
@@ -24,7 +26,6 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
-import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.http.Cookie;
 import io.restassured.http.Method;
@@ -63,7 +64,7 @@ class KeycloakMockIntegrationTest {
 
   @BeforeAll
   static void setupRestAssured() {
-    RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
+    enableLoggingOfRequestAndResponseIfValidationFails();
   }
 
   @AfterEach
@@ -99,7 +100,7 @@ class KeycloakMockIntegrationTest {
 
   private void assertServerMockRunnning(boolean running) {
     try {
-      RestAssured.when()
+      when()
           .get("http://localhost:8000/auth/realms/master/protocol/openid-connect/certs")
           .then()
           .statusCode(200)
@@ -124,7 +125,7 @@ class KeycloakMockIntegrationTest {
   void mock_server_endpoint_is_correctly_configured(int port, boolean tls) {
     keycloakMock = new KeycloakMock(aServerConfig().withPort(port).withTls(tls).build());
     keycloakMock.start();
-    RestAssured.given()
+    given()
         .relaxedHTTPSValidation()
         .when()
         .get(
@@ -213,7 +214,7 @@ class KeycloakMockIntegrationTest {
     keycloakMock = new KeycloakMock();
     keycloakMock.start();
     String issuer =
-        RestAssured.given()
+        given()
             .when()
             .header("Host", hostname)
             .get("http://localhost:8000/auth/realms/test/.well-known/openid-configuration")
@@ -243,7 +244,7 @@ class KeycloakMockIntegrationTest {
   void mock_server_answers_204_on_iframe_init() {
     keycloakMock = new KeycloakMock();
     keycloakMock.start();
-    RestAssured.given()
+    given()
         .when()
         .get(
             "http://localhost:8000/auth/realms/test/protocol/openid-connect/login-status-iframe.html/init")
@@ -261,7 +262,7 @@ class KeycloakMockIntegrationTest {
     keycloakMock = new KeycloakMock();
     keycloakMock.start();
     String body =
-        RestAssured.given()
+        given()
             .when()
             .get("http://localhost:8000/auth" + resource)
             .then()
@@ -280,12 +281,7 @@ class KeycloakMockIntegrationTest {
   void mock_server_returns_404_on_nonexistent_resource() {
     keycloakMock = new KeycloakMock();
     keycloakMock.start();
-    RestAssured.given()
-        .when()
-        .get("http://localhost:8000/i-do-not-exist")
-        .then()
-        .assertThat()
-        .statusCode(404);
+    given().when().get("http://localhost:8000/i-do-not-exist").then().assertThat().statusCode(404);
   }
 
   @Test
@@ -347,7 +343,7 @@ class KeycloakMockIntegrationTest {
   }
 
   private String openLoginPageAndGetCallbackUrl(ClientRequest request) {
-    return RestAssured.given()
+    return given()
         .when()
         .get(request.getLoginPageUrl())
         .then()
@@ -364,7 +360,7 @@ class KeycloakMockIntegrationTest {
   private Cookie loginAndValidateAndReturnSessionCookie(ClientRequest request, String callbackUrl)
       throws URISyntaxException {
     ExtractableResponse<Response> extractableResponse =
-        RestAssured.given()
+        given()
             .config(config().redirect(redirectConfig().followRedirects(false)))
             .when()
             .formParam("username", "username")
@@ -384,7 +380,7 @@ class KeycloakMockIntegrationTest {
   private String loginAndValidateAndReturnAuthCode(ClientRequest request, String callbackUrl)
       throws URISyntaxException {
     ExtractableResponse<Response> extractableResponse =
-        RestAssured.given()
+        given()
             .config(config().redirect(redirectConfig().followRedirects(false)))
             .when()
             .formParam("username", "username")
@@ -402,7 +398,7 @@ class KeycloakMockIntegrationTest {
 
   private String validateAuthorizationAndRetrieveToken(String authorizationCode, String nonce) {
     ExtractableResponse<Response> extractableResponse =
-        RestAssured.given()
+        given()
             .config(config().redirect(redirectConfig().followRedirects(false)))
             .when()
             .formParam("grant_type", "authorization_code")
@@ -422,7 +418,7 @@ class KeycloakMockIntegrationTest {
 
   private void validateRefreshTokenFlow(String refreshToken, String nonce) {
     ExtractableResponse<Response> extractableResponse =
-        RestAssured.given()
+        given()
             .config(config().redirect(redirectConfig().followRedirects(false)))
             .when()
             .formParam("grant_type", "refresh_token")
@@ -450,7 +446,7 @@ class KeycloakMockIntegrationTest {
   private void openLoginPageAgainAndExpectToBeLoggedInAlready(
       ClientRequest request, Cookie keycloakSession) throws URISyntaxException {
     String location =
-        RestAssured.given()
+        given()
             .config(config().redirect(redirectConfig().followRedirects(false)))
             .when()
             .cookie(keycloakSession)
@@ -512,7 +508,7 @@ class KeycloakMockIntegrationTest {
   }
 
   private void logoutAndExpectSessionCookieReset(Method method) {
-    RestAssured.given()
+    given()
         .config(config().redirect(redirectConfig().followRedirects(false)))
         .when()
         .request(
@@ -532,7 +528,7 @@ class KeycloakMockIntegrationTest {
     keycloakMock.start();
 
     ExtractableResponse<Response> extractableResponse =
-        RestAssured.given()
+        given()
             .when()
             .formParam("client_id", "client")
             .formParam("username", "username")
@@ -561,7 +557,7 @@ class KeycloakMockIntegrationTest {
     keycloakMock.start();
 
     ExtractableResponse<Response> extractableResponse =
-        RestAssured.given()
+        given()
             .auth()
             .preemptive()
             .basic("client", "does not matter")
@@ -592,7 +588,7 @@ class KeycloakMockIntegrationTest {
     keycloakMock.start();
 
     ExtractableResponse<Response> extractableResponse =
-        RestAssured.given()
+        given()
             .auth()
             .preemptive()
             .basic("client", "role1,role2,role3")
@@ -621,7 +617,7 @@ class KeycloakMockIntegrationTest {
     keycloakMock.start();
 
     ExtractableResponse<Response> extractableResponse =
-        RestAssured.given()
+        given()
             .when()
             .formParam("grant_type", "client_credentials")
             .formParam("client_id", "client")
@@ -641,6 +637,29 @@ class KeycloakMockIntegrationTest {
     assertThat(tokenConfig.getRealmAccess().getRoles())
         .containsExactlyInAnyOrder("role1", "role2", "role3");
     assertThat(tokenConfig.getAudience()).containsExactlyInAnyOrder("client", "server");
+  }
+
+  @Test
+  void documentation_works() {
+    keycloakMock = new KeycloakMock();
+    keycloakMock.start();
+
+    ExtractableResponse<Response> extractableResponse =
+        given()
+            .when()
+            .get("http://localhost:8000/docs")
+            .then()
+            .assertThat()
+            .statusCode(200)
+            .extract();
+
+    assertThat(extractableResponse.body().asPrettyString())
+        .contains(
+            "      <tr>\n"
+                + "        <td colspan=\"1\" rowspan=\"1\">GET</td>\n"
+                + "        <td colspan=\"1\" rowspan=\"1\">/docs</td>\n"
+                + "        <td colspan=\"1\" rowspan=\"1\">documentation endpoint</td>\n"
+                + "      </tr>");
   }
 
   private static class ClientRequest {

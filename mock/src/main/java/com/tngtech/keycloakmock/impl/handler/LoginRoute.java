@@ -60,20 +60,27 @@ public class LoginRoute implements Handler<RoutingContext> {
             .map(sessionRepository::getSession);
 
     // for now, we just override the settings of the session with values of the new client
-    SessionRequest request =
-        new SessionRequest.Builder()
-            .setClientId(routingContext.queryParams().get(CLIENT_ID))
-            .setState(routingContext.queryParams().get(STATE))
-            .setRedirectUri(routingContext.queryParams().get(REDIRECT_URI))
-            .setSessionId(
-                existingSession
-                    .map(PersistentSession::getSessionId)
-                    .orElseGet(() -> UUID.randomUUID().toString()))
-            .setResponseType(routingContext.queryParams().get(RESPONSE_TYPE))
-            // optional parameter
-            .setNonce(routingContext.queryParams().get(NONCE))
-            .setResponseMode(routingContext.queryParams().get(RESPONSE_MODE))
-            .build();
+    SessionRequest request;
+    try {
+      request =
+          new SessionRequest.Builder()
+              .setClientId(routingContext.queryParams().get(CLIENT_ID))
+              .setRedirectUri(routingContext.queryParams().get(REDIRECT_URI))
+              .setSessionId(
+                  existingSession
+                      .map(PersistentSession::getSessionId)
+                      .orElseGet(() -> UUID.randomUUID().toString()))
+              .setResponseType(routingContext.queryParams().get(RESPONSE_TYPE))
+              // optional parameter
+              .setState(routingContext.queryParams().get(STATE))
+              .setNonce(routingContext.queryParams().get(NONCE))
+              .setResponseMode(routingContext.queryParams().get(RESPONSE_MODE))
+              .build();
+    } catch (NullPointerException e) {
+      LOG.warn("Mandatory parameter missing", e);
+      routingContext.fail(400);
+      return;
+    }
 
     UrlConfiguration requestConfiguration = baseConfiguration.forRequestContext(routingContext);
     if (existingSession.isPresent()) {
