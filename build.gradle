@@ -1,20 +1,20 @@
 buildscript {
     repositories {
         maven {
-            url 'https://plugins.gradle.org/m2/'
+            url = 'https://plugins.gradle.org/m2/'
         }
     }
 }
 
 plugins {
     id 'com.github.ben-manes.versions' version '0.51.0'
-    id 'com.google.cloud.tools.jib' version '3.4.3' apply false
-    id 'org.sonarqube' version '5.1.0.4882'
-    id 'pl.allegro.tech.build.axion-release' version '1.18.13'
+    id 'com.google.cloud.tools.jib' version '3.4.4' apply false
+    id 'org.sonarqube' version '6.0.1.5171'
+    id 'pl.allegro.tech.build.axion-release' version '1.18.16'
 }
 
 wrapper {
-    gradleVersion = '8.10.2'
+    gradleVersion = '8.12'
     distributionType = Wrapper.DistributionType.ALL
 }
 
@@ -42,17 +42,18 @@ allprojects {
 }
 
 ext {
-    assertj_version = '3.26.3'
+    assertj_version = '3.27.2'
     jjwt_version = '0.12.6'
     jsr305_version = '3.0.2'
     junit4_version = '4.13.2'
-    junit5_version = '5.11.2'
-    keycloak_version = '26.0.0'
-    mockito_version = '5.14.2'
+    junit5_version = '5.11.4'
+    keycloak_version = '26.0.4'
+    keycloak_js_version = '26.1.0'
+    mockito_version = '5.15.2'
     picocli_version = '4.7.6'
     restassured_version = '5.5.0'
     slf4j_version = '2.0.16'
-    vertx_version = '4.5.10'
+    vertx_version = '4.5.11'
 
     license_name = 'The Apache License, Version 2.0'
     license_url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
@@ -159,19 +160,19 @@ subprojects {
             }
             repositories.maven {
                 if (project.version.endsWith('-SNAPSHOT')) {
-                    credentials.username project.findProperty('sonatypeUsername')
-                    credentials.password project.findProperty('sonatypePassword')
-                    url 'https://oss.sonatype.org/content/repositories/snapshots/'
+                    credentials.username = project.findProperty('sonatypeUsername')
+                    credentials.password = project.findProperty('sonatypePassword')
+                    url = 'https://oss.sonatype.org/content/repositories/snapshots/'
                 } else {
-                    credentials.username project.findProperty('sonatypeUsername')
-                    credentials.password project.findProperty('sonatypePassword')
-                    url 'https://oss.sonatype.org/service/local/staging/deploy/maven2/'
+                    credentials.username = project.findProperty('sonatypeUsername')
+                    credentials.password = project.findProperty('sonatypePassword')
+                    url = 'https://oss.sonatype.org/service/local/staging/deploy/maven2/'
                 }
             }
         }
 
         signing {
-            required {
+            required = {
                 gradle.taskGraph.hasTask('uploadArchives')
             }
             if ('standalone' != project.name) {

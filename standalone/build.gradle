@@ -2,8 +2,8 @@ import com.github.jengelman.gradle.plugins.shadow.transformers.ApacheNoticeResou
 
 plugins {
     id 'application'
-    id 'com.github.gmazzo.buildconfig' version '5.5.0'
-    id 'com.gradleup.shadow' version '8.3.3'
+    id 'com.github.gmazzo.buildconfig' version '5.5.1'
+    id 'com.gradleup.shadow' version '8.3.5'
 }
 
 apply plugin: 'com.google.cloud.tools.jib'
@@ -46,10 +46,10 @@ publishing {
             publication ->
                 project.shadow.component(publication)
                 artifact(fakeJar) {
-                    classifier 'javadoc'
+                    classifier = 'javadoc'
                 }
                 artifact(fakeJar) {
-                    classifier 'sources'
+                    classifier = 'sources'
                 }
         }
     }

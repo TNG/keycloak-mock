@@ -23,7 +23,7 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
       - name: Run pre-commit check
-        uses: pre-commit/action@v3.0.1
+        uses: cloudposse/github-action-pre-commit@v4.0.0
 
   build_java:
     runs-on: ubuntu-latest
@@ -52,7 +52,7 @@ jobs:
       - name: Run integration tests
         run: ./gradlew e2e
       - name: Publish test report
-        uses: mikepenz/action-junit-report@v4
+        uses: mikepenz/action-junit-report@v5
         if: always()
         with:
           report_paths: '**/build/test-results/test/TEST-*.xml'

@@ -10,6 +10,7 @@ configurations {
 }
 
 ext {
+    // looks like starting from version 2.52, the included shadowed room library has Java compile version 11
     dagger_version = '2.51.1'
 }
 
@@ -21,13 +22,13 @@ dependencies {
     implementation "com.google.code.findbugs:jsr305:$jsr305_version"
     implementation "com.google.dagger:dagger:$dagger_version"
     implementation "org.slf4j:slf4j-api:$slf4j_version"
-    jsResourceJar "org.keycloak:keycloak-js-adapter:$keycloak_version@tar.gz"
+    jsResourceJar "org.keycloak:keycloak-js-adapter:$keycloak_js_version@tar.gz"
     htmlResourceJar "org.keycloak:keycloak-services:$keycloak_version"
     testImplementation 'io.fusionauth:fusionauth-jwt:5.3.3'
     testImplementation "io.rest-assured:rest-assured:$restassured_version"
     // required to mock RoutingContext
     testImplementation "io.vertx:vertx-codegen:$vertx_version"
-    testImplementation 'net.javacrumbs.json-unit:json-unit-assertj:3.4.1'
+    testImplementation 'net.javacrumbs.json-unit:json-unit-assertj:4.1.0'
     testImplementation "org.assertj:assertj-core:$assertj_version"
     testImplementation "org.junit.jupiter:junit-jupiter-api"
     testImplementation "org.junit.jupiter:junit-jupiter-params"
