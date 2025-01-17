@@ -2,12 +2,13 @@ package com.tngtech.keycloakmock.impl.helper;
 
 import static com.tngtech.keycloakmock.api.TokenConfig.aTokenConfig;
 
+import com.tngtech.keycloakmock.api.LoginRoleMapping;
 import com.tngtech.keycloakmock.api.TokenConfig.Builder;
 import com.tngtech.keycloakmock.impl.TokenGenerator;
 import com.tngtech.keycloakmock.impl.UrlConfiguration;
 import com.tngtech.keycloakmock.impl.session.Session;
 import com.tngtech.keycloakmock.impl.session.UserData;
-import java.util.List;
+import java.util.Collection;
 import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -21,14 +22,17 @@ public class TokenHelper {
   private static final String NONCE = "nonce";
 
   @Nonnull private final TokenGenerator tokenGenerator;
-  @Nonnull private final List<String> resourcesToMapRolesTo;
+  @Nonnull private final Collection<String> defaultAudiences;
+  @Nonnull private final LoginRoleMapping loginRoleMapping;
 
   @Inject
   TokenHelper(
       @Nonnull TokenGenerator tokenGenerator,
-      @Nonnull @Named("resources") List<String> resourcesToMapRolesTo) {
+      @Nonnull @Named("audiences") Collection<String> defaultAudiences,
+      @Nonnull LoginRoleMapping loginRoleMapping) {
     this.tokenGenerator = tokenGenerator;
-    this.resourcesToMapRolesTo = resourcesToMapRolesTo;
+    this.defaultAudiences = defaultAudiences;
+    this.loginRoleMapping = loginRoleMapping;
   }
 
   @Nullable
@@ -37,8 +41,8 @@ public class TokenHelper {
     Builder builder =
         aTokenConfig()
             .withAuthorizedParty(session.getClientId())
-            // at the moment, there is no explicit way of setting an audience
             .withAudience(session.getClientId())
+            .withAudiences(defaultAudiences)
             .withSubject(userData.getSubject())
             .withPreferredUsername(userData.getPreferredUsername())
             .withGivenName(userData.getGivenName())
@@ -52,16 +56,29 @@ public class TokenHelper {
     if (session.getNonce() != null) {
       builder.withClaim(NONCE, session.getNonce());
     }
-    if (resourcesToMapRolesTo.isEmpty()) {
-      builder.withRealmRoles(session.getRoles());
-    } else {
-      for (String resource : resourcesToMapRolesTo) {
-        builder.withResourceRoles(resource, session.getRoles());
-      }
+    switch (loginRoleMapping) {
+      case TO_REALM:
+        builder.withRealmRoles(session.getRoles());
+        break;
+      case TO_RESOURCE:
+        setResourceRoles(builder, session);
+        break;
+      case TO_BOTH:
+        builder.withRealmRoles(session.getRoles());
+        setResourceRoles(builder, session);
+        break;
     }
 
     // for simplicity, the access token is the same as the ID token
     return tokenGenerator.getToken(builder.build(), requestConfiguration);
+  }
+
+  private void setResourceRoles(@Nonnull Builder builder, @Nonnull Session session) {
+    // we always set the client ID as audience, so we also need to set the roles
+    builder.withResourceRoles(session.getClientId(), session.getRoles());
+    for (String audience : defaultAudiences) {
+      builder.withResourceRoles(audience, session.getRoles());
+    }
   }
 
   @Nonnull

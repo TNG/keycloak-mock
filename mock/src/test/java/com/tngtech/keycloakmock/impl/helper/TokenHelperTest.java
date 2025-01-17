@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.within;
 import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.doReturn;
 
+import com.tngtech.keycloakmock.api.LoginRoleMapping;
 import com.tngtech.keycloakmock.api.TokenConfig;
 import com.tngtech.keycloakmock.impl.TokenGenerator;
 import com.tngtech.keycloakmock.impl.UrlConfiguration;
@@ -15,6 +16,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -32,7 +34,6 @@ class TokenHelperTest {
   private static final UserData USER = UserData.fromUsernameAndHostname("jane.user", "example.com");
   private static final String TOKEN = "token123";
   private static final List<String> ROLES = Arrays.asList("role1", "role2");
-  private static final List<String> CONFIGURED_RESOURCES = Arrays.asList("resource1", "resource2");
 
   @Mock private TokenGenerator tokenGenerator;
 
@@ -55,7 +56,7 @@ class TokenHelperTest {
 
   @Test
   void token_is_correctly_generated() {
-    uut = new TokenHelper(tokenGenerator, Collections.emptyList());
+    uut = new TokenHelper(tokenGenerator, Collections.emptyList(), LoginRoleMapping.TO_REALM);
 
     uut.getToken(session, urlConfiguration);
 
@@ -80,17 +81,59 @@ class TokenHelperTest {
   }
 
   @Test
-  void resource_roles_are_used_if_configured() {
-    uut = new TokenHelper(tokenGenerator, CONFIGURED_RESOURCES);
+  void default_audiences_are_added() {
+    uut =
+        new TokenHelper(
+            tokenGenerator, Lists.list("audience1", "audience2"), LoginRoleMapping.TO_REALM);
 
     uut.getToken(session, urlConfiguration);
 
     TokenConfig tokenConfig = configCaptor.getValue();
+    assertThat(tokenConfig.getAudience())
+        .containsExactlyInAnyOrder(CLIENT_ID, "audience1", "audience2");
+    assertThat(tokenConfig.getResourceAccess()).isEmpty();
+  }
+
+  @Test
+  void resource_roles_are_added() {
+    uut =
+        new TokenHelper(
+            tokenGenerator, Lists.list("audience1", "audience2"), LoginRoleMapping.TO_RESOURCE);
+
+    uut.getToken(session, urlConfiguration);
+
+    TokenConfig tokenConfig = configCaptor.getValue();
+    assertThat(tokenConfig.getAudience())
+        .containsExactlyInAnyOrder(CLIENT_ID, "audience1", "audience2");
     assertThat(tokenConfig.getRealmAccess().getRoles()).isEmpty();
-    assertThat(tokenConfig.getResourceAccess()).containsOnlyKeys("resource1", "resource2");
-    assertThat(tokenConfig.getResourceAccess().get("resource1").getRoles())
+    assertThat(tokenConfig.getResourceAccess())
+        .containsOnlyKeys(CLIENT_ID, "audience1", "audience2");
+    assertThat(tokenConfig.getResourceAccess().get(CLIENT_ID).getRoles())
         .containsExactlyInAnyOrderElementsOf(ROLES);
-    assertThat(tokenConfig.getResourceAccess().get("resource2").getRoles())
+    assertThat(tokenConfig.getResourceAccess().get("audience1").getRoles())
+        .containsExactlyInAnyOrderElementsOf(ROLES);
+    assertThat(tokenConfig.getResourceAccess().get("audience2").getRoles())
+        .containsExactlyInAnyOrderElementsOf(ROLES);
+  }
+
+  @Test
+  void resource_and_realm_roles_are_added() {
+    uut =
+        new TokenHelper(
+            tokenGenerator, Lists.list("audience1", "audience2"), LoginRoleMapping.TO_BOTH);
+
+    uut.getToken(session, urlConfiguration);
+
+    TokenConfig tokenConfig = configCaptor.getValue();
+    assertThat(tokenConfig.getAudience())
+        .containsExactlyInAnyOrder(CLIENT_ID, "audience1", "audience2");
+    assertThat(tokenConfig.getResourceAccess())
+        .containsOnlyKeys(CLIENT_ID, "audience1", "audience2");
+    assertThat(tokenConfig.getResourceAccess().get(CLIENT_ID).getRoles())
+        .containsExactlyInAnyOrderElementsOf(ROLES);
+    assertThat(tokenConfig.getResourceAccess().get("audience1").getRoles())
+        .containsExactlyInAnyOrderElementsOf(ROLES);
+    assertThat(tokenConfig.getResourceAccess().get("audience2").getRoles())
         .containsExactlyInAnyOrderElementsOf(ROLES);
   }
 }

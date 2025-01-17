@@ -3,6 +3,7 @@ package com.tngtech.keycloakmock.standalone;
 import static com.tngtech.keycloakmock.api.ServerConfig.aServerConfig;
 
 import com.tngtech.keycloakmock.api.KeycloakMock;
+import com.tngtech.keycloakmock.api.LoginRoleMapping;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
@@ -49,11 +50,12 @@ public class Main implements Callable<Void> {
 
   @SuppressWarnings("FieldMayBeFinal")
   @Option(
-      names = {"-r", "--mapRolesToResources"},
-      description = "If set, roles will be assigned to these resources instead of the realm.",
-      paramLabel = "RESOURCE",
+      names = {"-a", "--audiences"},
+      description =
+          "Audiences to set in the token in addition to the client_id (default: [server]).",
+      paramLabel = "AUDIENCE",
       split = ",")
-  private List<String> resourcesToMapRolesTo = Collections.emptyList();
+  private List<String> audiences = Collections.emptyList();
 
   @SuppressWarnings("FieldMayBeFinal")
   @Option(
@@ -70,6 +72,14 @@ public class Main implements Callable<Void> {
           "Lifespan of generated tokens (default: ${DEFAULT-VALUE}). Valid values are e.g. '10h',"
               + " '15m', '3m45s'.")
   private String tokenLifespan = "10h";
+
+  @SuppressWarnings("FieldMayBeFinal")
+  @Option(
+      names = {"-rm", "--roleMapping"},
+      description =
+          "Where to add the roles given in the login dialog (default: ${DEFAULT-VALUE}). Valid"
+              + " options: ${COMPLETION-CANDIDATES}")
+  private LoginRoleMapping loginRoleMapping = LoginRoleMapping.TO_REALM;
 
   public static void main(@Nonnull final String[] args) {
     if (System.getProperty("org.slf4j.simpleLogger.logFile") == null) {
@@ -90,9 +100,10 @@ public class Main implements Callable<Void> {
                 .withPort(port)
                 .withTls(tls)
                 .withContextPath(usedContextPath)
-                .withResourcesToMapRolesTo(resourcesToMapRolesTo)
+                .withDefaultAudiences(audiences)
                 .withDefaultScopes(scopes)
                 .withDefaultTokenLifespan(getParsedLifespan())
+                .withLoginRoleMapping(loginRoleMapping)
                 .build())
         .start();
 

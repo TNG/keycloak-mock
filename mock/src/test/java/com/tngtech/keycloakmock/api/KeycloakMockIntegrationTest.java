@@ -552,7 +552,7 @@ class KeycloakMockIntegrationTest {
     assertThat(tokenConfig.getPreferredUsername()).isEqualTo("username");
     assertThat(tokenConfig.getRealmAccess().getRoles())
         .containsExactlyInAnyOrder("role1", "role2", "role3");
-    assertThat(tokenConfig.getAudience()).containsExactly("client");
+    assertThat(tokenConfig.getAudience()).containsExactlyInAnyOrder("client", "server");
   }
 
   @Test
@@ -583,7 +583,7 @@ class KeycloakMockIntegrationTest {
     assertThat(tokenConfig.getPreferredUsername()).isEqualTo("username");
     assertThat(tokenConfig.getRealmAccess().getRoles())
         .containsExactlyInAnyOrder("role1", "role2", "role3");
-    assertThat(tokenConfig.getAudience()).containsExactly("client");
+    assertThat(tokenConfig.getAudience()).containsExactlyInAnyOrder("client", "server");
   }
 
   @Test
@@ -612,7 +612,7 @@ class KeycloakMockIntegrationTest {
     assertThat(tokenConfig.getPreferredUsername()).isEqualTo("client");
     assertThat(tokenConfig.getRealmAccess().getRoles())
         .containsExactlyInAnyOrder("role1", "role2", "role3");
-    assertThat(tokenConfig.getAudience()).containsExactly("client");
+    assertThat(tokenConfig.getAudience()).containsExactlyInAnyOrder("client", "server");
   }
 
   @Test
@@ -640,7 +640,7 @@ class KeycloakMockIntegrationTest {
     assertThat(tokenConfig.getPreferredUsername()).isEqualTo("client");
     assertThat(tokenConfig.getRealmAccess().getRoles())
         .containsExactlyInAnyOrder("role1", "role2", "role3");
-    assertThat(tokenConfig.getAudience()).containsExactly("client");
+    assertThat(tokenConfig.getAudience()).containsExactlyInAnyOrder("client", "server");
   }
 
   private static class ClientRequest {

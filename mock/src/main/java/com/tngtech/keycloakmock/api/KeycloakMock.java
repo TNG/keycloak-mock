@@ -62,6 +62,7 @@ public class KeycloakMock {
     this.signatureComponent =
         DaggerSignatureComponent.builder()
             .defaultScopes(serverConfig.getDefaultScopes())
+            .defaultAudiences(serverConfig.getDefaultAudiences())
             .defaultTokenLifespan(serverConfig.getDefaultTokenLifespan())
             .build();
   }

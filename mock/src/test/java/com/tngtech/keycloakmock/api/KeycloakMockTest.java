@@ -54,4 +54,17 @@ class KeycloakMockTest {
 
     assertThat(jwt.getPayload()).containsEntry("scope", "openid");
   }
+
+  @Test
+  void contains_default_audiences() {
+    Set<String> resources = Sets.set("audience1", "audience2");
+    KeycloakMock keycloakMock =
+        new KeycloakMock(aServerConfig().withDefaultAudiences(resources).build());
+
+    String token = keycloakMock.getAccessToken(TokenConfig.aTokenConfig().build());
+
+    Jws<Claims> jwt = jwtParser.parseSignedClaims(token);
+
+    assertThat(jwt.getPayload().getAudience()).containsExactlyInAnyOrder("audience1", "audience2");
+  }
 }
