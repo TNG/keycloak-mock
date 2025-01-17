@@ -132,6 +132,52 @@ class RedirectHelperTest {
     assertThat(redirectLocation).isEqualTo(expectedRedirectUrl);
   }
 
+  static Stream<Arguments> originalUrlsAndModesAndExpectedUrl() {
+    return Stream.of(
+        Arguments.of(
+            "https://localhost:1234/gohere#existingFragment",
+            ResponseMode.QUERY,
+            "https://localhost:1234/gohere?session_state=session123&state=state123&code=session123#existingFragment"),
+        Arguments.of(
+            "https://localhost:1234/gohere#existingFragment",
+            ResponseMode.FRAGMENT,
+            "https://localhost:1234/gohere#existingFragment&session_state=session123&state=state123&code=session123"),
+        Arguments.of(
+            "https://localhost:1234/gohere?existingQuery=true",
+            ResponseMode.QUERY,
+            "https://localhost:1234/gohere?existingQuery=true&session_state=session123&state=state123&code=session123"),
+        Arguments.of(
+            "https://localhost:1234/gohere?existingQuery=true",
+            ResponseMode.FRAGMENT,
+            "https://localhost:1234/gohere?existingQuery=true#session_state=session123&state=state123&code=session123"),
+        Arguments.of(
+            "https://localhost:1234/gohere?existingQuery=true#existingFragment",
+            ResponseMode.QUERY,
+            "https://localhost:1234/gohere?existingQuery=true&session_state=session123&state=state123&code=session123#existingFragment"),
+        Arguments.of(
+            "https://localhost:1234/gohere?existingQuery=true#existingFragment",
+            ResponseMode.FRAGMENT,
+            "https://localhost:1234/gohere?existingQuery=true#existingFragment&session_state=session123&state=state123&code=session123"));
+  }
+
+  @ParameterizedTest
+  @MethodSource("originalUrlsAndModesAndExpectedUrl")
+  void redirect_location_keeps_existing_parameters(
+      @Nonnull String originalRedirectUri,
+      @Nonnull ResponseMode mode,
+      @Nonnull String expectedRedirectUrl) {
+    doReturn(SESSION_ID).when(session).getSessionId();
+    doReturn(STATE).when(session).getState();
+    doReturn(originalRedirectUri).when(session).getRedirectUri();
+    doReturn(ResponseType.CODE.toString()).when(session).getResponseType();
+    doReturn(mode.toString()).when(session).getResponseMode();
+    doReturn(TOKEN).when(tokenHelper).getToken(session, urlConfiguration);
+
+    String redirectLocation = uut.getRedirectLocation(session, urlConfiguration);
+
+    assertThat(redirectLocation).isEqualTo(expectedRedirectUrl);
+  }
+
   @Test
   void oob_redirect_location_is_generated_correctly() {
     doReturn(SESSION_ID).when(session).getSessionId();
@@ -145,7 +191,8 @@ class RedirectHelperTest {
     String redirectLocation = uut.getRedirectLocation(session, urlConfiguration);
 
     assertThat(redirectLocation)
-        .isEqualTo("file:///oob-dummy?session_state=session123&state=state123&code=session123");
+        // converting to URI and back to String seems to drop the superfluous //, but that's OK
+        .isEqualTo("file:/oob-dummy?session_state=session123&state=state123&code=session123");
   }
 
   @Test
