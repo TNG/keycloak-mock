@@ -88,18 +88,6 @@ public final class ServerConfig {
    * The default hostname used in issuer claim.
    *
    * @return default hostname
-   * @deprecated use {@link #getDefaultHostname()} instead
-   */
-  @Nonnull
-  @Deprecated
-  public String getHostname() {
-    return getDefaultHostname();
-  }
-
-  /**
-   * The default hostname used in issuer claim.
-   *
-   * @return default hostname
    * @see TokenConfig.Builder#withHostname(String)
    */
   @Nonnull
@@ -117,18 +105,6 @@ public final class ServerConfig {
   @Nonnull
   public String getContextPath() {
     return contextPath;
-  }
-
-  /**
-   * The default realm used in issuer claim.
-   *
-   * @return default realm
-   * @deprecated use {@link #getDefaultRealm()} instead
-   */
-  @Nonnull
-  @Deprecated
-  public String getRealm() {
-    return getDefaultRealm();
   }
 
   /**
@@ -229,45 +205,11 @@ public final class ServerConfig {
      * @param defaultHostname the hostname to use
      * @return builder
      * @see TokenConfig.Builder#withHostname(String)
-     * @deprecated use {@link #withDefaultHostname(String)} instead
-     */
-    @Nonnull
-    @Deprecated
-    public Builder withHostname(@Nonnull final String defaultHostname) {
-      return withDefaultHostname(defaultHostname);
-    }
-
-    /**
-     * Set default hostname.
-     *
-     * <p>The hostname that is used as token issuer if no explicit hostname is configured for the
-     * token. Default value is 'localhost'.
-     *
-     * @param defaultHostname the hostname to use
-     * @return builder
-     * @see TokenConfig.Builder#withHostname(String)
      */
     @Nonnull
     public Builder withDefaultHostname(@Nonnull final String defaultHostname) {
       this.defaultHostname = defaultHostname;
       return this;
-    }
-
-    /**
-     * Set default realm.
-     *
-     * <p>The realm that is used in issued tokens if no explicit realm is configured for the token.
-     * Default value is 'master'.
-     *
-     * @param defaultRealm the realm to use
-     * @return builder
-     * @see TokenConfig.Builder#withRealm(String)
-     * @deprecated use {@link #withDefaultRealm(String)} instead
-     */
-    @Nonnull
-    @Deprecated
-    public Builder withRealm(@Nonnull final String defaultRealm) {
-      return withDefaultRealm(defaultRealm);
     }
 
     /**
