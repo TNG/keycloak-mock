@@ -2,13 +2,14 @@ version: '3'
 services:
   keycloak:
     image: keycloak/keycloak
+    command:
+      - start-dev
     ports:
-      - 8000:8000
+      - 8000:8080
     environment:
       - KEYCLOAK_USER=admin
       - KEYCLOAK_PASSWORD=admin
       - KEYCLOAK_IMPORT=/tmp/realm.json
-      - JAVA_OPTS_APPEND="-Djboss.http.port=8000"
     volumes:
       - ./realm.json:/tmp/realm.json
     # this is necessary so that the keycloak is visible on the same hostname both for frontend
