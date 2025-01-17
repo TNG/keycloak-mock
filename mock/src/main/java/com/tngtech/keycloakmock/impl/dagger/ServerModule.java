@@ -158,7 +158,7 @@ public class ServerModule {
         .method(HttpMethod.POST)
         .handler(logoutRoute);
     router.get(routing.getOutOfBandLoginLoginEndpoint().getPath()).handler(outOfBandLoginRoute);
-    router.route("/auth/js/keycloak.js").handler(keycloakJsRoute);
+    router.route(routing.getContextPath("/js/keycloak.js").getPath()).handler(keycloakJsRoute);
     return router;
   }
 
