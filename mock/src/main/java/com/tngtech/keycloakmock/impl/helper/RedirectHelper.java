@@ -5,6 +5,11 @@ import com.tngtech.keycloakmock.impl.session.PersistentSession;
 import com.tngtech.keycloakmock.impl.session.ResponseMode;
 import com.tngtech.keycloakmock.impl.session.ResponseType;
 import io.vertx.core.http.Cookie;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.inject.Inject;
@@ -46,17 +51,66 @@ public class RedirectHelper {
       return null;
     }
 
-    ResponseMode responseMode = responseType.getValidResponseMode(session.getResponseMode());
     String originalRedirectUri = session.getRedirectUri();
-    StringBuilder redirectUri;
+    URI redirectUriBase;
     if (OOB_REDIRECT.equals(originalRedirectUri)) {
-      redirectUri =
-          new StringBuilder(requestConfiguration.getOutOfBandLoginLoginEndpoint().toASCIIString());
+      redirectUriBase = requestConfiguration.getOutOfBandLoginLoginEndpoint();
     } else {
-      redirectUri = new StringBuilder(originalRedirectUri);
+      try {
+        redirectUriBase = new URI(originalRedirectUri);
+      } catch (URISyntaxException e) {
+        LOG.warn("Invalid redirect URI '{}'!", originalRedirectUri, e);
+        return null;
+      }
     }
-    redirectUri.append(getResponseParameter(responseMode, SESSION_STATE, session.getSessionId()));
-    redirectUri.append(getResponseParameter(null, STATE, session.getState()));
+
+    ResponseMode responseMode = responseType.getValidResponseMode(session.getResponseMode());
+    try {
+      switch (responseMode) {
+        case FRAGMENT:
+          String fragment =
+              appendResponseParameters(
+                  session, requestConfiguration, responseType, redirectUriBase.getFragment());
+          return new URI(
+                  redirectUriBase.getScheme(),
+                  redirectUriBase.getUserInfo(),
+                  redirectUriBase.getHost(),
+                  redirectUriBase.getPort(),
+                  redirectUriBase.getPath(),
+                  redirectUriBase.getQuery(),
+                  fragment)
+              .toASCIIString();
+        case QUERY:
+          String query =
+              appendResponseParameters(
+                  session, requestConfiguration, responseType, redirectUriBase.getQuery());
+          return new URI(
+                  redirectUriBase.getScheme(),
+                  redirectUriBase.getUserInfo(),
+                  redirectUriBase.getHost(),
+                  redirectUriBase.getPort(),
+                  redirectUriBase.getPath(),
+                  query,
+                  redirectUriBase.getFragment())
+              .toASCIIString();
+        default:
+          LOG.warn("Invalid response mode '{}' encountered!", responseMode);
+          return null;
+      }
+    } catch (URISyntaxException e) {
+      LOG.warn("Error while generating final redirect URI from '{}'!", redirectUriBase, e);
+      return null;
+    }
+  }
+
+  private String appendResponseParameters(
+      @Nonnull PersistentSession session,
+      @Nonnull UrlConfiguration requestConfiguration,
+      @Nonnull ResponseType responseType,
+      @Nullable String existingParameters) {
+    List<String> parameters = new ArrayList<>();
+    parameters.add(getResponseParameter(SESSION_STATE, session.getSessionId()));
+    parameters.add(getResponseParameter(STATE, session.getState()));
     String token = tokenHelper.getToken(session, requestConfiguration);
     if (token == null) {
       LOG.warn("No token available for session {}", session.getSessionId());
@@ -65,21 +119,29 @@ public class RedirectHelper {
     switch (responseType) {
       case CODE:
         // for simplicity, use session ID as authorization code
-        redirectUri.append(getResponseParameter(null, CODE, session.getSessionId()));
+        parameters.add(getResponseParameter(CODE, session.getSessionId()));
         break;
       case ID_TOKEN:
-        redirectUri.append(getResponseParameter(null, ID_TOKEN, token));
+        parameters.add(getResponseParameter(ID_TOKEN, token));
         break;
       case ID_TOKEN_PLUS_TOKEN:
-        redirectUri.append(getResponseParameter(null, ID_TOKEN, token));
-        redirectUri.append(getResponseParameter(null, ACCESS_TOKEN, token));
-        redirectUri.append(getResponseParameter(null, TOKEN_TYPE, "bearer"));
+        parameters.add(getResponseParameter(ID_TOKEN, token));
+        parameters.add(getResponseParameter(ACCESS_TOKEN, token));
+        parameters.add(getResponseParameter(TOKEN_TYPE, "bearer"));
         break;
       case NONE:
       default:
         break;
     }
-    return redirectUri.toString();
+    String parameterString =
+        parameters.stream().filter(s -> !s.isEmpty()).collect(Collectors.joining("&"));
+    if (parameterString.isEmpty()) {
+      return existingParameters;
+    }
+    if (existingParameters == null || existingParameters.isEmpty()) {
+      return parameterString;
+    }
+    return existingParameters + "&" + parameterString;
   }
 
   @Nonnull
@@ -104,11 +166,10 @@ public class RedirectHelper {
         .setSecure(false);
   }
 
-  private String getResponseParameter(
-      @Nullable ResponseMode responseMode, @Nonnull String name, @Nullable String value) {
+  private String getResponseParameter(@Nonnull String name, @Nullable String value) {
     if (value == null) {
       return "";
     }
-    return (responseMode != null ? responseMode.getSign() : "&") + name + "=" + value;
+    return name + "=" + value;
   }
 }
