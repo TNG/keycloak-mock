@@ -48,7 +48,8 @@ ext {
     junit4_version = '4.13.2'
     junit5_version = '5.11.4'
     keycloak_version = '26.0.4'
-    keycloak_js_version = '26.1.0'
+    // the last version that was shipped together with keycloak server
+    keycloak_js_version = '25.0.6'
     mockito_version = '5.15.2'
     picocli_version = '4.7.6'
     restassured_version = '5.5.0'

@@ -41,8 +41,8 @@ tasks.register('addResources', Copy) {
     // make sure to fail if both JARs contain a NOTICE, then we need to merge the files somehow ...
     duplicatesStrategy = DuplicatesStrategy.FAIL
     from files(tarTree(configurations.jsResourceJar.singleFile)) {
-        include '/package/lib/keycloak.js'
-        include '/META-INF/NOTICE'
+        include '/package/dist/keycloak.js'
+        include '/package/LICENSE.txt'
     }
     from files(zipTree(configurations.htmlResourceJar.singleFile)) {
         include '/org/keycloak/protocol/oidc/endpoints/3p-cookies-step1.html'
