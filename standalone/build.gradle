@@ -70,6 +70,12 @@ dependencies {
     implementation "org.slf4j:slf4j-simple:$slf4j_version"
 }
 
+sonar {
+    properties {
+        property "sonar.coverage.exclusions", "src/main/java/com/tngtech/keycloakmock/standalone/Main.java"
+    }
+}
+
 application {
     mainClass = 'com.tngtech.keycloakmock.standalone.Main'
 }
