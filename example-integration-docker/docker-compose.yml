@@ -1,7 +1,7 @@
 version: '3'
 services:
   keycloak:
-    image: keycloak-mock/standalone
+    image: ghcr.io/tng/keycloak-mock
     ports:
       - 8000:8000
     # this is necessary so that the keycloak is visible on the same hostname both for frontend

@@ -90,10 +90,16 @@ jib {
         image = 'eclipse-temurin:21.0.6_7-jre'
     }
     to {
-        image = 'keycloak-mock/standalone'
+        image = "ghcr.io/tng/keycloak-mock:${project.version}"
+        tags = ['latest']
     }
     container {
         ports = ['8000']
         mainClass = 'com.tngtech.keycloakmock.standalone.Main'
+        labels = [
+            "org.opencontainers.image.source": "https://github.com/TNG/keycloak-mock",
+            "org.opencontainers.image.description": "Docker image for keycloak mock",
+            "org.opencontainers.image.licenses": "Apache-2.0"
+        ]
     }
 }
