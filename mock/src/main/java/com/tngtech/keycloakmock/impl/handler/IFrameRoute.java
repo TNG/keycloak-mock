@@ -1,20 +1,27 @@
 package com.tngtech.keycloakmock.impl.handler;
 
+import com.tngtech.keycloakmock.impl.UrlConfiguration;
 import io.vertx.core.Handler;
+import io.vertx.core.http.HttpHeaders;
 import io.vertx.ext.web.RoutingContext;
+import io.vertx.ext.web.common.template.TemplateEngine;
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
-import javax.inject.Named;
 import javax.inject.Singleton;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Singleton
 public class IFrameRoute implements Handler<RoutingContext> {
 
-  @Nonnull private final ResourceFileHandler resourceFileHandler;
+  private static final Logger LOG = LoggerFactory.getLogger(IFrameRoute.class);
+  @Nonnull private final TemplateEngine engine;
+  @Nonnull private final UrlConfiguration baseConfiguration;
 
   @Inject
-  IFrameRoute(@Nonnull @Named("iframe") ResourceFileHandler resourceFileHandler) {
-    this.resourceFileHandler = resourceFileHandler;
+  IFrameRoute(@Nonnull TemplateEngine engine, @Nonnull UrlConfiguration baseConfiguration) {
+    this.engine = engine;
+    this.baseConfiguration = baseConfiguration;
   }
 
   @Override
@@ -23,6 +30,18 @@ public class IFrameRoute implements Handler<RoutingContext> {
       routingContext.response().setStatusCode(204).end();
       return;
     }
-    resourceFileHandler.handle(routingContext);
+    routingContext.put("isSecureContext", routingContext.request().isSSL());
+    routingContext.put(
+        "resourceCommonUrl", baseConfiguration.forRequestContext(routingContext).getJsPath());
+    engine
+        .render(
+            routingContext.data(), "/org/keycloak/protocol/oidc/endpoints/login-status-iframe.ftl")
+        .onSuccess(
+            b -> routingContext.response().putHeader(HttpHeaders.CONTENT_TYPE, "text/html").end(b))
+        .onFailure(
+            t -> {
+              LOG.error("Unable to render login iframe", t);
+              routingContext.fail(t);
+            });
   }
 }

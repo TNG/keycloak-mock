@@ -2,8 +2,8 @@ import com.github.jengelman.gradle.plugins.shadow.transformers.ApacheNoticeResou
 
 plugins {
     id 'application'
-    id 'com.github.gmazzo.buildconfig' version '5.5.1'
-    id 'com.gradleup.shadow' version '8.3.5'
+    id 'com.github.gmazzo.buildconfig' version '5.6.2'
+    id 'com.gradleup.shadow' version '8.3.6'
 }
 
 apply plugin: 'com.google.cloud.tools.jib'
@@ -83,12 +83,11 @@ application {
 buildConfig {
     buildConfigField('String', 'NAME', "\"${project.name}\"")
     buildConfigField('String', 'VERSION', "\"${project.version}\"")
-    buildConfigField('long', 'BUILD_TIME', "${System.currentTimeMillis()}L")
 }
 
 jib {
     from {
-        image = 'eclipse-temurin:21-jre'
+        image = 'eclipse-temurin:21.0.6_7-jre'
     }
     to {
         image = 'keycloak-mock/standalone'

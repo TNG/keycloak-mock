@@ -237,7 +237,8 @@ class KeycloakMockIntegrationTest {
             "getSessionCookie()"),
         of("/realms/test/protocol/openid-connect/3p-cookies/step1.html", HTML, "step2.html"),
         of("/realms/test/protocol/openid-connect/3p-cookies/step2.html", HTML, "\"supported\""),
-        of("/js/keycloak.js", JSON, "function Keycloak"));
+        of("/js/keycloak.js", JSON, "function Keycloak"),
+        of("/js/web-crypto-shim.js", JSON, "crypto.randomUUID"));
   }
 
   @Test
