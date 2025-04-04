@@ -1,6 +1,6 @@
 buildscript {
     ext {
-        springBootVersion = '3.4.1'
+        springBootVersion = '3.4.4'
     }
     repositories {
         mavenCentral()
@@ -29,7 +29,8 @@ dependencies {
     implementation "org.springframework.boot:spring-boot-starter-security:$springBootVersion"
     implementation "org.springframework.boot:spring-boot-starter-oauth2-resource-server:$springBootVersion"
     implementation "org.springframework.boot:spring-boot-configuration-processor:$springBootVersion"
-    implementation "org.keycloak:keycloak-policy-enforcer:$keycloak_version"
+    // the enforcer has become decoupled from the keycloak release, see https://github.com/keycloak/keycloak/issues/30787
+    implementation 'org.keycloak:keycloak-policy-enforcer:26.0.4'
     testImplementation project(':mock-junit')
     testImplementation project(':mock-junit5')
     testImplementation "org.springframework.boot:spring-boot-starter-test:$springBootVersion"

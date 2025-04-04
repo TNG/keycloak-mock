@@ -78,8 +78,13 @@ public class UrlConfiguration {
   }
 
   @Nonnull
-  public URI getContextPath(String path) {
+  URI getContextPath(String path) {
     return getBaseUrl().resolve(contextPath + path);
+  }
+
+  @Nonnull
+  public URI getJsPath() {
+    return getContextPath("/js/");
   }
 
   @Nonnull

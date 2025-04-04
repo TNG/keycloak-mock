@@ -55,10 +55,10 @@ public class ServerModule {
 
   @Provides
   @Singleton
-  @Named("iframe")
-  ResourceFileHandler provideIframeHandler() {
+  @Named("webCryptoShimJs")
+  ResourceFileHandler provideWebCryptoShimJsHandler() {
     return new ResourceFileHandler(
-        "/org/keycloak/protocol/oidc/endpoints/login-status-iframe.html");
+        "/theme/keycloak/common/resources/vendor/web-crypto-shim/web-crypto-shim.js");
   }
 
   @Provides
@@ -129,6 +129,7 @@ public class ServerModule {
       @Nonnull OptionalBasicAuthHandler basicAuthHandler,
       @Nonnull TokenRoute tokenRoute,
       @Nonnull IFrameRoute iframeRoute,
+      @Nonnull @Named("webCryptoShimJs") ResourceFileHandler webCryptoShimJsHandler,
       @Nonnull @Named("cookie1") ResourceFileHandler thirdPartyCookies1Route,
       @Nonnull @Named("cookie2") ResourceFileHandler thirdPartyCookies2Route,
       @Nonnull LogoutRoute logoutRoute,
@@ -168,6 +169,10 @@ public class ServerModule {
         .setName("Keycloak login iframe")
         .handler(iframeRoute);
     router
+        .get(routing.getJsPath().resolve("web-crypto-shim.js").getPath())
+        .setName("provided web-crypto-shim.js")
+        .handler(webCryptoShimJsHandler);
+    router
         .get(routing.getOpenIdPath("3p-cookies/step1.html").getPath())
         .setName("keycloak third party cookies - step 1")
         .handler(thirdPartyCookies1Route);
@@ -186,7 +191,7 @@ public class ServerModule {
         .setName("out-of-band login endpoint")
         .handler(outOfBandLoginRoute);
     router
-        .get(routing.getContextPath("/js/keycloak.js").getPath())
+        .get(routing.getJsPath().resolve("keycloak.js").getPath())
         .setName("provided keycloak.js")
         .handler(keycloakJsRoute);
     router.get("/style.css").handler(stylesheetRoute);
