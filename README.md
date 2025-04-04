@@ -1,4 +1,4 @@
-[![Java CI](https://github.com/TNG/keycloak-mock/workflows/Java%20CI/badge.svg?branch=main)](https://github.com/TNG/keycloak-mock/actions?query=branch%3Amain)
+[![Java CI](https://github.com/TNG/keycloak-mock/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/TNG/keycloak-mock/actions?query=branch%3Amain)
 [![Github release date](https://img.shields.io/github/release-date/TNG/keycloak-mock.svg?logo=github)
 ![Github release](https://img.shields.io/github/release/TNG/keycloak-mock.svg?logo=github)](https://github.com/TNG/keycloak-mock/releases)
 [![Maven release](https://img.shields.io/maven-central/v/com.tngtech.keycloakmock/mock?color=informational)](https://search.maven.org/search?q=com.tngtech.keycloakmock)
