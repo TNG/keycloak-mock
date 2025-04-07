@@ -32,14 +32,14 @@ You can create and start the mock directly from the `mock` artifact using Maven
     <groupId>com.tngtech.keycloakmock</groupId>
     <artifactId>mock</artifactId>
     <scope>test</scope>
-    <version>0.17.0</version>
+    <version>0.18.0</version>
 </dependency>
 ```
 
 or Gradle
 
 ```gradle
-testImplementation 'com.tngtech.keycloakmock:mock:0.17.0'
+testImplementation 'com.tngtech.keycloakmock:mock:0.18.0'
 ```
 
 like this:
@@ -134,15 +134,18 @@ should not contain it according to the specifications.
 
 ### Developing / testing frontends
 
-It is also possible to run the mock server as a stand-alone application. Just get the (
-self-contained)
-`standalone` artifact, e.g.
-from [Maven Central](https://search.maven.org/artifact/com.tngtech.keycloakmock/standalone), and run
-it:
+It is also possible to run the mock server as a stand-alone application. Just get the self-contained
+`standalone` artifact, e.g. from [Maven Central](https://search.maven.org/artifact/com.tngtech.keycloakmock/standalone), and run it:
 
 ```bash
 $ java -jar standalone.jar &
 [main] INFO com.tngtech.keycloakmock.standalone.Main - Server is running on http://localhost:8000
+```
+
+Alternatively, you can get the application as a docker image from [Github Container Registry](https://github.com/TNG/keycloak-mock/pkgs/container/keycloak-mock):
+
+```bash
+docker run ghcr.io/tng/keycloak-mock:latest
 ```
 
 The stand-alone server can be configured using command line parameters. You can call it
