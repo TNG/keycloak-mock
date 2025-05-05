@@ -169,7 +169,7 @@ public class ServerModule {
         .setName("Keycloak login iframe")
         .handler(iframeRoute);
     router
-        .get(routing.getJsPath().resolve("web-crypto-shim.js").getPath())
+        .get(IFrameRoute.getWebCryptoShimPath(routing).getPath())
         .setName("provided web-crypto-shim.js")
         .handler(webCryptoShimJsHandler);
     router

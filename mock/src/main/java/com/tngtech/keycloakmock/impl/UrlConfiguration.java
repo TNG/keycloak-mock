@@ -83,6 +83,11 @@ public class UrlConfiguration {
   }
 
   @Nonnull
+  public URI getJs() {
+    return getContextPath("/js");
+  }
+
+  @Nonnull
   public URI getJsPath() {
     return getContextPath("/js/");
   }

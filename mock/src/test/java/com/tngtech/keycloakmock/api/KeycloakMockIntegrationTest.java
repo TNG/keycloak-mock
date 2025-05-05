@@ -15,6 +15,8 @@ import static org.hamcrest.Matchers.emptyString;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.params.provider.Arguments.of;
 
+import com.tngtech.keycloakmock.impl.UrlConfiguration;
+import com.tngtech.keycloakmock.impl.handler.IFrameRoute;
 import com.tngtech.keycloakmock.test.ConfigurationResponse;
 import io.fusionauth.jwks.JSONWebKeySetHelper;
 import io.fusionauth.jwks.domain.JSONWebKey;
@@ -229,18 +231,6 @@ class KeycloakMockIntegrationTest {
     assertThat(issuer).isEqualTo("http://%s/auth/realms/test", hostname);
   }
 
-  private static Stream<Arguments> resourcesWithContent() {
-    return Stream.of(
-        of(
-            "/realms/test/protocol/openid-connect/login-status-iframe.html",
-            HTML,
-            "getSessionCookie()"),
-        of("/realms/test/protocol/openid-connect/3p-cookies/step1.html", HTML, "step2.html"),
-        of("/realms/test/protocol/openid-connect/3p-cookies/step2.html", HTML, "\"supported\""),
-        of("/js/keycloak.js", JSON, "function Keycloak"),
-        of("/js/web-crypto-shim.js", JSON, "crypto.randomUUID"));
-  }
-
   @Test
   void mock_server_answers_204_on_iframe_init() {
     keycloakMock = new KeycloakMock();
@@ -254,6 +244,18 @@ class KeycloakMockIntegrationTest {
         .statusCode(204)
         .and()
         .body(is(emptyString()));
+  }
+
+  private static Stream<Arguments> resourcesWithContent() {
+    return Stream.of(
+        of(
+            "/realms/test/protocol/openid-connect/login-status-iframe.html",
+            HTML,
+            "getSessionCookie()"),
+        of("/realms/test/protocol/openid-connect/3p-cookies/step1.html", HTML, "step2.html"),
+        of("/realms/test/protocol/openid-connect/3p-cookies/step2.html", HTML, "\"supported\""),
+        of("/js/keycloak.js", JSON, "function Keycloak"),
+        of("/js/vendor/web-crypto-shim/web-crypto-shim.js", JSON, "crypto.randomUUID"));
   }
 
   @ParameterizedTest
@@ -276,6 +278,30 @@ class KeycloakMockIntegrationTest {
             .asString();
 
     assertThat(body).contains(content);
+  }
+
+  @Test
+  void iframe_has_correct_shim_path() {
+    ServerConfig config = aServerConfig().build();
+    keycloakMock = new KeycloakMock(config);
+    UrlConfiguration configuration = new UrlConfiguration(config);
+
+    keycloakMock.start();
+    String body =
+        given()
+            .when()
+            .get(
+                "http://localhost:8000/auth/realms/test/protocol/openid-connect/login-status-iframe.html")
+            .then()
+            .assertThat()
+            .statusCode(200)
+            .and()
+            .contentType(HTML)
+            .extract()
+            .body()
+            .asString();
+
+    assertThat(body).contains(IFrameRoute.getWebCryptoShimPath(configuration).toASCIIString());
   }
 
   @Test

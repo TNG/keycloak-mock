@@ -5,6 +5,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.common.template.TemplateEngine;
+import java.net.URI;
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -32,7 +33,7 @@ public class IFrameRoute implements Handler<RoutingContext> {
     }
     routingContext.put("isSecureContext", routingContext.request().isSSL());
     routingContext.put(
-        "resourceCommonUrl", baseConfiguration.forRequestContext(routingContext).getJsPath());
+        "resourceCommonUrl", baseConfiguration.forRequestContext(routingContext).getJs());
     engine
         .render(
             routingContext.data(), "/org/keycloak/protocol/oidc/endpoints/login-status-iframe.ftl")
@@ -43,5 +44,9 @@ public class IFrameRoute implements Handler<RoutingContext> {
               LOG.error("Unable to render login iframe", t);
               routingContext.fail(t);
             });
+  }
+
+  public static URI getWebCryptoShimPath(@Nonnull UrlConfiguration urlConfiguration) {
+    return urlConfiguration.getJsPath().resolve("vendor/web-crypto-shim/web-crypto-shim.js");
   }
 }
