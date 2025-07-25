@@ -1,10 +1,8 @@
 package com.tngtech.keycloakmock.impl;
 
 import com.tngtech.keycloakmock.api.ServerConfig;
-import io.vertx.ext.web.RoutingContext;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -18,22 +16,26 @@ public class UrlConfiguration {
   private static final String OPEN_ID_AUTHORIZATION_PATH = "auth";
   private static final String OPEN_ID_END_SESSION_PATH = "logout";
   @Nonnull private final Protocol protocol;
-  private final int port;
   @Nonnull private final String hostname;
   @Nonnull private final String contextPath;
   @Nonnull private final String realm;
 
-  public UrlConfiguration(@Nonnull final ServerConfig serverConfig) {
-    this.protocol = Objects.requireNonNull(serverConfig.getProtocol());
-    this.port = serverConfig.getPort();
-    if (protocol.getDefaultPort() == serverConfig.getPort()
-        || serverConfig.getDefaultHostname().contains(":")) {
-      this.hostname = serverConfig.getDefaultHostname();
+  UrlConfiguration(
+      @Nonnull ServerConfig serverConfig,
+      @Nullable String requestHost,
+      @Nullable String requestRealm) {
+    this.protocol = serverConfig.getProtocol();
+    if (requestHost != null) {
+      this.hostname = requestHost;
     } else {
-      this.hostname = serverConfig.getDefaultHostname() + ":" + serverConfig.getPort();
+      if (protocol.getDefaultPort() == serverConfig.getPort()
+          || serverConfig.getDefaultHostname().contains(":")) {
+        this.hostname = serverConfig.getDefaultHostname();
+      } else {
+        this.hostname = serverConfig.getDefaultHostname() + ":" + serverConfig.getPort();
+      }
     }
-    if (Objects.requireNonNull(serverConfig.getContextPath()).isEmpty()
-        || "/".equals(serverConfig.getContextPath())) {
+    if (serverConfig.getContextPath().isEmpty() || "/".equals(serverConfig.getContextPath())) {
       this.contextPath = "";
     } else {
       this.contextPath =
@@ -41,31 +43,7 @@ public class UrlConfiguration {
               ? serverConfig.getContextPath()
               : "/".concat(serverConfig.getContextPath());
     }
-    this.realm = Objects.requireNonNull(serverConfig.getDefaultRealm());
-  }
-
-  private UrlConfiguration(
-      @Nonnull final UrlConfiguration baseConfiguration,
-      @Nullable final String requestHost,
-      @Nullable final String requestRealm) {
-    this.protocol = baseConfiguration.protocol;
-    this.port = baseConfiguration.port;
-    this.hostname = requestHost != null ? requestHost : baseConfiguration.hostname;
-    this.contextPath = baseConfiguration.contextPath;
-    this.realm = requestRealm != null ? requestRealm : baseConfiguration.realm;
-  }
-
-  @Nonnull
-  public UrlConfiguration forRequestContext(
-      @Nullable final String requestHost, @Nullable final String requestRealm) {
-    return new UrlConfiguration(this, requestHost, requestRealm);
-  }
-
-  @Nonnull
-  public UrlConfiguration forRequestContext(RoutingContext routingContext) {
-    String requestHostname = routingContext.request().getHeader("Host");
-    String requestRealm = routingContext.pathParam("realm");
-    return new UrlConfiguration(this, requestHostname, requestRealm);
+    this.realm = requestRealm != null ? requestRealm : serverConfig.getDefaultRealm();
   }
 
   @Nonnull
@@ -78,7 +56,7 @@ public class UrlConfiguration {
   }
 
   @Nonnull
-  URI getContextPath(String path) {
+  private URI getContextPath(String path) {
     return getBaseUrl().resolve(contextPath + path);
   }
 
@@ -140,10 +118,6 @@ public class UrlConfiguration {
   @Nonnull
   public Protocol getProtocol() {
     return protocol;
-  }
-
-  public int getPort() {
-    return port;
   }
 
   @Nonnull

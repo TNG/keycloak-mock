@@ -62,6 +62,16 @@ public class KeycloakMockRule extends ExternalResource {
     return mock.getAccessToken(tokenConfig);
   }
 
+  /**
+   * Get the actual port that the mock is running on.
+   *
+   * @return the actual port
+   * @throws IllegalStateException if the server is not running
+   */
+  public int getActualPort() {
+    return mock.getActualPort();
+  }
+
   @Override
   protected void before() {
     mock.start();

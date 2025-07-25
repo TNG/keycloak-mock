@@ -1,6 +1,7 @@
 package com.tngtech.keycloakmock.impl.handler;
 
 import com.tngtech.keycloakmock.impl.UrlConfiguration;
+import com.tngtech.keycloakmock.impl.UrlConfigurationFactory;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -14,16 +15,16 @@ import javax.inject.Singleton;
 @Singleton
 public class WellKnownRoute implements Handler<RoutingContext> {
 
-  @Nonnull private final UrlConfiguration baseConfiguration;
+  @Nonnull private final UrlConfigurationFactory urlConfigurationFactory;
 
   @Inject
-  WellKnownRoute(@Nonnull UrlConfiguration baseConfiguration) {
-    this.baseConfiguration = baseConfiguration;
+  WellKnownRoute(@Nonnull UrlConfigurationFactory urlConfigurationFactory) {
+    this.urlConfigurationFactory = urlConfigurationFactory;
   }
 
   @Override
   public void handle(@Nonnull RoutingContext routingContext) {
-    UrlConfiguration requestConfiguration = baseConfiguration.forRequestContext(routingContext);
+    UrlConfiguration requestConfiguration = urlConfigurationFactory.create(routingContext);
     routingContext
         .response()
         .putHeader("content-type", "application/json")

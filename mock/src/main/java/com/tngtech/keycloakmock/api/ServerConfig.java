@@ -15,6 +15,13 @@ public final class ServerConfig {
   private static final String DEFAULT_HOSTNAME = "localhost";
   private static final String DEFAULT_CONTEXT_PATH = "/auth";
   private static final int DEFAULT_PORT = 8000;
+
+  /**
+   * see {@link <a href="https://vertx.io/docs/vertx-core/java/#_listening_on_a_random_port">Vert.x
+   * Core documentation</a>}
+   */
+  private static final int RANDOM_PORT = 0;
+
   private static final String DEFAULT_REALM = "master";
   private static final String DEFAULT_SCOPE = "openid";
   private static final Duration DEFAULT_TOKEN_LIFESPAN = Duration.ofHours(10);
@@ -30,7 +37,7 @@ public final class ServerConfig {
   @Nonnull private final LoginRoleMapping loginRoleMapping;
 
   private ServerConfig(@Nonnull final Builder builder) {
-    this.port = builder.port;
+    this.port = (builder.port > 0 ? builder.port : RANDOM_PORT);
     this.protocol = builder.protocol;
     this.defaultHostname = builder.defaultHostname;
     this.contextPath = builder.contextPath;
@@ -193,6 +200,18 @@ public final class ServerConfig {
     @Nonnull
     public Builder withPort(final int port) {
       this.port = port;
+      return this;
+    }
+
+    /**
+     * Use random port.
+     *
+     * <p>Will start the server on a random port. Actual value can be retrieved via {@link
+     * KeycloakMock#getActualPort()}.
+     */
+    @Nonnull
+    public Builder withRandomPort() {
+      this.port = RANDOM_PORT;
       return this;
     }
 

@@ -60,11 +60,7 @@ public class TokenGenerator {
             .and()
             .issuedAt(new Date(tokenConfig.getIssuedAt().toEpochMilli()))
             .claim("auth_time", tokenConfig.getAuthenticationTime().getEpochSecond())
-            .issuer(
-                requestConfiguration
-                    .forRequestContext(tokenConfig.getHostname(), tokenConfig.getRealm())
-                    .getIssuer()
-                    .toASCIIString())
+            .issuer(requestConfiguration.getIssuer().toASCIIString())
             .subject(tokenConfig.getSubject())
             .claim("scope", encodeGivenOrDefaultScopes(tokenConfig.getScopes()))
             .claim("typ", "Bearer")

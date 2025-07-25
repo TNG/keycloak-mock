@@ -3,6 +3,7 @@ package com.tngtech.keycloakmock.impl.handler;
 import static com.tngtech.keycloakmock.impl.helper.RedirectHelper.KEYCLOAK_SESSION_COOKIE;
 
 import com.tngtech.keycloakmock.impl.UrlConfiguration;
+import com.tngtech.keycloakmock.impl.UrlConfigurationFactory;
 import com.tngtech.keycloakmock.impl.helper.RedirectHelper;
 import com.tngtech.keycloakmock.impl.session.PersistentSession;
 import com.tngtech.keycloakmock.impl.session.SessionRepository;
@@ -34,18 +35,18 @@ public class LoginRoute implements Handler<RoutingContext> {
   @Nonnull private final SessionRepository sessionRepository;
   @Nonnull private final RedirectHelper redirectHelper;
   @Nonnull private final TemplateEngine engine;
-  @Nonnull private final UrlConfiguration baseConfiguration;
+  @Nonnull private final UrlConfigurationFactory urlConfigurationFactory;
 
   @Inject
   LoginRoute(
       @Nonnull SessionRepository sessionRepository,
       @Nonnull RedirectHelper redirectHelper,
       @Nonnull TemplateEngine engine,
-      @Nonnull UrlConfiguration baseConfiguration) {
+      @Nonnull UrlConfigurationFactory urlConfigurationFactory) {
     this.sessionRepository = sessionRepository;
     this.redirectHelper = redirectHelper;
     this.engine = engine;
-    this.baseConfiguration = baseConfiguration;
+    this.urlConfigurationFactory = urlConfigurationFactory;
   }
 
   @Override
@@ -82,7 +83,7 @@ public class LoginRoute implements Handler<RoutingContext> {
       return;
     }
 
-    UrlConfiguration requestConfiguration = baseConfiguration.forRequestContext(routingContext);
+    UrlConfiguration requestConfiguration = urlConfigurationFactory.create(routingContext);
     if (existingSession.isPresent()) {
       PersistentSession oldSession = existingSession.get();
       PersistentSession newSession =

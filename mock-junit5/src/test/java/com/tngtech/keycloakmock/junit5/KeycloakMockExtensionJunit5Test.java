@@ -14,7 +14,6 @@ class KeycloakMockExtensionJunit5Test {
   @BeforeEach
   void setup() {
     RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
-    RestAssured.port = 8000;
   }
 
   @AfterEach
@@ -26,8 +25,9 @@ class KeycloakMockExtensionJunit5Test {
 
   @Test
   void mock_is_running() {
-    keyCloakMockExtension = new KeycloakMockExtension();
+    keyCloakMockExtension = new KeycloakMockExtension(aServerConfig().withRandomPort().build());
     keyCloakMockExtension.beforeAll(null);
+    RestAssured.port = keyCloakMockExtension.getActualPort();
 
     RestAssured.when()
         .get("/auth/realms/master/protocol/openid-connect/certs")
@@ -41,6 +41,7 @@ class KeycloakMockExtensionJunit5Test {
   void https_is_working() {
     keyCloakMockExtension = new KeycloakMockExtension(aServerConfig().withTls(true).build());
     keyCloakMockExtension.beforeAll(null);
+    RestAssured.port = keyCloakMockExtension.getActualPort();
 
     RestAssured.given()
         .relaxedHTTPSValidation()

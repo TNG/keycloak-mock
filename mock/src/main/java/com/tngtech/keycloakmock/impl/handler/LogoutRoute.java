@@ -3,6 +3,7 @@ package com.tngtech.keycloakmock.impl.handler;
 import static com.tngtech.keycloakmock.impl.helper.RedirectHelper.KEYCLOAK_SESSION_COOKIE;
 
 import com.tngtech.keycloakmock.impl.UrlConfiguration;
+import com.tngtech.keycloakmock.impl.UrlConfigurationFactory;
 import com.tngtech.keycloakmock.impl.helper.RedirectHelper;
 import com.tngtech.keycloakmock.impl.session.SessionRepository;
 import io.vertx.core.Handler;
@@ -29,16 +30,16 @@ public class LogoutRoute implements Handler<RoutingContext> {
 
   @Nonnull private final SessionRepository sessionRepository;
   @Nonnull private final RedirectHelper redirectHelper;
-  @Nonnull private final UrlConfiguration baseConfiguration;
+  @Nonnull private final UrlConfigurationFactory urlConfigurationFactory;
 
   @Inject
   LogoutRoute(
       @Nonnull SessionRepository sessionRepository,
       @Nonnull RedirectHelper redirectHelper,
-      @Nonnull UrlConfiguration baseConfiguration) {
+      @Nonnull UrlConfigurationFactory urlConfigurationFactory) {
     this.sessionRepository = sessionRepository;
     this.redirectHelper = redirectHelper;
-    this.baseConfiguration = baseConfiguration;
+    this.urlConfigurationFactory = urlConfigurationFactory;
   }
 
   @Override
@@ -47,7 +48,7 @@ public class LogoutRoute implements Handler<RoutingContext> {
     if (redirectUri == null) { // for backwards compatibility:
       redirectUri = routingContext.queryParams().get(LEGACY_REDIRECT_URI);
     }
-    UrlConfiguration requestConfiguration = baseConfiguration.forRequestContext(routingContext);
+    UrlConfiguration requestConfiguration = urlConfigurationFactory.create(routingContext);
     invalidateSession(routingContext);
     routingContext
         .response()

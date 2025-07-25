@@ -11,6 +11,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import com.tngtech.keycloakmock.impl.UrlConfiguration;
+import com.tngtech.keycloakmock.impl.UrlConfigurationFactory;
 import com.tngtech.keycloakmock.impl.helper.RedirectHelper;
 import com.tngtech.keycloakmock.impl.session.PersistentSession;
 import com.tngtech.keycloakmock.impl.session.SessionRepository;
@@ -45,7 +46,7 @@ class AuthenticationRouteTest {
   @Mock private RoutingContext routingContext;
   @Mock private HttpServerRequest request;
   @Mock private HttpServerResponse response;
-  @Mock private UrlConfiguration baseConfiguration;
+  @Mock private UrlConfigurationFactory urlConfigurationFactory;
   @Mock private UrlConfiguration contextConfiguration;
   @Mock private SessionRequest sessionRequest;
   @Mock private PersistentSession session;
@@ -62,14 +63,14 @@ class AuthenticationRouteTest {
 
   @Test
   void missing_session_causes_error() {
-    uut = new AuthenticationRoute(sessionRepository, redirectHelper, baseConfiguration);
+    uut = new AuthenticationRoute(sessionRepository, redirectHelper, urlConfigurationFactory);
 
     uut.handle(routingContext);
 
     verify(sessionRepository).getRequest(SESSION_ID);
     verify(routingContext).fail(404);
     verifyNoMoreInteractions(
-        baseConfiguration, contextConfiguration, sessionRepository, redirectHelper);
+        urlConfigurationFactory, contextConfiguration, sessionRepository, redirectHelper);
   }
 
   @Test
@@ -77,20 +78,20 @@ class AuthenticationRouteTest {
     doReturn(sessionRequest).when(sessionRepository).getRequest(SESSION_ID);
     doReturn(request).when(routingContext).request();
 
-    uut = new AuthenticationRoute(sessionRepository, redirectHelper, baseConfiguration);
+    uut = new AuthenticationRoute(sessionRepository, redirectHelper, urlConfigurationFactory);
 
     uut.handle(routingContext);
 
     verify(sessionRepository).getRequest(SESSION_ID);
     verify(routingContext).fail(400);
     verifyNoMoreInteractions(
-        baseConfiguration, contextConfiguration, sessionRepository, redirectHelper);
+        urlConfigurationFactory, contextConfiguration, sessionRepository, redirectHelper);
   }
 
   @Test
   void correct_token_is_created() {
     setupValidRequest();
-    uut = new AuthenticationRoute(sessionRepository, redirectHelper, baseConfiguration);
+    uut = new AuthenticationRoute(sessionRepository, redirectHelper, urlConfigurationFactory);
 
     uut.handle(routingContext);
 
@@ -110,7 +111,7 @@ class AuthenticationRouteTest {
     doReturn(request).when(routingContext).request();
     doReturn(sessionRequest).when(sessionRepository).getRequest(SESSION_ID);
     doReturn(session).when(sessionRequest).toSession(eq(USER), anyList());
-    doReturn(contextConfiguration).when(baseConfiguration).forRequestContext(routingContext);
+    doReturn(contextConfiguration).when(urlConfigurationFactory).create(routingContext);
     doReturn(HOSTNAME).when(contextConfiguration).getHostname();
     doReturn(response).when(routingContext).response();
     doReturn(response).when(response).addCookie(any(Cookie.class));

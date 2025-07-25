@@ -28,7 +28,6 @@ import org.assertj.core.util.Sets;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -66,10 +65,6 @@ class TokenGeneratorTest {
 
   @BeforeEach
   void setup() throws URISyntaxException {
-    doReturn(urlConfiguration)
-        .when(urlConfiguration)
-        .forRequestContext(
-            ArgumentMatchers.nullable(String.class), ArgumentMatchers.nullable(String.class));
     doReturn(new URI(ISSUER)).when(urlConfiguration).getIssuer();
   }
 
@@ -119,7 +114,6 @@ class TokenGeneratorTest {
             urlConfiguration);
 
     verify(urlConfiguration).getIssuer();
-    verify(urlConfiguration).forRequestContext(HOSTNAME, REALM);
     Jws<Claims> jwt = Jwts.parser().verifyWith(publicKey).build().parseSignedClaims(token);
     assertThat(jwt.getHeader())
         .containsEntry("alg", "RS256")
