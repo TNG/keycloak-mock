@@ -5,7 +5,6 @@ import static com.tngtech.keycloakmock.api.ServerConfig.aServerConfig;
 import com.tngtech.keycloakmock.api.KeycloakMock;
 import com.tngtech.keycloakmock.api.LoginRoleMapping;
 import java.time.Duration;
-import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.Callable;
@@ -13,6 +12,7 @@ import javax.annotation.Nonnull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
+import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
@@ -24,62 +24,70 @@ import picocli.CommandLine.Option;
 public class Main implements Callable<Void> {
   private static final Logger LOG = LoggerFactory.getLogger(Main.class);
 
-  @SuppressWarnings("FieldMayBeFinal")
   @Option(
       names = {"-p", "--port"},
+      defaultValue = "8000",
       description = "The port on which to run (default: ${DEFAULT-VALUE}).")
-  private int port = 8000;
+  private int port;
 
   @Option(
       names = {"-s", "--https"},
       description = "Whether to use HTTPS instead of HTTP.")
   private boolean tls;
 
-  @SuppressWarnings("FieldMayBeFinal")
-  @Option(
-      names = {"-cp", "--contextPath"},
-      description =
-          "Keycloak context path (default: ${DEFAULT-VALUE}). "
-              + "If present, must be prefixed with '/', eg. --contextPath=/example-path")
-  private String contextPath = "/auth";
+  static class ContextConfig {
+    @Option(
+        names = {"-cp", "--contextPath"},
+        defaultValue = "/auth",
+        description =
+            "Keycloak context path (default: ${DEFAULT-VALUE}). "
+                + "If present, must be prefixed with '/', eg. --contextPath=/example-path")
+    private String contextPath;
 
-  @Option(
-      names = {"-ncp", "--noContextPath"},
-      description = "If present context path will not be used. Good for mocking Keycloak 18.0.0+.")
-  private boolean noContextPath;
+    @Option(
+        names = {"-ncp", "--noContextPath"},
+        description =
+            "If present context path will not be used. Good for mocking Keycloak 18.0.0+.")
+    private boolean noContextPath;
+  }
 
   @SuppressWarnings("FieldMayBeFinal")
+  @ArgGroup
+  private ContextConfig contextConfig = new ContextConfig();
+
   @Option(
       names = {"-a", "--audiences"},
+      defaultValue = "server",
       description =
-          "Audiences to set in the token in addition to the client_id (default: [server]).",
+          "Audiences to set in the token in addition to the client_id (default:"
+              + " [${DEFAULT-VALUE}]).",
       paramLabel = "AUDIENCE",
       split = ",")
-  private List<String> audiences = Collections.emptyList();
+  private List<String> audiences;
 
-  @SuppressWarnings("FieldMayBeFinal")
   @Option(
       names = {"-sc", "--scopes"},
-      description = "Scopes to add to generated token (default: ${DEFAULT-VALUE}).",
+      defaultValue = "openid",
+      description = "Scopes to add to generated token (default: [${DEFAULT-VALUE}]).",
       paramLabel = "SCOPE",
       split = ",")
-  private List<String> scopes = Collections.singletonList("openid");
+  private List<String> scopes;
 
-  @SuppressWarnings("FieldMayBeFinal")
   @Option(
       names = {"-tl", "--tokenLifespan"},
+      defaultValue = "10h",
       description =
           "Lifespan of generated tokens (default: ${DEFAULT-VALUE}). Valid values are e.g. '10h',"
               + " '15m', '3m45s'.")
-  private String tokenLifespan = "10h";
+  private String tokenLifespan;
 
-  @SuppressWarnings("FieldMayBeFinal")
   @Option(
       names = {"-rm", "--roleMapping"},
+      defaultValue = "TO_REALM",
       description =
           "Where to add the roles given in the login dialog (default: ${DEFAULT-VALUE}). Valid"
               + " options: ${COMPLETION-CANDIDATES}")
-  private LoginRoleMapping loginRoleMapping = LoginRoleMapping.TO_REALM;
+  private LoginRoleMapping loginRoleMapping;
 
   public static void main(@Nonnull final String[] args) {
     if (System.getProperty("org.slf4j.simpleLogger.logFile") == null) {
@@ -93,7 +101,7 @@ public class Main implements Callable<Void> {
 
   @Override
   public Void call() {
-    String usedContextPath = noContextPath ? "" : contextPath;
+    String usedContextPath = contextConfig.noContextPath ? "" : contextConfig.contextPath;
 
     new KeycloakMock(
             aServerConfig()
