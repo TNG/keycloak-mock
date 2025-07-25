@@ -1,28 +1,31 @@
 import com.github.jengelman.gradle.plugins.shadow.transformers.ApacheNoticeResourceTransformer
+import com.github.jengelman.gradle.plugins.shadow.transformers.PreserveFirstFoundResourceTransformer
 
 plugins {
     id 'application'
-    id 'com.github.gmazzo.buildconfig' version '5.6.2'
-    id 'com.gradleup.shadow' version '8.3.6'
+    id 'com.github.gmazzo.buildconfig' version '5.6.7'
+    id 'com.gradleup.shadow' version '9.0.2'
 }
 
 apply plugin: 'com.google.cloud.tools.jib'
 
 description = 'Standalone keycloak-mock server for use in frontend development'
 
-shadowJar {
+tasks.shadowJar {
     archiveClassifier = null
-    manifest {
-        attributes 'Main-Class': 'com.tngtech.keycloakmock.standalone.Main'
-    }
-    exclude 'META-INF/LICENSE.*'
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+    failOnDuplicateEntries = true
+    exclude 'META-INF/LICENSE.*', 'META-INF/LICENSE'
     transform(ApacheNoticeResourceTransformer.class) {
         addHeader = true
-        encoding = 'UTF-8'
-        inceptionYear = 2019
+        charsetName = 'UTF-8'
+        inceptionYear = '2019'
         organizationName = company_name
         organizationURL = company_url
         projectName = 'Keycloak Mock Standalone'
+    }
+    transform(PreserveFirstFoundResourceTransformer.class) {
+        resources = ['META-INF/io.netty.versions.properties']
     }
     metaInf {
         from "${rootDir}/NOTICE", "${rootDir}/LICENSE"
@@ -43,14 +46,13 @@ startShadowScripts.dependsOn(jar)
 publishing {
     publications {
         shadow(MavenPublication) {
-            publication ->
-                project.shadow.component(publication)
-                artifact(fakeJar) {
-                    classifier = 'javadoc'
-                }
-                artifact(fakeJar) {
-                    classifier = 'sources'
-                }
+            from components.shadow
+            artifact(fakeJar) {
+                classifier = 'javadoc'
+            }
+            artifact(fakeJar) {
+                classifier = 'sources'
+            }
         }
     }
 }
