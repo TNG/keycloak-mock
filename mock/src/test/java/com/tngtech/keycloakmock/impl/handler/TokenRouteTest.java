@@ -4,7 +4,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
-import com.tngtech.keycloakmock.impl.UrlConfiguration;
+import com.tngtech.keycloakmock.impl.UrlConfigurationFactory;
 import com.tngtech.keycloakmock.impl.helper.TokenHelper;
 import com.tngtech.keycloakmock.impl.session.SessionRepository;
 import io.vertx.core.http.HttpServerRequest;
@@ -29,7 +29,7 @@ class TokenRouteTest {
 
   @Mock private RoutingContext routingContext;
   @Mock private HttpServerRequest request;
-  @Mock private UrlConfiguration baseConfiguration;
+  @Mock private UrlConfigurationFactory urlConfigurationFactory;
 
   private TokenRoute uut;
 
@@ -38,7 +38,7 @@ class TokenRouteTest {
     doReturn(request).when(routingContext).request();
     doReturn(null).when(request).getFormAttribute("grant_type");
 
-    uut = new TokenRoute(sessionRepository, tokenHelper, baseConfiguration);
+    uut = new TokenRoute(sessionRepository, tokenHelper, urlConfigurationFactory);
 
     uut.handle(routingContext);
 
@@ -52,7 +52,7 @@ class TokenRouteTest {
     doReturn(AUTH_CODE_GRANT_TYPE).when(request).getFormAttribute("grant_type");
     doReturn(null).when(request).getFormAttribute("code");
 
-    uut = new TokenRoute(sessionRepository, tokenHelper, baseConfiguration);
+    uut = new TokenRoute(sessionRepository, tokenHelper, urlConfigurationFactory);
 
     uut.handle(routingContext);
 
@@ -67,7 +67,7 @@ class TokenRouteTest {
     doReturn(UNKNOWN_SESSION).when(request).getFormAttribute("code");
     doReturn(null).when(sessionRepository).getSession(UNKNOWN_SESSION);
 
-    uut = new TokenRoute(sessionRepository, tokenHelper, baseConfiguration);
+    uut = new TokenRoute(sessionRepository, tokenHelper, urlConfigurationFactory);
 
     uut.handle(routingContext);
 
@@ -81,7 +81,7 @@ class TokenRouteTest {
     doReturn(REFRESH_TOKEN_GRANT_TYPE).when(request).getFormAttribute("grant_type");
     doReturn(null).when(request).getFormAttribute("refresh_token");
 
-    uut = new TokenRoute(sessionRepository, tokenHelper, baseConfiguration);
+    uut = new TokenRoute(sessionRepository, tokenHelper, urlConfigurationFactory);
 
     uut.handle(routingContext);
 
@@ -95,7 +95,7 @@ class TokenRouteTest {
     doReturn(PASSWORD_GRANT_TYPE).when(request).getFormAttribute("grant_type");
     doReturn(null).when(request).getFormAttribute("client_id");
 
-    uut = new TokenRoute(sessionRepository, tokenHelper, baseConfiguration);
+    uut = new TokenRoute(sessionRepository, tokenHelper, urlConfigurationFactory);
 
     uut.handle(routingContext);
 
@@ -110,7 +110,7 @@ class TokenRouteTest {
     doReturn("myclient").when(request).getFormAttribute("client_id");
     doReturn(null).when(request).getFormAttribute("username");
 
-    uut = new TokenRoute(sessionRepository, tokenHelper, baseConfiguration);
+    uut = new TokenRoute(sessionRepository, tokenHelper, urlConfigurationFactory);
 
     uut.handle(routingContext);
 
@@ -124,7 +124,7 @@ class TokenRouteTest {
     doReturn(CLIENT_CREDENTIALS_GRANT_TYPE).when(request).getFormAttribute("grant_type");
     doReturn(null).when(routingContext).user();
 
-    uut = new TokenRoute(sessionRepository, tokenHelper, baseConfiguration);
+    uut = new TokenRoute(sessionRepository, tokenHelper, urlConfigurationFactory);
 
     uut.handle(routingContext);
 
@@ -139,7 +139,7 @@ class TokenRouteTest {
     final User user = User.fromName("");
     doReturn(user).when(routingContext).user();
 
-    uut = new TokenRoute(sessionRepository, tokenHelper, baseConfiguration);
+    uut = new TokenRoute(sessionRepository, tokenHelper, urlConfigurationFactory);
 
     uut.handle(routingContext);
 

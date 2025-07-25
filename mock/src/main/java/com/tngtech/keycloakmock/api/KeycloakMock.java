@@ -1,6 +1,7 @@
 package com.tngtech.keycloakmock.api;
 
 import com.tngtech.keycloakmock.impl.UrlConfiguration;
+import com.tngtech.keycloakmock.impl.UrlConfigurationFactory;
 import com.tngtech.keycloakmock.impl.dagger.DaggerServerComponent;
 import com.tngtech.keycloakmock.impl.dagger.DaggerSignatureComponent;
 import com.tngtech.keycloakmock.impl.dagger.ServerComponent;
@@ -29,7 +30,7 @@ public class KeycloakMock {
   private static final Logger LOG = LoggerFactory.getLogger(KeycloakMock.class);
 
   @Nonnull private final ServerConfig serverConfig;
-  @Nonnull private final UrlConfiguration defaultConfiguration;
+  @Nonnull private final UrlConfigurationFactory urlConfigurationFactory;
 
   @Nonnull private final SignatureComponent signatureComponent;
 
@@ -58,7 +59,7 @@ public class KeycloakMock {
    */
   public KeycloakMock(@Nonnull final ServerConfig serverConfig) {
     this.serverConfig = serverConfig;
-    this.defaultConfiguration = new UrlConfiguration(serverConfig);
+    this.urlConfigurationFactory = new UrlConfigurationFactory(serverConfig);
     this.signatureComponent =
         DaggerSignatureComponent.builder()
             .defaultScopes(serverConfig.getDefaultScopes())
@@ -76,7 +77,9 @@ public class KeycloakMock {
    */
   @Nonnull
   public String getAccessToken(@Nonnull final TokenConfig tokenConfig) {
-    return signatureComponent.tokenGenerator().getToken(tokenConfig, defaultConfiguration);
+    UrlConfiguration configuration =
+        urlConfigurationFactory.create(tokenConfig.getHostname(), tokenConfig.getRealm());
+    return signatureComponent.tokenGenerator().getToken(tokenConfig, configuration);
   }
 
   /**
@@ -98,7 +101,6 @@ public class KeycloakMock {
             .keyId(signatureComponent.keyId())
             .keyStore(signatureComponent.keyStore())
             .tokenGenerator(signatureComponent.tokenGenerator())
-            .defaultConfiguration(defaultConfiguration)
             .build();
     serverComponent.server().listen(startHandler);
     startHandler.await();
@@ -119,6 +121,19 @@ public class KeycloakMock {
       stopVertxHandler.await();
       serverComponent = null;
     }
+  }
+
+  /**
+   * Return the actual port the server is running on.
+   *
+   * @return the port
+   * @throws IllegalStateException if the server is not running
+   */
+  public synchronized int getActualPort() {
+    if (serverComponent == null) {
+      throw new IllegalStateException("Server is not running!");
+    }
+    return serverComponent.server().actualPort();
   }
 
   private static class ResultHandler<E> implements Handler<AsyncResult<E>> {

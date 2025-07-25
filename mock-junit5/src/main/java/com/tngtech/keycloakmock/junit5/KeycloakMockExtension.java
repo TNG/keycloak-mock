@@ -65,6 +65,16 @@ public class KeycloakMockExtension implements BeforeAllCallback, AfterAllCallbac
     return mock.getAccessToken(tokenConfig);
   }
 
+  /**
+   * Get the actual port that the mock is running on.
+   *
+   * @return the actual port
+   * @throws IllegalStateException if the server is not running
+   */
+  public int getActualPort() {
+    return mock.getActualPort();
+  }
+
   @Override
   public void beforeAll(@Nullable final ExtensionContext context) {
     mock.start();

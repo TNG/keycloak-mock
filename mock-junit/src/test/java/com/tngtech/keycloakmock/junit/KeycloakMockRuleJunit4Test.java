@@ -1,5 +1,7 @@
 package com.tngtech.keycloakmock.junit;
 
+import static com.tngtech.keycloakmock.api.ServerConfig.aServerConfig;
+
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import org.junit.Before;
@@ -8,12 +10,14 @@ import org.junit.Test;
 
 public class KeycloakMockRuleJunit4Test {
 
-  @Rule public KeycloakMockRule keycloakMockRule = new KeycloakMockRule();
+  @Rule
+  public KeycloakMockRule keycloakMockRule =
+      new KeycloakMockRule(aServerConfig().withRandomPort().build());
 
   @Before
   public void setup() {
     RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
-    RestAssured.port = 8000;
+    RestAssured.port = keycloakMockRule.getActualPort();
   }
 
   @Test

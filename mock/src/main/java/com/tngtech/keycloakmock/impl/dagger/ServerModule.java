@@ -3,6 +3,7 @@ package com.tngtech.keycloakmock.impl.dagger;
 import com.tngtech.keycloakmock.api.LoginRoleMapping;
 import com.tngtech.keycloakmock.api.ServerConfig;
 import com.tngtech.keycloakmock.impl.UrlConfiguration;
+import com.tngtech.keycloakmock.impl.UrlConfigurationFactory;
 import com.tngtech.keycloakmock.impl.handler.AuthenticationRoute;
 import com.tngtech.keycloakmock.impl.handler.CommonHandler;
 import com.tngtech.keycloakmock.impl.handler.DocumentationRoute;
@@ -104,9 +105,9 @@ public class ServerModule {
   @Provides
   @Singleton
   HttpServerOptions provideHttpServerOptions(
-      @Nonnull UrlConfiguration defaultConfiguration, @Nonnull Lazy<Buffer> keyStoreBuffer) {
-    HttpServerOptions options = new HttpServerOptions().setPort(defaultConfiguration.getPort());
-    if (defaultConfiguration.getProtocol().isTls()) {
+      @Nonnull ServerConfig serverConfig, @Nonnull Lazy<Buffer> keyStoreBuffer) {
+    HttpServerOptions options = new HttpServerOptions().setPort(serverConfig.getPort());
+    if (serverConfig.getProtocol().isTls()) {
       options
           .setSsl(true)
           .setKeyCertOptions(new JksOptions().setValue(keyStoreBuffer.get()).setPassword(""));
@@ -118,7 +119,7 @@ public class ServerModule {
   @Singleton
   @SuppressWarnings("java:S107")
   Router provideRouter(
-      @Nonnull UrlConfiguration defaultConfiguration,
+      @Nonnull UrlConfigurationFactory urlConfigurationFactory,
       @Nonnull Vertx vertx,
       @Nonnull CommonHandler commonHandler,
       @Nonnull FailureHandler failureHandler,
@@ -137,7 +138,7 @@ public class ServerModule {
       @Nonnull @Named("keycloakJs") ResourceFileHandler keycloakJsRoute,
       @Nonnull @Named("stylesheet") ResourceFileHandler stylesheetRoute,
       @Nonnull DocumentationRoute documentationRoute) {
-    UrlConfiguration routing = defaultConfiguration.forRequestContext(null, ":realm");
+    UrlConfiguration routing = urlConfigurationFactory.create(null, ":realm");
     Router router = Router.router(vertx);
     router
         .route()

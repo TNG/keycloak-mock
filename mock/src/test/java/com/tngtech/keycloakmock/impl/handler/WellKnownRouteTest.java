@@ -5,6 +5,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 
 import com.tngtech.keycloakmock.impl.UrlConfiguration;
+import com.tngtech.keycloakmock.impl.UrlConfigurationFactory;
 import com.tngtech.keycloakmock.test.ConfigurationResponse;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -24,19 +25,19 @@ class WellKnownRouteTest extends HandlerTestBase {
   private static final String JWKS_URI = "jwksUri";
   private static final String TOKEN_ENDPOINT = "tokenEndpoint";
 
-  @Mock private UrlConfiguration baseConfiguration;
+  @Mock private UrlConfigurationFactory urlConfigurationFactory;
   @Mock private UrlConfiguration contextConfiguration;
 
   private WellKnownRoute wellKnownRoute;
 
   @BeforeEach
   void setup() {
-    wellKnownRoute = new WellKnownRoute(baseConfiguration);
+    wellKnownRoute = new WellKnownRoute(urlConfigurationFactory);
   }
 
   @Test
   void well_known_configuration_is_complete() throws URISyntaxException {
-    doReturn(contextConfiguration).when(baseConfiguration).forRequestContext(routingContext);
+    doReturn(contextConfiguration).when(urlConfigurationFactory).create(routingContext);
     doReturn(new URI(ISSUER)).when(contextConfiguration).getIssuer();
     doReturn(new URI(AUTHORIZATION_ENDPOINT)).when(contextConfiguration).getAuthorizationEndpoint();
     doReturn(new URI(END_SESSION_ENDPOINT)).when(contextConfiguration).getEndSessionEndpoint();

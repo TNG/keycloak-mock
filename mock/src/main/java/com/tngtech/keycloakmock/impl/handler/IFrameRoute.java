@@ -1,6 +1,7 @@
 package com.tngtech.keycloakmock.impl.handler;
 
 import com.tngtech.keycloakmock.impl.UrlConfiguration;
+import com.tngtech.keycloakmock.impl.UrlConfigurationFactory;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.ext.web.RoutingContext;
@@ -17,12 +18,13 @@ public class IFrameRoute implements Handler<RoutingContext> {
 
   private static final Logger LOG = LoggerFactory.getLogger(IFrameRoute.class);
   @Nonnull private final TemplateEngine engine;
-  @Nonnull private final UrlConfiguration baseConfiguration;
+  @Nonnull private final UrlConfigurationFactory urlConfigurationFactory;
 
   @Inject
-  IFrameRoute(@Nonnull TemplateEngine engine, @Nonnull UrlConfiguration baseConfiguration) {
+  IFrameRoute(
+      @Nonnull TemplateEngine engine, @Nonnull UrlConfigurationFactory urlConfigurationFactory) {
     this.engine = engine;
-    this.baseConfiguration = baseConfiguration;
+    this.urlConfigurationFactory = urlConfigurationFactory;
   }
 
   @Override
@@ -32,8 +34,7 @@ public class IFrameRoute implements Handler<RoutingContext> {
       return;
     }
     routingContext.put("isSecureContext", routingContext.request().isSSL());
-    routingContext.put(
-        "resourceCommonUrl", baseConfiguration.forRequestContext(routingContext).getJs());
+    routingContext.put("resourceCommonUrl", urlConfigurationFactory.create(routingContext).getJs());
     engine
         .render(
             routingContext.data(), "/org/keycloak/protocol/oidc/endpoints/login-status-iframe.ftl")

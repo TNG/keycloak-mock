@@ -16,6 +16,7 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.params.provider.Arguments.of;
 
 import com.tngtech.keycloakmock.impl.UrlConfiguration;
+import com.tngtech.keycloakmock.impl.UrlConfigurationFactory;
 import com.tngtech.keycloakmock.impl.handler.IFrameRoute;
 import com.tngtech.keycloakmock.test.ConfigurationResponse;
 import io.fusionauth.jwks.JSONWebKeySetHelper;
@@ -127,13 +128,18 @@ class KeycloakMockIntegrationTest {
   void mock_server_endpoint_is_correctly_configured(int port, boolean tls) {
     keycloakMock = new KeycloakMock(aServerConfig().withPort(port).withTls(tls).build());
     keycloakMock.start();
+    if (port > 0) {
+      assertThat(keycloakMock.getActualPort()).isEqualTo(port);
+    } else {
+      assertThat(keycloakMock.getActualPort()).isGreaterThan(0);
+    }
     given()
         .relaxedHTTPSValidation()
         .when()
         .get(
             (tls ? "https" : "http")
                 + "://localhost:"
-                + port
+                + keycloakMock.getActualPort()
                 + "/auth/realms/master/protocol/openid-connect/certs")
         .then()
         .statusCode(200)
@@ -143,7 +149,7 @@ class KeycloakMockIntegrationTest {
   }
 
   private static Stream<Arguments> serverConfig() {
-    return Stream.of(Arguments.of(8000, false), Arguments.of(8001, true));
+    return Stream.of(Arguments.of(8000, false), Arguments.of(8001, true), Arguments.of(0, true));
   }
 
   @Test
@@ -284,7 +290,7 @@ class KeycloakMockIntegrationTest {
   void iframe_has_correct_shim_path() {
     ServerConfig config = aServerConfig().build();
     keycloakMock = new KeycloakMock(config);
-    UrlConfiguration configuration = new UrlConfiguration(config);
+    UrlConfiguration configuration = new UrlConfigurationFactory(config).create(null, null);
 
     keycloakMock.start();
     String body =

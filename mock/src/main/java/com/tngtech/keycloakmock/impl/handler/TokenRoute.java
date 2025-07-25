@@ -1,6 +1,7 @@
 package com.tngtech.keycloakmock.impl.handler;
 
 import com.tngtech.keycloakmock.impl.UrlConfiguration;
+import com.tngtech.keycloakmock.impl.UrlConfigurationFactory;
 import com.tngtech.keycloakmock.impl.helper.TokenHelper;
 import com.tngtech.keycloakmock.impl.session.AdHocSession;
 import com.tngtech.keycloakmock.impl.session.Session;
@@ -25,16 +26,16 @@ public class TokenRoute implements Handler<RoutingContext> {
 
   @Nonnull private final SessionRepository sessionRepository;
   @Nonnull private final TokenHelper tokenHelper;
-  @Nonnull private final UrlConfiguration baseConfiguration;
+  @Nonnull private final UrlConfigurationFactory urlConfigurationFactory;
 
   @Inject
   TokenRoute(
       @Nonnull SessionRepository sessionRepository,
       @Nonnull TokenHelper tokenHelper,
-      @Nonnull UrlConfiguration baseConfiguration) {
+      @Nonnull UrlConfigurationFactory urlConfigurationFactory) {
     this.sessionRepository = sessionRepository;
     this.tokenHelper = tokenHelper;
-    this.baseConfiguration = baseConfiguration;
+    this.urlConfigurationFactory = urlConfigurationFactory;
   }
 
   @Override
@@ -61,7 +62,7 @@ public class TokenRoute implements Handler<RoutingContext> {
   private void handleAuthorizationCodeFlow(RoutingContext routingContext) {
     // here again we use the equality of authorization code and session ID
     String sessionId = routingContext.request().getFormAttribute(CODE);
-    UrlConfiguration requestConfiguration = baseConfiguration.forRequestContext(routingContext);
+    UrlConfiguration requestConfiguration = urlConfigurationFactory.create(routingContext);
     String token =
         Optional.ofNullable(sessionRepository.getSession(sessionId))
             .map(s -> tokenHelper.getToken(s, requestConfiguration))
@@ -108,7 +109,7 @@ public class TokenRoute implements Handler<RoutingContext> {
       routingContext.fail(400);
       return;
     }
-    UrlConfiguration requestConfiguration = baseConfiguration.forRequestContext(routingContext);
+    UrlConfiguration requestConfiguration = urlConfigurationFactory.create(routingContext);
     String password = routingContext.request().getFormAttribute("password");
 
     Session session =
@@ -145,8 +146,7 @@ public class TokenRoute implements Handler<RoutingContext> {
       return;
     }
 
-    final UrlConfiguration requestConfiguration =
-        baseConfiguration.forRequestContext(routingContext);
+    final UrlConfiguration requestConfiguration = urlConfigurationFactory.create(routingContext);
 
     final Session session =
         AdHocSession.fromClientIdUsernameAndPassword(
