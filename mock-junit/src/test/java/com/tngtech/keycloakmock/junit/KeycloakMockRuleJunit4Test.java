@@ -6,9 +6,13 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
+import static com.tngtech.keycloakmock.api.ServerConfig.aServerConfig;
+
 public class KeycloakMockRuleJunit4Test {
 
   @Rule public KeycloakMockRule keycloakMockRule = new KeycloakMockRule();
+
+  @Rule public KeycloakMockRule randomPortKeycloakMockRule = new KeycloakMockRule(aServerConfig().withPort(0).build());
 
   @Before
   public void setup() {
@@ -24,5 +28,17 @@ public class KeycloakMockRuleJunit4Test {
         .statusCode(200)
         .and()
         .contentType(ContentType.JSON);
+  }
+
+  @Test
+  public void mock_is_running_on_a_random_port() {
+      RestAssured.port = randomPortKeycloakMockRule.getActualPort();
+
+      RestAssured.when()
+          .get("/auth/realms/master/protocol/openid-connect/certs")
+          .then()
+          .statusCode(200)
+          .and()
+          .contentType(ContentType.JSON);
   }
 }

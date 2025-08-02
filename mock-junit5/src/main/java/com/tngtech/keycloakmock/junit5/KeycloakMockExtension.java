@@ -65,6 +65,32 @@ public class KeycloakMockExtension implements BeforeAllCallback, AfterAllCallbac
     return mock.getAccessToken(tokenConfig);
   }
 
+  /**
+   * Get the actual port the server is running on.
+   *
+   * <p>This is useful when the server was started with port 0 (random port assignment).
+   *
+   * <p>Example usage for Spring configuration:
+   * <pre><code>
+   * {@literal @}RegisterExtension
+   * static KeycloakMockExtension mock = new KeycloakMockExtension(
+   *     aServerConfig().withPort(0).build()
+   * );
+   *
+   * {@literal @}DynamicPropertySource
+   * static void configureProperties(DynamicPropertyRegistry registry) {
+   *     registry.add("keycloak.auth-server-url", 
+   *         () -&gt; "http://localhost:" + mock.getActualPort() + "/auth");
+   * }
+   * </code></pre>
+   *
+   * @return the actual port number the server is listening on
+   * @throws IllegalStateException if the server is not currently running
+   */
+  public int getActualPort() {
+    return mock.getActualPort();
+  }
+
   @Override
   public void beforeAll(@Nullable final ExtensionContext context) {
     mock.start();

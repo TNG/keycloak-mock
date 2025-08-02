@@ -105,6 +105,22 @@ public class KeycloakMock {
   }
 
   /**
+   * Get the actual port the server is running on.
+   *
+   * <p>This is useful when the server was started with port 0 (random port assignment).
+   * For servers started with a specific port, this will return that configured port.
+   *
+   * @return the actual port number the server is listening on
+   * @throws IllegalStateException if the server is not currently running
+   */
+  public synchronized int getActualPort() {
+    if (serverComponent == null) {
+      throw new IllegalStateException("Server is not running. Call start() first.");
+    }
+    return serverComponent.server().actualPort();
+  }
+
+  /**
    * Stop the server (blocking).
    *
    * @throws MockServerException when the server could not be stopped properly
