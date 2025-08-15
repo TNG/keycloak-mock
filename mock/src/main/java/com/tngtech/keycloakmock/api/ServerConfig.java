@@ -196,6 +196,7 @@ public final class ServerConfig {
      *
      * @param port the port to use
      * @return builder
+     * @see #withRandomPort()
      */
     @Nonnull
     public Builder withPort(final int port) {
@@ -206,8 +207,12 @@ public final class ServerConfig {
     /**
      * Use random port.
      *
-     * <p>Will start the server on a random port. Actual value can be retrieved via {@link
-     * KeycloakMock#getActualPort()}.
+     * <p>Will start the server on a random port. The actual value can be retrieved via {@link
+     * KeycloakMock#getActualPort()} after the server was started.
+     *
+     * @return builder
+     * @see #withPort(int)
+     * @see KeycloakMock#getActualPort()
      */
     @Nonnull
     public Builder withRandomPort() {
@@ -293,12 +298,14 @@ public final class ServerConfig {
      * is removed and can be enabled/overridden in configuration to keep backward compatibility.
      * Default value is '/auth' To disable context path use {@link #withNoContextPath()} method.
      *
-     * @see <a href="https://www.keycloak.org/server/all-config#category-hostname">hostname-path</a>
+     * @param contextPath context path to use
+     * @return builder
+     * @see #withNoContextPath()
+     * @see <a
+     *     href="https://www.keycloak.org/server/all-config?q=http-relative-path&f=build">http-relative-path</a>
      * @see <a
      *     href="https://www.keycloak.org/migration/migrating-to-quarkus#_default_context_path_changed">Default
      *     context path changed</a>
-     * @param contextPath context path to use
-     * @return builder
      */
     @Nonnull
     public Builder withContextPath(@Nonnull String contextPath) {
@@ -309,8 +316,8 @@ public final class ServerConfig {
     /**
      * Disabling context path.
      *
-     * @see #withContextPath(String)
      * @return builder
+     * @see #withContextPath(String)
      */
     @Nonnull
     public Builder withNoContextPath() {

@@ -499,8 +499,9 @@ public class TokenConfig {
      * <p>The hostname for which this token has been requested. If not set, the default hostname of
      * the mock is used.
      *
-     * <p>This will be used to construct the issuer "iss": http[s]://$HOSTNAME/auth/realms/$REALM.
-     * The protocol is taken from the server configuration.
+     * <p>This will be used to construct the issuer "iss":
+     * http[s]://$HOSTNAME/$CONTEXT_PATH/realms/$REALM. The protocol is taken from the server
+     * configuration.
      *
      * <p>Note: The hostname must not contain a protocol prefix like 'http://'.
      *
@@ -521,8 +522,9 @@ public class TokenConfig {
      * <p>The realm for which this token has been requested. If not set, the default realm of the
      * mock is used.
      *
-     * <p>This will be used to construct the issuer "iss": http[s]://$HOSTNAME/auth/realms/$REALM.
-     * The protocol is taken from the server configuration.
+     * <p>This will be used to construct the issuer "iss":
+     * http[s]://$HOSTNAME/$CONTEXT_PATH/realms/$REALM. The protocol is taken from the server
+     * configuration.
      *
      * @param realm the realm
      * @return builder
@@ -542,7 +544,9 @@ public class TokenConfig {
      *
      * @param roles the roles to add
      * @return builder
-     * @see <a href="https://www.keycloak.org/docs/latest/server_admin/index.html#realm-roles">realm
+     * @see #withRealmRole(String)
+     * @see <a
+     *     href="https://www.keycloak.org/docs/latest/server_admin/index.html#proc-creating-realm-roles_server_administration_guide">realm
      *     roles</a>
      */
     @Nonnull
@@ -558,7 +562,9 @@ public class TokenConfig {
      *
      * @param role the role to add
      * @return builder
-     * @see <a href="https://www.keycloak.org/docs/latest/server_admin/index.html#realm-roles">realm
+     * @see #withRealmRoles(Collection)
+     * @see <a
+     *     href="https://www.keycloak.org/docs/latest/server_admin/index.html#proc-creating-realm-roles_server_administration_guide">realm
      *     roles</a>
      */
     @Nonnull
@@ -578,8 +584,9 @@ public class TokenConfig {
      * @param resource the resource or client for which to add the roles
      * @param roles the roles to add
      * @return builder
+     * @see #withResourceRole(String, String)
      * @see <a
-     *     href="https://www.keycloak.org/docs/latest/server_admin/index.html#client-roles">client
+     *     href="https://www.keycloak.org/docs/latest/server_admin/index.html#con-client-roles_server_administration_guide">client
      *     roles</a>
      */
     @Nonnull
@@ -602,8 +609,9 @@ public class TokenConfig {
      * @param resource the resource or client for which to add the roles
      * @param role the role to add
      * @return builder
+     * @see #withResourceRoles(String, Collection)
      * @see <a
-     *     href="https://www.keycloak.org/docs/latest/server_admin/index.html#client-roles">client
+     *     href="https://www.keycloak.org/docs/latest/server_admin/index.html#con-client-roles_server_administration_guide">client
      *     roles</a>
      */
     @Nonnull
@@ -641,6 +649,7 @@ public class TokenConfig {
      *
      * @param claims the claims to add (map from claim name to claim value)
      * @return builder
+     * @see #withClaim(String, Object)
      */
     @Nonnull
     public Builder withClaims(@Nonnull final Map<String, Object> claims) {
@@ -658,6 +667,7 @@ public class TokenConfig {
      * @param key the claim name
      * @param value the claim value
      * @return builder
+     * @see #withClaims(Map)
      */
     @Nonnull
     public Builder withClaim(@Nonnull final String key, @Nonnull final Object value) {
@@ -702,8 +712,8 @@ public class TokenConfig {
      *
      * @param expiration the instant when the token expires
      * @return builder
-     * @see <a href="https://openid.net/specs/openid-connect-core-1_0.html#IDToken">ID token</a>
      * @see #withTokenLifespan(Duration)
+     * @see <a href="https://openid.net/specs/openid-connect-core-1_0.html#IDToken">ID token</a>
      */
     @Nonnull
     public Builder withExpiration(@Nonnull final Instant expiration) {
@@ -748,8 +758,8 @@ public class TokenConfig {
      * @param givenName the given name of the user
      * @return builder
      * @see <a
-     *     href="https://www.keycloak.org/docs/latest/server_admin/index.html#_create-new-user">create
-     *     new user</a>
+     *     href="https://www.keycloak.org/docs/latest/server_admin/index.html#understanding-the-default-configuration">default
+     *     user attributes</a>
      */
     @Nonnull
     public Builder withGivenName(@Nullable final String givenName) {
@@ -763,8 +773,8 @@ public class TokenConfig {
      * @param familyName the family name of the user
      * @return builder
      * @see <a
-     *     href="https://www.keycloak.org/docs/latest/server_admin/index.html#_create-new-user">create
-     *     new user</a>
+     *     href="https://www.keycloak.org/docs/latest/server_admin/index.html#understanding-the-default-configuration">default
+     *     user attributes</a>
      */
     @Nonnull
     public Builder withFamilyName(@Nullable final String familyName) {
@@ -792,8 +802,8 @@ public class TokenConfig {
      * @param email the email address of the user
      * @return builder
      * @see <a
-     *     href="https://www.keycloak.org/docs/latest/server_admin/index.html#_create-new-user">create
-     *     new user</a>
+     *     href="https://www.keycloak.org/docs/latest/server_admin/index.html#understanding-the-default-configuration">default
+     *     user attributes</a>
      */
     @Nonnull
     public Builder withEmail(@Nullable final String email) {
@@ -807,8 +817,8 @@ public class TokenConfig {
      * @param preferredUsername the preferred username of the user
      * @return builder
      * @see <a
-     *     href="https://www.keycloak.org/docs/latest/server_admin/index.html#_create-new-user">create
-     *     new user</a>
+     *     href="https://www.keycloak.org/docs/latest/server_admin/index.html#understanding-the-default-configuration">default
+     *     user attributes</a>
      */
     @Nonnull
     public Builder withPreferredUsername(@Nullable final String preferredUsername) {
