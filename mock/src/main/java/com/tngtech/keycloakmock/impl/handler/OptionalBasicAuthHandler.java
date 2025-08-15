@@ -1,7 +1,8 @@
 package com.tngtech.keycloakmock.impl.handler;
 
-import io.vertx.core.Handler;
+import io.vertx.core.Future;
 import io.vertx.core.http.HttpHeaders;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.auth.User;
 import io.vertx.ext.auth.authentication.Credentials;
 import io.vertx.ext.auth.authentication.UsernamePasswordCredentials;
@@ -15,14 +16,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Singleton
-public class OptionalBasicAuthHandler implements Handler<RoutingContext> {
+public class OptionalBasicAuthHandler {
   private static final Logger LOG = LoggerFactory.getLogger(OptionalBasicAuthHandler.class);
 
   @Inject
   OptionalBasicAuthHandler() {}
 
-  @Override
-  public void handle(@Nonnull RoutingContext routingContext) {
+  public Future<User> handle(@Nonnull RoutingContext routingContext) {
     String authorization = routingContext.request().getHeader(HttpHeaders.AUTHORIZATION);
     if (authorization != null) {
       try {
@@ -37,12 +37,13 @@ public class OptionalBasicAuthHandler implements Handler<RoutingContext> {
         } else {
           credentials = new UsernamePasswordCredentials(split[0], null);
         }
-        // just put the credentials into the context user if available, no need for validity check
-        routingContext.setUser(User.create(credentials.toJson()));
+        // just return the credentials if available, no need for validity check
+        return Future.succeededFuture(User.create(credentials.toJson()));
       } catch (RuntimeException e) {
         LOG.warn("Unable to parse authorization header {}", authorization);
       }
     }
-    routingContext.next();
+    // to signal that "no credentials" is OK, we still need to return an empty user
+    return Future.succeededFuture(User.create(new JsonObject()));
   }
 }
