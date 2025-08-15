@@ -24,7 +24,7 @@ import org.slf4j.LoggerFactory;
  *
  * <p>Typically, you should not need to use this class directly. Consider using {@code
  * com.tngtech.keycloakmock.junit.KeycloakMockRule} from module mock-junit or {@code
- * com.tngtech.keycloakmock.junit5.KeycloakMockExtension} instead.
+ * com.tngtech.keycloakmock.junit5.KeycloakMockExtension} from module mock-junit5 instead.
  */
 public class KeycloakMock {
   private static final Logger LOG = LoggerFactory.getLogger(KeycloakMock.class);
@@ -73,7 +73,7 @@ public class KeycloakMock {
    *
    * @param tokenConfig the configuration of the token to generate
    * @return an access token in compact JWT form
-   * @see TokenConfig.Builder
+   * @see TokenConfig#aTokenConfig()
    */
   @Nonnull
   public String getAccessToken(@Nonnull final TokenConfig tokenConfig) {
@@ -128,6 +128,7 @@ public class KeycloakMock {
    *
    * @return the port
    * @throws IllegalStateException if the server is not running
+   * @see ServerConfig.Builder#withRandomPort()
    */
   public synchronized int getActualPort() {
     if (serverComponent == null) {
