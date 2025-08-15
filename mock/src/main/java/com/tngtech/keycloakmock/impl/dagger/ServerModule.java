@@ -30,6 +30,7 @@ import io.vertx.ext.web.Router;
 import io.vertx.ext.web.common.template.TemplateEngine;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.ErrorHandler;
+import io.vertx.ext.web.handler.SimpleAuthenticationHandler;
 import io.vertx.ext.web.templ.freemarker.FreeMarkerTemplateEngine;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -163,7 +164,7 @@ public class ServerModule {
         .post(routing.getTokenEndpoint().getPath())
         .setName("token endpoint")
         .handler(BodyHandler.create())
-        .handler(basicAuthHandler)
+        .handler(SimpleAuthenticationHandler.create().authenticate(basicAuthHandler::handle))
         .handler(tokenRoute);
     router
         .get(routing.getOpenIdPath("login-status-iframe.html*").getPath())
