@@ -89,7 +89,7 @@ buildConfig {
 
 jib {
     from {
-        image = 'eclipse-temurin:21.0.6_7-jre'
+        image = 'eclipse-temurin:21.0.8_9-jre'
     }
     to {
         image = "ghcr.io/tng/keycloak-mock:${project.version}"
