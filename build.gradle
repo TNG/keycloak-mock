@@ -169,6 +169,9 @@ subprojects {
 
         signing {
             if ('standalone' != project.name) {
+                def signingKey = findProperty("signingKey")
+                def signingPassword = findProperty("signingPassword")
+                useInMemoryPgpKeys(signingKey, signingPassword)
                 sign publishing.publications.mavenJava
             }
         }
@@ -235,8 +238,8 @@ sonar {
 
 nmcpAggregation {
     centralPortal {
-        username = project.findProperty('sonatypeUsername')
-        password = project.findProperty('sonatypePassword')
+        username = findProperty('sonatypeUsername')
+        password = findProperty('sonatypePassword')
         publishingType = 'AUTOMATIC'
     }
 }
