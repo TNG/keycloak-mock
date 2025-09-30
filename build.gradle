@@ -9,6 +9,8 @@ buildscript {
 plugins {
     id 'com.github.ben-manes.versions' version '0.52.0'
     id 'com.google.cloud.tools.jib' version '3.4.5' apply false
+    id 'com.gradleup.nmcp' version '1.2.0' apply false
+    id 'com.gradleup.nmcp.aggregation' version '1.2.0'
     id 'org.sonarqube' version '6.2.0.5505'
     id 'pl.allegro.tech.build.axion-release' version '1.20.1'
 }
@@ -64,6 +66,8 @@ ext {
     company_url = 'https://www.tngtech.com'
 
     release_projects = ['mock', 'mock-junit', 'mock-junit5', 'standalone']
+
+    isReleaseVersion = !project.version.endsWith("-SNAPSHOT")
 }
 
 subprojects {
@@ -119,6 +123,7 @@ subprojects {
     if (release_projects.contains(project.name)) {
         apply plugin: 'maven-publish'
         apply plugin: 'signing'
+        apply plugin: 'com.gradleup.nmcp'
 
         java {
             sourceCompatibility = JavaVersion.VERSION_1_8
@@ -160,30 +165,16 @@ subprojects {
                     }
                 }
             }
-            repositories.maven {
-                if (project.version.endsWith('-SNAPSHOT')) {
-                    credentials.username = project.findProperty('sonatypeUsername')
-                    credentials.password = project.findProperty('sonatypePassword')
-                    url = 'https://oss.sonatype.org/content/repositories/snapshots/'
-                } else {
-                    credentials.username = project.findProperty('sonatypeUsername')
-                    credentials.password = project.findProperty('sonatypePassword')
-                    url = 'https://oss.sonatype.org/service/local/staging/deploy/maven2/'
-                }
-            }
         }
 
         signing {
-            required = {
-                gradle.taskGraph.hasTask('uploadArchives')
-            }
             if ('standalone' != project.name) {
                 sign publishing.publications.mavenJava
             }
         }
 
         tasks.withType(Sign).configureEach {
-            onlyIf { project.hasProperty('sonatypeUsername') }
+            onlyIf { isReleaseVersion }
         }
 
         afterEvaluate {
@@ -239,5 +230,20 @@ sonar {
         property "sonar.projectKey", "TNG_keycloak-mock"
         property "sonar.cpd.exclusions", "mock-junit/**"
         property "sonar.gradle.skipCompile", "true"
+    }
+}
+
+nmcpAggregation {
+    centralPortal {
+        username = project.findProperty('sonatypeUsername')
+        password = project.findProperty('sonatypePassword')
+        publishingType = 'AUTOMATIC'
+    }
+}
+
+
+dependencies {
+    release_projects.forEach { p ->
+        nmcpAggregation(project(p))
     }
 }
