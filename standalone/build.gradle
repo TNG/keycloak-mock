@@ -42,6 +42,9 @@ startScripts.dependsOn(shadowJar)
 distZip.dependsOn(shadowJar)
 distTar.dependsOn(shadowJar)
 startShadowScripts.dependsOn(jar)
+afterEvaluate {
+    generateMetadataFileForShadowPublication.dependsOn(jar)
+}
 
 publishing {
     publications {
