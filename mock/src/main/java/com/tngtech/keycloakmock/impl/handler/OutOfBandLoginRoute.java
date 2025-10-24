@@ -1,7 +1,9 @@
 package com.tngtech.keycloakmock.impl.handler;
 
+import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
+import static io.netty.handler.codec.http.HttpHeaderValues.TEXT_HTML;
+
 import io.vertx.core.Handler;
-import io.vertx.core.http.HttpHeaders;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.common.template.TemplateEngine;
 import java.util.Optional;
@@ -29,8 +31,7 @@ public class OutOfBandLoginRoute implements Handler<RoutingContext> {
         CODE, Optional.ofNullable(routingContext.queryParams().get(CODE)).orElse("invalid"));
     engine
         .render(routingContext.data(), "oob.ftl")
-        .onSuccess(
-            b -> routingContext.response().putHeader(HttpHeaders.CONTENT_TYPE, "text/html").end(b))
+        .onSuccess(b -> routingContext.response().putHeader(CONTENT_TYPE, TEXT_HTML).end(b))
         .onFailure(
             t -> {
               LOG.error("Unable to render oob page", t);

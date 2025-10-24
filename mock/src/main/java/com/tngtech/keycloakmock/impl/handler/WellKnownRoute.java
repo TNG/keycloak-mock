@@ -1,5 +1,8 @@
 package com.tngtech.keycloakmock.impl.handler;
 
+import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
+import static io.netty.handler.codec.http.HttpHeaderValues.APPLICATION_JSON;
+
 import com.tngtech.keycloakmock.impl.UrlConfiguration;
 import com.tngtech.keycloakmock.impl.UrlConfigurationFactory;
 import io.vertx.core.Handler;
@@ -27,7 +30,7 @@ public class WellKnownRoute implements Handler<RoutingContext> {
     UrlConfiguration requestConfiguration = urlConfigurationFactory.create(routingContext);
     routingContext
         .response()
-        .putHeader("content-type", "application/json")
+        .putHeader(CONTENT_TYPE, APPLICATION_JSON)
         .end(getConfiguration(requestConfiguration).encode());
   }
 

@@ -1,5 +1,8 @@
 package com.tngtech.keycloakmock.impl.handler;
 
+import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
+import static io.netty.handler.codec.http.HttpHeaderValues.APPLICATION_JSON;
+
 import io.jsonwebtoken.security.Jwks;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
@@ -26,7 +29,7 @@ public class JwksRoute implements Handler<RoutingContext> {
 
   @Override
   public void handle(@Nonnull RoutingContext routingContext) {
-    routingContext.response().putHeader("content-type", "application/json").end(jwksResponse);
+    routingContext.response().putHeader(CONTENT_TYPE, APPLICATION_JSON).end(jwksResponse);
   }
 
   private static JsonObject toSigningKey(@Nonnull String keyId, @Nonnull PublicKey publicKey) {

@@ -1,8 +1,11 @@
 package com.tngtech.keycloakmock.impl.handler;
 
+import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
+import static io.netty.handler.codec.http.HttpHeaderValues.APPLICATION_JSON;
+import static io.netty.handler.codec.http.HttpHeaderValues.TEXT_HTML;
+
 import dagger.Lazy;
 import io.vertx.core.Handler;
-import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Route;
@@ -40,7 +43,7 @@ public class DocumentationRoute implements Handler<RoutingContext> {
             .filter(r -> r.getName() != null && !Objects.equals(r.getName(), r.getPath()))
             .sorted(Comparator.comparing(Route::getPath))
             .collect(Collectors.toList());
-    if ("application/json".equals(routingContext.getAcceptableContentType())) {
+    if (APPLICATION_JSON.contentEquals(routingContext.getAcceptableContentType())) {
       JsonObject result = new JsonObject();
       descriptions.forEach(
           r -> {
@@ -51,14 +54,12 @@ public class DocumentationRoute implements Handler<RoutingContext> {
             routeDescription.put("description", r.getName());
             result.put(r.getPath(), routeDescription);
           });
-      routingContext.response().putHeader("content-type", "application/json").end(result.encode());
+      routingContext.response().putHeader(CONTENT_TYPE, APPLICATION_JSON).end(result.encode());
     } else {
       routingContext.put("descriptions", descriptions);
       engine
           .render(routingContext.data(), "documentation.ftl")
-          .onSuccess(
-              b ->
-                  routingContext.response().putHeader(HttpHeaders.CONTENT_TYPE, "text/html").end(b))
+          .onSuccess(b -> routingContext.response().putHeader(CONTENT_TYPE, TEXT_HTML).end(b))
           .onFailure(
               t -> {
                 LOG.error("Unable to render documentation page", t);

@@ -1,5 +1,8 @@
 package com.tngtech.keycloakmock.impl.handler;
 
+import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
+import static io.netty.handler.codec.http.HttpHeaderValues.APPLICATION_JSON;
+
 import com.tngtech.keycloakmock.impl.UrlConfiguration;
 import com.tngtech.keycloakmock.impl.UrlConfigurationFactory;
 import com.tngtech.keycloakmock.impl.helper.TokenHelper;
@@ -73,7 +76,7 @@ public class TokenRoute implements Handler<RoutingContext> {
     }
     routingContext
         .response()
-        .putHeader("content-type", "application/json")
+        .putHeader(CONTENT_TYPE, APPLICATION_JSON)
         .end(toTokenResponse(token, sessionId));
   }
 
@@ -88,7 +91,7 @@ public class TokenRoute implements Handler<RoutingContext> {
 
     routingContext
         .response()
-        .putHeader("content-type", "application/json")
+        .putHeader(CONTENT_TYPE, APPLICATION_JSON)
         .end(toTokenResponse(refreshToken, sessionId));
   }
 
@@ -119,7 +122,7 @@ public class TokenRoute implements Handler<RoutingContext> {
 
     routingContext
         .response()
-        .putHeader("content-type", "application/json")
+        .putHeader(CONTENT_TYPE, APPLICATION_JSON)
         .end(toTokenResponse(token, session.getSessionId()));
   }
 
@@ -156,7 +159,7 @@ public class TokenRoute implements Handler<RoutingContext> {
 
     routingContext
         .response()
-        .putHeader("content-type", "application/json")
+        .putHeader(CONTENT_TYPE, APPLICATION_JSON)
         .end(toTokenResponse(token, session.getSessionId()));
   }
 

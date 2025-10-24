@@ -1,6 +1,6 @@
 package com.tngtech.keycloakmock.impl.handler;
 
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 
 import io.vertx.core.http.HttpServerResponse;
@@ -23,6 +23,8 @@ public class HandlerTestBase {
   @BeforeEach
   void setupServerResponse() {
     doReturn(serverResponse).when(routingContext).response();
-    doReturn(serverResponse).when(serverResponse).putHeader(anyString(), anyString());
+    doReturn(serverResponse)
+        .when(serverResponse)
+        .putHeader(any(CharSequence.class), any(CharSequence.class));
   }
 }

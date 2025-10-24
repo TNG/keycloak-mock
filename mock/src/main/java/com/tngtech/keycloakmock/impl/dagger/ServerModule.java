@@ -1,5 +1,7 @@
 package com.tngtech.keycloakmock.impl.dagger;
 
+import static io.netty.handler.codec.http.HttpHeaderValues.TEXT_HTML;
+
 import com.tngtech.keycloakmock.api.LoginRoleMapping;
 import com.tngtech.keycloakmock.api.ServerConfig;
 import com.tngtech.keycloakmock.impl.UrlConfiguration;
@@ -200,7 +202,7 @@ public class ServerModule {
     router
         .get("/docs")
         .setName("documentation endpoint")
-        .produces("text/html")
+        .produces(TEXT_HTML.toString())
         .handler(documentationRoute);
     return router;
   }
