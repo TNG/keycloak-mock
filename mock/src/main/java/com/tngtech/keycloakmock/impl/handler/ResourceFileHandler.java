@@ -1,7 +1,8 @@
 package com.tngtech.keycloakmock.impl.handler;
 
+import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
+
 import io.vertx.core.Handler;
-import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.impl.MimeMapping;
 import io.vertx.ext.web.RoutingContext;
 import java.io.InputStream;
@@ -27,10 +28,7 @@ public class ResourceFileHandler implements Handler<RoutingContext> {
   public void handle(@Nonnull RoutingContext routingContext) {
     Optional<String> resourceContent = loadResourceAsString(resource);
     if (resourceContent.isPresent()) {
-      routingContext
-          .response()
-          .putHeader(HttpHeaders.CONTENT_TYPE, contentType)
-          .end(resourceContent.get());
+      routingContext.response().putHeader(CONTENT_TYPE, contentType).end(resourceContent.get());
     } else {
       LOG.error("Unable to find resource {}", resource);
       routingContext.fail(404);

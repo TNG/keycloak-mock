@@ -1,9 +1,11 @@
 package com.tngtech.keycloakmock.impl.handler;
 
+import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
+import static io.netty.handler.codec.http.HttpHeaderValues.TEXT_HTML;
+
 import com.tngtech.keycloakmock.impl.UrlConfiguration;
 import com.tngtech.keycloakmock.impl.UrlConfigurationFactory;
 import io.vertx.core.Handler;
-import io.vertx.core.http.HttpHeaders;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.common.template.TemplateEngine;
 import java.net.URI;
@@ -38,8 +40,7 @@ public class IFrameRoute implements Handler<RoutingContext> {
     engine
         .render(
             routingContext.data(), "/org/keycloak/protocol/oidc/endpoints/login-status-iframe.ftl")
-        .onSuccess(
-            b -> routingContext.response().putHeader(HttpHeaders.CONTENT_TYPE, "text/html").end(b))
+        .onSuccess(b -> routingContext.response().putHeader(CONTENT_TYPE, TEXT_HTML).end(b))
         .onFailure(
             t -> {
               LOG.error("Unable to render login iframe", t);

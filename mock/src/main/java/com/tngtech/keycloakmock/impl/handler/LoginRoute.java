@@ -1,6 +1,8 @@
 package com.tngtech.keycloakmock.impl.handler;
 
 import static com.tngtech.keycloakmock.impl.helper.RedirectHelper.KEYCLOAK_SESSION_COOKIE;
+import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
+import static io.netty.handler.codec.http.HttpHeaderValues.TEXT_HTML;
 
 import com.tngtech.keycloakmock.impl.UrlConfiguration;
 import com.tngtech.keycloakmock.impl.UrlConfigurationFactory;
@@ -10,7 +12,6 @@ import com.tngtech.keycloakmock.impl.session.SessionRepository;
 import com.tngtech.keycloakmock.impl.session.SessionRequest;
 import io.vertx.core.Handler;
 import io.vertx.core.http.Cookie;
-import io.vertx.core.http.HttpHeaders;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.common.template.TemplateEngine;
 import java.util.Optional;
@@ -103,9 +104,7 @@ public class LoginRoute implements Handler<RoutingContext> {
           requestConfiguration.getAuthenticationCallbackEndpoint(request.getSessionId()));
       engine
           .render(routingContext.data(), "loginPage.ftl")
-          .onSuccess(
-              b ->
-                  routingContext.response().putHeader(HttpHeaders.CONTENT_TYPE, "text/html").end(b))
+          .onSuccess(b -> routingContext.response().putHeader(CONTENT_TYPE, TEXT_HTML).end(b))
           .onFailure(
               t -> {
                 LOG.error("Unable to render login page", t);

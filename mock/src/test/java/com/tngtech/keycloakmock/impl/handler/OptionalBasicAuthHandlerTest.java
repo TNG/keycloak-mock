@@ -1,10 +1,10 @@
 package com.tngtech.keycloakmock.impl.handler;
 
+import static io.netty.handler.codec.http.HttpHeaderNames.AUTHORIZATION;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 import io.vertx.core.Future;
-import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.ext.auth.User;
 import io.vertx.ext.web.RoutingContext;
@@ -31,7 +31,7 @@ class OptionalBasicAuthHandlerTest {
 
   @Test
   void allows_missing_authentication() {
-    when(request.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn(null);
+    when(request.getHeader(AUTHORIZATION)).thenReturn(null);
 
     Future<User> result = uut.handle(routingContext);
 
@@ -43,7 +43,7 @@ class OptionalBasicAuthHandlerTest {
 
   @Test
   void ignore_non_base64_data() {
-    when(request.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn("Basic but not base64");
+    when(request.getHeader(AUTHORIZATION)).thenReturn("Basic but not base64");
 
     Future<User> result = uut.handle(routingContext);
 
@@ -56,7 +56,7 @@ class OptionalBasicAuthHandlerTest {
   @Test
   void forward_username() {
     String auth = Base64.getEncoder().encodeToString("test".getBytes(StandardCharsets.UTF_8));
-    when(request.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn("Basic " + auth);
+    when(request.getHeader(AUTHORIZATION)).thenReturn("Basic " + auth);
 
     Future<User> result = uut.handle(routingContext);
 
@@ -70,7 +70,7 @@ class OptionalBasicAuthHandlerTest {
   void forward_username_and_password() {
     String auth =
         Base64.getEncoder().encodeToString("test:secret".getBytes(StandardCharsets.UTF_8));
-    when(request.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn("Basic " + auth);
+    when(request.getHeader(AUTHORIZATION)).thenReturn("Basic " + auth);
 
     Future<User> result = uut.handle(routingContext);
 

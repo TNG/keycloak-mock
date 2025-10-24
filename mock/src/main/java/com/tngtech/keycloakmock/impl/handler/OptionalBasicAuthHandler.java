@@ -1,7 +1,8 @@
 package com.tngtech.keycloakmock.impl.handler;
 
+import static io.netty.handler.codec.http.HttpHeaderNames.AUTHORIZATION;
+
 import io.vertx.core.Future;
-import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.auth.User;
 import io.vertx.ext.auth.authentication.Credentials;
@@ -23,7 +24,7 @@ public class OptionalBasicAuthHandler {
   OptionalBasicAuthHandler() {}
 
   public Future<User> handle(@Nonnull RoutingContext routingContext) {
-    String authorization = routingContext.request().getHeader(HttpHeaders.AUTHORIZATION);
+    String authorization = routingContext.request().getHeader(AUTHORIZATION);
     if (authorization != null) {
       try {
         String usernamePassword =
