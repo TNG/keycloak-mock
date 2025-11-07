@@ -14,7 +14,7 @@ import com.tngtech.keycloakmock.impl.handler.IFrameRoute;
 import com.tngtech.keycloakmock.impl.handler.JwksRoute;
 import com.tngtech.keycloakmock.impl.handler.LoginRoute;
 import com.tngtech.keycloakmock.impl.handler.LogoutRoute;
-import com.tngtech.keycloakmock.impl.handler.OptionalBasicAuthHandler;
+import com.tngtech.keycloakmock.impl.handler.OptionalClientAuthHandler;
 import com.tngtech.keycloakmock.impl.handler.OutOfBandLoginRoute;
 import com.tngtech.keycloakmock.impl.handler.ResourceFileHandler;
 import com.tngtech.keycloakmock.impl.handler.TokenRoute;
@@ -130,7 +130,7 @@ public class ServerModule {
       @Nonnull WellKnownRoute wellKnownRoute,
       @Nonnull LoginRoute loginRoute,
       @Nonnull AuthenticationRoute authenticationRoute,
-      @Nonnull OptionalBasicAuthHandler basicAuthHandler,
+      @Nonnull OptionalClientAuthHandler clientAuthHandler,
       @Nonnull TokenRoute tokenRoute,
       @Nonnull IFrameRoute iframeRoute,
       @Nonnull @Named("webCryptoShimJs") ResourceFileHandler webCryptoShimJsHandler,
@@ -166,7 +166,7 @@ public class ServerModule {
         .post(routing.getTokenEndpoint().getPath())
         .setName("token endpoint")
         .handler(BodyHandler.create())
-        .handler(SimpleAuthenticationHandler.create().authenticate(basicAuthHandler::handle))
+        .handler(SimpleAuthenticationHandler.create().authenticate(clientAuthHandler::handle))
         .handler(tokenRoute);
     router
         .get(routing.getOpenIdPath("login-status-iframe.html*").getPath())
