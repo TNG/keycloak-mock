@@ -96,11 +96,10 @@ public class TokenRoute implements Handler<RoutingContext> {
   }
 
   private void handlePasswordFlow(RoutingContext routingContext) {
-    String clientId = null;
-    User user = routingContext.user();
-    if (user != null) {
-      clientId = user.get("client_id");
-    }
+    String clientId =
+        Optional.ofNullable(routingContext.user())
+            .map(u -> u.<String>get("client_id"))
+            .orElse(null);
     if (clientId == null || clientId.isEmpty()) {
       routingContext.fail(400);
       return;

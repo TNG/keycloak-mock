@@ -1,6 +1,7 @@
 package com.tngtech.keycloakmock.api;
 
 import static com.tngtech.keycloakmock.api.ServerConfig.aServerConfig;
+import static com.tngtech.keycloakmock.api.TokenConfig.aTokenConfig;
 import static com.tngtech.keycloakmock.test.KeyHelper.loadValidKey;
 import static io.restassured.RestAssured.enableLoggingOfRequestAndResponseIfValidationFails;
 import static io.restassured.RestAssured.given;
@@ -11,6 +12,7 @@ import static io.restassured.http.ContentType.HTML;
 import static io.restassured.http.ContentType.JSON;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.data.MapEntry.entry;
 import static org.hamcrest.Matchers.emptyString;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.params.provider.Arguments.of;
@@ -40,6 +42,8 @@ import java.net.URISyntaxException;
 import java.security.PublicKey;
 import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPublicKey;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -156,7 +160,7 @@ class KeycloakMockIntegrationTest {
   void generated_token_is_valid() {
     keycloakMock = new KeycloakMock();
     keycloakMock.start();
-    String accessToken = keycloakMock.getAccessToken(TokenConfig.aTokenConfig().build());
+    String accessToken = keycloakMock.getAccessToken(aTokenConfig().build());
 
     List<JSONWebKey> jsonWebKeys =
         JSONWebKeySetHelper.retrieveKeysFromWellKnownConfiguration(
@@ -214,6 +218,8 @@ class KeycloakMockIntegrationTest {
     assertThat(response.subject_types_supported).containsExactly("public");
     assertThat(response.token_endpoint)
         .isEqualTo("http://server/auth/realms/test/protocol/openid-connect/token");
+    assertThat(response.introspection_endpoint)
+        .isEqualTo("http://server/auth/realms/test/protocol/openid-connect/token/introspect");
   }
 
   @Test
@@ -469,7 +475,7 @@ class KeycloakMockIntegrationTest {
   private void validateToken(String accessToken, String nonce) {
     Jws<Claims> jwt = jwtParser.parseSignedClaims(accessToken);
     assertThat(jwt.getPayload().getIssuer()).isEqualTo("http://localhost:8000/auth/realms/realm");
-    TokenConfig tokenConfig = TokenConfig.aTokenConfig().withSourceToken(accessToken).build();
+    TokenConfig tokenConfig = aTokenConfig().withSourceToken(accessToken).build();
     assertThat(tokenConfig.getPreferredUsername()).isEqualTo("username");
     assertThat(tokenConfig.getRealmAccess().getRoles())
         .containsExactlyInAnyOrder("role1", "role2", "role3");
@@ -577,7 +583,7 @@ class KeycloakMockIntegrationTest {
 
     Jws<Claims> jwt = jwtParser.parseSignedClaims(accessToken);
     assertThat(jwt.getPayload().getIssuer()).isEqualTo("http://localhost:8000/auth/realms/realm");
-    TokenConfig tokenConfig = TokenConfig.aTokenConfig().withSourceToken(accessToken).build();
+    TokenConfig tokenConfig = aTokenConfig().withSourceToken(accessToken).build();
     assertThat(tokenConfig.getPreferredUsername()).isEqualTo("username");
     assertThat(tokenConfig.getRealmAccess().getRoles())
         .containsExactlyInAnyOrder("role1", "role2", "role3");
@@ -608,7 +614,7 @@ class KeycloakMockIntegrationTest {
 
     Jws<Claims> jwt = jwtParser.parseSignedClaims(accessToken);
     assertThat(jwt.getPayload().getIssuer()).isEqualTo("http://localhost:8000/auth/realms/realm");
-    TokenConfig tokenConfig = TokenConfig.aTokenConfig().withSourceToken(accessToken).build();
+    TokenConfig tokenConfig = aTokenConfig().withSourceToken(accessToken).build();
     assertThat(tokenConfig.getPreferredUsername()).isEqualTo("username");
     assertThat(tokenConfig.getRealmAccess().getRoles())
         .containsExactlyInAnyOrder("role1", "role2", "role3");
@@ -637,7 +643,7 @@ class KeycloakMockIntegrationTest {
 
     Jws<Claims> jwt = jwtParser.parseSignedClaims(accessToken);
     assertThat(jwt.getPayload().getIssuer()).isEqualTo("http://localhost:8000/auth/realms/realm");
-    TokenConfig tokenConfig = TokenConfig.aTokenConfig().withSourceToken(accessToken).build();
+    TokenConfig tokenConfig = aTokenConfig().withSourceToken(accessToken).build();
     assertThat(tokenConfig.getPreferredUsername()).isEqualTo("client");
     assertThat(tokenConfig.getRealmAccess().getRoles())
         .containsExactlyInAnyOrder("role1", "role2", "role3");
@@ -665,7 +671,7 @@ class KeycloakMockIntegrationTest {
 
     Jws<Claims> jwt = jwtParser.parseSignedClaims(accessToken);
     assertThat(jwt.getPayload().getIssuer()).isEqualTo("http://localhost:8000/auth/realms/realm");
-    TokenConfig tokenConfig = TokenConfig.aTokenConfig().withSourceToken(accessToken).build();
+    TokenConfig tokenConfig = aTokenConfig().withSourceToken(accessToken).build();
     assertThat(tokenConfig.getPreferredUsername()).isEqualTo("client");
     assertThat(tokenConfig.getRealmAccess().getRoles())
         .containsExactlyInAnyOrder("role1", "role2", "role3");
@@ -693,6 +699,55 @@ class KeycloakMockIntegrationTest {
                 + "        <td colspan=\"1\" rowspan=\"1\">/docs</td>\n"
                 + "        <td colspan=\"1\" rowspan=\"1\">documentation endpoint</td>\n"
                 + "      </tr>");
+  }
+
+  @Test
+  void token_introspection_works() {
+    keycloakMock = new KeycloakMock();
+    keycloakMock.start();
+
+    TokenConfig tokenConfig = aTokenConfig().withAudience("myclient").build();
+    String accessToken = keycloakMock.getAccessToken(tokenConfig);
+
+    ExtractableResponse<Response> extractableResponse =
+        given()
+            .when()
+            .formParam("token", accessToken)
+            .formParam("client_id", "myclient")
+            .post(
+                "http://localhost:8000/auth/realms/realm/protocol/openid-connect/token/introspect")
+            .then()
+            .assertThat()
+            .statusCode(200)
+            .extract();
+
+    assertThat(extractableResponse.jsonPath().getBoolean("active")).isTrue();
+    assertThat(extractableResponse.jsonPath().getMap(""))
+        .containsAllEntriesOf(tokenConfig.getClaims());
+  }
+
+  @Test
+  void token_introspection_does_not_leak_claims_on_invalid_token() {
+    keycloakMock = new KeycloakMock();
+    keycloakMock.start();
+
+    String accessToken =
+        keycloakMock.getAccessToken(
+            aTokenConfig().withExpiration(Instant.now().minus(1, ChronoUnit.HOURS)).build());
+
+    ExtractableResponse<Response> extractableResponse =
+        given()
+            .when()
+            .formParam("token", accessToken)
+            .formParam("client_id", "myclient")
+            .post(
+                "http://localhost:8000/auth/realms/realm/protocol/openid-connect/token/introspect")
+            .then()
+            .assertThat()
+            .statusCode(200)
+            .extract();
+
+    assertThat(extractableResponse.jsonPath().getMap("")).containsExactly(entry("active", false));
   }
 
   private static class ClientRequest {

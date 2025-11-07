@@ -42,6 +42,9 @@ public class WellKnownRoute implements Handler<RoutingContext> {
             "authorization_endpoint",
             requestConfiguration.getAuthorizationEndpoint().toASCIIString())
         .put("token_endpoint", requestConfiguration.getTokenEndpoint().toASCIIString())
+        .put(
+            "introspection_endpoint",
+            requestConfiguration.getTokenIntrospectionEndpoint().toASCIIString())
         .put("jwks_uri", requestConfiguration.getJwksUri().toASCIIString())
         .put("end_session_endpoint", requestConfiguration.getEndSessionEndpoint().toASCIIString())
         .put(
