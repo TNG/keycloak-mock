@@ -4,6 +4,7 @@ import static java.util.Optional.ofNullable;
 
 import com.tngtech.keycloakmock.api.TokenConfig;
 import com.tngtech.keycloakmock.impl.session.UserData;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
@@ -13,7 +14,6 @@ import java.time.Duration;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
@@ -124,7 +124,7 @@ public class TokenGenerator {
     }
   }
 
-  public Map<String, Object> parseToken(@Nonnull String token) {
+  public Claims parseToken(@Nonnull String token) {
     JwtParser parser = Jwts.parser().verifyWith(publicKey).build();
     return parser.parseSignedClaims(token).getPayload();
   }

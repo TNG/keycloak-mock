@@ -12,6 +12,7 @@ public class UrlConfiguration {
   private static final String OUT_OF_BAND_PATH = "oob";
   private static final String ISSUER_OPEN_ID_PATH = "protocol/openid-connect/";
   private static final String OPEN_ID_TOKEN_PATH = "token";
+  private static final String OPEN_ID_TOKEN_INTROSPECTION_PATH = OPEN_ID_TOKEN_PATH + "/introspect";
   private static final String OPEN_ID_JWKS_PATH = "certs";
   private static final String OPEN_ID_AUTHORIZATION_PATH = "auth";
   private static final String OPEN_ID_END_SESSION_PATH = "logout";
@@ -108,6 +109,11 @@ public class UrlConfiguration {
   @Nonnull
   public URI getTokenEndpoint() {
     return getOpenIdPath(OPEN_ID_TOKEN_PATH);
+  }
+
+  @Nonnull
+  public URI getTokenIntrospectionEndpoint() {
+    return getOpenIdPath(OPEN_ID_TOKEN_INTROSPECTION_PATH);
   }
 
   @Nonnull

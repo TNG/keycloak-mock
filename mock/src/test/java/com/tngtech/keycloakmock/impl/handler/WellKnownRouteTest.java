@@ -24,6 +24,7 @@ class WellKnownRouteTest extends HandlerTestBase {
   private static final String END_SESSION_ENDPOINT = "endSessionEndpoint";
   private static final String JWKS_URI = "jwksUri";
   private static final String TOKEN_ENDPOINT = "tokenEndpoint";
+  private static final String INTROSPECTION_ENDPOINT = "introspectionEndpoint";
 
   @Mock private UrlConfigurationFactory urlConfigurationFactory;
   @Mock private UrlConfiguration contextConfiguration;
@@ -43,6 +44,9 @@ class WellKnownRouteTest extends HandlerTestBase {
     doReturn(new URI(END_SESSION_ENDPOINT)).when(contextConfiguration).getEndSessionEndpoint();
     doReturn(new URI(JWKS_URI)).when(contextConfiguration).getJwksUri();
     doReturn(new URI(TOKEN_ENDPOINT)).when(contextConfiguration).getTokenEndpoint();
+    doReturn(new URI(INTROSPECTION_ENDPOINT))
+        .when(contextConfiguration)
+        .getTokenIntrospectionEndpoint();
 
     wellKnownRoute.handle(routingContext);
 
@@ -57,6 +61,7 @@ class WellKnownRouteTest extends HandlerTestBase {
     response.issuer = ISSUER;
     response.authorization_endpoint = AUTHORIZATION_ENDPOINT;
     response.token_endpoint = TOKEN_ENDPOINT;
+    response.introspection_endpoint = INTROSPECTION_ENDPOINT;
     response.jwks_uri = JWKS_URI;
     response.end_session_endpoint = END_SESSION_ENDPOINT;
     response.response_types_supported =
