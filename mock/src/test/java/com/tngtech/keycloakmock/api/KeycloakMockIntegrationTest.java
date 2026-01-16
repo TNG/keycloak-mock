@@ -3,18 +3,13 @@ package com.tngtech.keycloakmock.api;
 import static com.tngtech.keycloakmock.api.ServerConfig.aServerConfig;
 import static com.tngtech.keycloakmock.api.TokenConfig.aTokenConfig;
 import static com.tngtech.keycloakmock.test.KeyHelper.loadValidKey;
-import static io.restassured.RestAssured.enableLoggingOfRequestAndResponseIfValidationFails;
-import static io.restassured.RestAssured.given;
-import static io.restassured.RestAssured.when;
-import static io.restassured.config.RedirectConfig.redirectConfig;
-import static io.restassured.config.RestAssuredConfig.config;
-import static io.restassured.http.ContentType.HTML;
-import static io.restassured.http.ContentType.JSON;
+import static io.vertx.core.http.HttpResponseExpectation.JSON;
+import static io.vertx.core.http.HttpResponseExpectation.SC_FOUND;
+import static io.vertx.core.http.HttpResponseExpectation.SC_NOT_FOUND;
+import static io.vertx.core.http.HttpResponseExpectation.SC_OK;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.data.MapEntry.entry;
-import static org.hamcrest.Matchers.emptyString;
-import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.params.provider.Arguments.of;
 
 import com.tngtech.keycloakmock.impl.UrlConfiguration;
@@ -31,12 +26,22 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
-import io.restassured.http.ContentType;
-import io.restassured.http.Cookie;
-import io.restassured.http.Method;
-import io.restassured.path.json.JsonPath;
-import io.restassured.response.ExtractableResponse;
-import io.restassured.response.Response;
+import io.netty.handler.codec.http.cookie.ClientCookieDecoder;
+import io.netty.handler.codec.http.cookie.Cookie;
+import io.netty.handler.codec.http.cookie.DefaultCookie;
+import io.vertx.core.Future;
+import io.vertx.core.MultiMap;
+import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.http.HttpMethod;
+import io.vertx.core.http.HttpResponseExpectation;
+import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.client.HttpResponse;
+import io.vertx.ext.web.client.WebClient;
+import io.vertx.ext.web.client.WebClientOptions;
+import io.vertx.ext.web.client.WebClientSession;
+import io.vertx.junit5.VertxExtension;
+import io.vertx.junit5.VertxTestContext;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.PublicKey;
@@ -46,32 +51,38 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.jsoup.Jsoup;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+@ExtendWith(VertxExtension.class)
 class KeycloakMockIntegrationTest {
 
   private static final String LOGIN_PAGE_URL_TEMPLATE =
-      "http://localhost:8000/auth/realms/realm/protocol/openid-connect/auth?client_id=client&redirect_uri=%s&state=%s&nonce=%s&response_type=%s";
+      "/auth/realms/realm/protocol/openid-connect/auth?client_id=client&redirect_uri=%s&state=%s&nonce=%s&response_type=%s";
   private static final String TOKEN_ENDPOINT_URL =
-      "http://localhost:8000/auth/realms/realm/protocol/openid-connect/token";
+      "/auth/realms/realm/protocol/openid-connect/token";
+  private static final HttpResponseExpectation HTML =
+      HttpResponseExpectation.contentType("text/html");
+  private static final HttpResponseExpectation JS =
+      HttpResponseExpectation.contentType("text/javascript");
+
   private static JwtParser jwtParser;
   private KeycloakMock keycloakMock = null;
 
   @BeforeAll
   static void setupJwtsParser() {
     jwtParser = Jwts.parser().verifyWith(loadValidKey()).build();
-  }
-
-  @BeforeAll
-  static void setupRestAssured() {
-    enableLoggingOfRequestAndResponseIfValidationFails();
   }
 
   @AfterEach
@@ -82,37 +93,44 @@ class KeycloakMockIntegrationTest {
   }
 
   @Test
-  void mock_server_can_be_started_and_stopped() {
+  void mock_server_can_be_started_and_stopped(Vertx vertx, VertxTestContext testContext) {
+    WebClient webClient = WebClient.create(vertx);
     keycloakMock = new KeycloakMock();
-    assertServerMockRunnning(false);
+    assertServerMockRunnning(webClient, testContext, false);
     keycloakMock.start();
-    assertServerMockRunnning(true);
+    assertServerMockRunnning(webClient, testContext, true);
     keycloakMock.stop();
-    assertServerMockRunnning(false);
+    assertServerMockRunnning(webClient, testContext, false);
+    testContext.completeNow();
   }
 
   @Test
-  void mock_server_can_be_started_and_stopped_twice() {
+  void mock_server_can_be_started_and_stopped_twice(Vertx vertx, VertxTestContext testContext) {
+    WebClient webClient = WebClient.create(vertx);
     keycloakMock = new KeycloakMock();
-    assertServerMockRunnning(false);
+    assertServerMockRunnning(webClient, testContext, false);
     keycloakMock.start();
-    assertServerMockRunnning(true);
+    assertServerMockRunnning(webClient, testContext, true);
     keycloakMock.stop();
-    assertServerMockRunnning(false);
+    assertServerMockRunnning(webClient, testContext, false);
     keycloakMock.start();
-    assertServerMockRunnning(true);
+    assertServerMockRunnning(webClient, testContext, true);
     keycloakMock.stop();
-    assertServerMockRunnning(false);
+    assertServerMockRunnning(webClient, testContext, false);
+    testContext.completeNow();
   }
 
-  private void assertServerMockRunnning(boolean running) {
+  private void assertServerMockRunnning(
+      WebClient webClient, VertxTestContext testContext, boolean running) {
     try {
-      when()
-          .get("http://localhost:8000/auth/realms/master/protocol/openid-connect/certs")
-          .then()
-          .statusCode(200)
-          .and()
-          .contentType(ContentType.JSON);
+      Future.await(
+          webClient
+              .get("/auth/realms/master/protocol/openid-connect/certs")
+              .port(8000)
+              .send()
+              .expecting(SC_OK.and(JSON)),
+          5,
+          TimeUnit.SECONDS);
       assertThat(running).as("Exception should occur if server is not running").isTrue();
     } catch (Throwable e) {
       assertThat(running).as("Exception should occur if server is not running").isFalse();
@@ -129,7 +147,8 @@ class KeycloakMockIntegrationTest {
 
   @ParameterizedTest
   @MethodSource("serverConfig")
-  void mock_server_endpoint_is_correctly_configured(int port, boolean tls) {
+  void mock_server_endpoint_is_correctly_configured(
+      int port, boolean tls, Vertx vertx, VertxTestContext testContext) {
     keycloakMock = new KeycloakMock(aServerConfig().withPort(port).withTls(tls).build());
     keycloakMock.start();
     if (port > 0) {
@@ -137,19 +156,18 @@ class KeycloakMockIntegrationTest {
     } else {
       assertThat(keycloakMock.getActualPort()).isGreaterThan(0);
     }
-    given()
-        .relaxedHTTPSValidation()
-        .when()
-        .get(
-            (tls ? "https" : "http")
-                + "://localhost:"
-                + keycloakMock.getActualPort()
-                + "/auth/realms/master/protocol/openid-connect/certs")
-        .then()
-        .statusCode(200)
-        .and()
-        .contentType(ContentType.JSON);
-    keycloakMock.stop();
+    WebClient.create(vertx, new WebClientOptions().setSsl(tls).setTrustAll(true))
+        .get("/auth/realms/master/protocol/openid-connect/certs")
+        .port(keycloakMock.getActualPort())
+        .ssl(tls)
+        .send()
+        .expecting(SC_OK.and(JSON))
+        .onComplete(
+            testContext.succeeding(
+                r -> {
+                  testContext.completeNow();
+                  keycloakMock.stop();
+                }));
   }
 
   private static Stream<Arguments> serverConfig() {
@@ -187,287 +205,298 @@ class KeycloakMockIntegrationTest {
   }
 
   @Test
-  void well_known_configuration_works() {
+  void well_known_configuration_works(Vertx vertx, VertxTestContext testContext) {
     keycloakMock = new KeycloakMock();
     keycloakMock.start();
-    ConfigurationResponse response =
-        given()
-            .header("Host", "server")
-            .when()
-            .get("http://localhost:8000/auth/realms/test/.well-known/openid-configuration")
-            .then()
-            .assertThat()
-            .statusCode(200)
-            .and()
-            .contentType(ContentType.JSON)
-            .and()
-            .extract()
-            .body()
-            .as(ConfigurationResponse.class);
-
-    assertThat(response.authorization_endpoint)
-        .isEqualTo("http://server/auth/realms/test/protocol/openid-connect/auth");
-    assertThat(response.end_session_endpoint)
-        .isEqualTo("http://server/auth/realms/test/protocol/openid-connect/logout");
-    assertThat(response.id_token_signing_alg_values_supported).containsExactly("RS256");
-    assertThat(response.issuer).isEqualTo("http://server/auth/realms/test");
-    assertThat(response.jwks_uri)
-        .isEqualTo("http://server/auth/realms/test/protocol/openid-connect/certs");
-    assertThat(response.response_types_supported)
-        .containsExactlyInAnyOrder("code", "code id_token", "id_token", "token id_token");
-    assertThat(response.subject_types_supported).containsExactly("public");
-    assertThat(response.token_endpoint)
-        .isEqualTo("http://server/auth/realms/test/protocol/openid-connect/token");
-    assertThat(response.introspection_endpoint)
-        .isEqualTo("http://server/auth/realms/test/protocol/openid-connect/token/introspect");
+    WebClient.create(vertx)
+        .get("/auth/realms/test/.well-known/openid-configuration")
+        .port(8000)
+        .putHeader("Host", "server")
+        .send()
+        .expecting(SC_OK.and(JSON))
+        .map(r -> r.bodyAsJson(ConfigurationResponse.class))
+        .expecting(
+            config -> {
+              assertThat(config.authorization_endpoint)
+                  .isEqualTo("http://server/auth/realms/test/protocol/openid-connect/auth");
+              assertThat(config.end_session_endpoint)
+                  .isEqualTo("http://server/auth/realms/test/protocol/openid-connect/logout");
+              assertThat(config.id_token_signing_alg_values_supported).containsExactly("RS256");
+              assertThat(config.issuer).isEqualTo("http://server/auth/realms/test");
+              assertThat(config.jwks_uri)
+                  .isEqualTo("http://server/auth/realms/test/protocol/openid-connect/certs");
+              assertThat(config.response_types_supported)
+                  .containsExactlyInAnyOrder("code", "code id_token", "id_token", "token id_token");
+              assertThat(config.subject_types_supported).containsExactly("public");
+              assertThat(config.token_endpoint)
+                  .isEqualTo("http://server/auth/realms/test/protocol/openid-connect/token");
+              assertThat(config.introspection_endpoint)
+                  .isEqualTo(
+                      "http://server/auth/realms/test/protocol/openid-connect/token/introspect");
+              return true;
+            })
+        .onComplete(testContext.succeedingThenComplete());
   }
 
   @Test
-  void mock_server_uses_host_header_as_server_host() {
-    String hostname = "server";
+  void mock_server_answers_204_on_iframe_init(Vertx vertx, VertxTestContext testContext) {
     keycloakMock = new KeycloakMock();
     keycloakMock.start();
-    String issuer =
-        given()
-            .when()
-            .header("Host", hostname)
-            .get("http://localhost:8000/auth/realms/test/.well-known/openid-configuration")
-            .then()
-            .assertThat()
-            .statusCode(200)
-            .and()
-            .extract()
-            .jsonPath()
-            .get("issuer");
-
-    assertThat(issuer).isEqualTo("http://%s/auth/realms/test", hostname);
-  }
-
-  @Test
-  void mock_server_answers_204_on_iframe_init() {
-    keycloakMock = new KeycloakMock();
-    keycloakMock.start();
-    given()
-        .when()
-        .get(
-            "http://localhost:8000/auth/realms/test/protocol/openid-connect/login-status-iframe.html/init")
-        .then()
-        .assertThat()
-        .statusCode(204)
-        .and()
-        .body(is(emptyString()));
+    WebClient.create(vertx)
+        .get("/auth/realms/test/protocol/openid-connect/login-status-iframe.html/init")
+        .port(8000)
+        .send()
+        .expecting(HttpResponseExpectation.SC_NO_CONTENT)
+        .map(HttpResponse::bodyAsString)
+        .expecting(Objects::isNull)
+        .onComplete(testContext.succeedingThenComplete());
   }
 
   private static Stream<Arguments> resourcesWithContent() {
     return Stream.of(
         of(
-            "/realms/test/protocol/openid-connect/login-status-iframe.html",
+            "/auth/realms/test/protocol/openid-connect/login-status-iframe.html",
             HTML,
             "getSessionCookie()"),
-        of("/realms/test/protocol/openid-connect/3p-cookies/step1.html", HTML, "step2.html"),
-        of("/realms/test/protocol/openid-connect/3p-cookies/step2.html", HTML, "\"supported\""),
-        of("/js/keycloak.js", JSON, "function Keycloak"),
-        of("/js/vendor/web-crypto-shim/web-crypto-shim.js", JSON, "crypto.randomUUID"));
+        of("/auth/realms/test/protocol/openid-connect/3p-cookies/step1.html", HTML, "step2.html"),
+        of(
+            "/auth/realms/test/protocol/openid-connect/3p-cookies/step2.html",
+            HTML,
+            "\"supported\""),
+        of("/auth/js/keycloak.js", JS, "function Keycloak"),
+        of("/auth/js/vendor/web-crypto-shim/web-crypto-shim.js", JS, "crypto.randomUUID"));
   }
 
   @ParameterizedTest
   @MethodSource("resourcesWithContent")
   void mock_server_properly_returns_resources(
-      String resource, ContentType contentType, String content) {
+      String resource,
+      HttpResponseExpectation contentType,
+      String content,
+      Vertx vertx,
+      VertxTestContext testContext) {
     keycloakMock = new KeycloakMock();
     keycloakMock.start();
-    String body =
-        given()
-            .when()
-            .get("http://localhost:8000/auth" + resource)
-            .then()
-            .assertThat()
-            .statusCode(200)
-            .and()
-            .contentType(contentType)
-            .extract()
-            .body()
-            .asString();
-
-    assertThat(body).contains(content);
+    WebClient.create(vertx)
+        .get(resource)
+        .port(8000)
+        .send()
+        .expecting(SC_OK.and(contentType))
+        .map(HttpResponse::bodyAsString)
+        .expecting(
+            body -> {
+              assertThat(body).contains(content);
+              return true;
+            })
+        .onComplete(testContext.succeedingThenComplete());
   }
 
   @Test
-  void iframe_has_correct_shim_path() {
+  void iframe_has_correct_shim_path(Vertx vertx, VertxTestContext testContext) {
     ServerConfig config = aServerConfig().build();
     keycloakMock = new KeycloakMock(config);
     UrlConfiguration configuration = new UrlConfigurationFactory(config).create(null, null);
 
     keycloakMock.start();
-    String body =
-        given()
-            .when()
-            .get(
-                "http://localhost:8000/auth/realms/test/protocol/openid-connect/login-status-iframe.html")
-            .then()
-            .assertThat()
-            .statusCode(200)
-            .and()
-            .contentType(HTML)
-            .extract()
-            .body()
-            .asString();
-
-    assertThat(body).contains(IFrameRoute.getWebCryptoShimPath(configuration).toASCIIString());
+    WebClient.create(vertx)
+        .get("/auth/realms/test/protocol/openid-connect/login-status-iframe.html")
+        .port(8000)
+        .send()
+        .expecting(SC_OK.and(HTML))
+        .map(HttpResponse::bodyAsString)
+        .expecting(
+            body -> {
+              assertThat(body)
+                  .contains(IFrameRoute.getWebCryptoShimPath(configuration).toASCIIString());
+              return true;
+            })
+        .onComplete(testContext.succeedingThenComplete());
   }
 
   @Test
-  void mock_server_returns_404_on_nonexistent_resource() {
+  void mock_server_returns_404_on_nonexistent_resource(Vertx vertx, VertxTestContext testContext) {
     keycloakMock = new KeycloakMock();
     keycloakMock.start();
-    given().when().get("http://localhost:8000/i-do-not-exist").then().assertThat().statusCode(404);
+    WebClient.create(vertx)
+        .get("/i-do-not-exist")
+        .port(8000)
+        .send()
+        .expecting(SC_NOT_FOUND)
+        .onComplete(testContext.succeedingThenComplete());
   }
 
   @Test
-  void mock_server_login_with_implicit_flow_works() throws Exception {
+  void mock_server_login_with_implicit_flow_works(Vertx vertx, VertxTestContext testContext)
+      throws Exception {
     keycloakMock = new KeycloakMock();
     keycloakMock.start();
+
+    // use a session to retain cookies
+    WebClientSession webClientSession = WebClientSession.create(WebClient.create(vertx));
 
     // open login page to create session (implicit flow)
     ClientRequest firstRequest = new ClientRequest("redirect-uri", "state", "nonce", "id_token");
-    String callbackUrl = openLoginPageAndGetCallbackUrl(firstRequest);
+    String callbackUrl = openLoginPageAndGetCallbackUrl(firstRequest, webClientSession);
 
     // simulate login
-    Cookie keycloakSession = loginAndValidateAndReturnSessionCookie(firstRequest, callbackUrl);
+    String sessionId =
+        loginAndValidateAndReturnSessionCookie(firstRequest, callbackUrl, webClientSession);
 
     // subsequent request to login page with session cookie will immediately return
     ClientRequest secondRequest =
         new ClientRequest("redirect-uri2", "state2", "nonce2", "id_token");
-    openLoginPageAgainAndExpectToBeLoggedInAlready(secondRequest, keycloakSession);
+    openLoginPageAgainAndExpectToBeLoggedInAlready(secondRequest, sessionId, webClientSession);
 
     // logout
-    logoutAndExpectSessionCookieReset(Method.GET);
+    logoutAndExpectSessionCookieReset(HttpMethod.GET, webClientSession, testContext);
+    testContext.completeNow();
   }
 
   @Test
-  void mock_server_logout_with_POST_works() throws Exception {
+  void mock_server_logout_with_POST_works(Vertx vertx, VertxTestContext testContext)
+      throws Exception {
     keycloakMock = new KeycloakMock();
     keycloakMock.start();
+
+    WebClient webClient = WebClient.create(vertx);
 
     // open login page to create session (implicit flow)
     ClientRequest firstRequest = new ClientRequest("redirect-uri", "state", "nonce", "id_token");
-    String callbackUrl = openLoginPageAndGetCallbackUrl(firstRequest);
+    String callbackUrl = openLoginPageAndGetCallbackUrl(firstRequest, webClient);
 
     // simulate login
-    loginAndValidateAndReturnSessionCookie(firstRequest, callbackUrl);
+    loginAndValidateAndReturnSessionCookie(firstRequest, callbackUrl, webClient);
 
     // logout
-    logoutAndExpectSessionCookieReset(Method.POST);
+    logoutAndExpectSessionCookieReset(HttpMethod.POST, webClient, testContext);
+    testContext.completeNow();
   }
 
   @Test
-  void mock_server_login_with_authorization_code_flow_works() throws Exception {
+  void mock_server_login_with_authorization_code_flow_works(
+      Vertx vertx, VertxTestContext testContext) throws Exception {
     keycloakMock = new KeycloakMock();
     keycloakMock.start();
 
+    WebClient webClient = WebClient.create(vertx);
+
     // open login page to create session (authorization code flow)
     ClientRequest firstRequest = new ClientRequest("redirect-uri", "state", "nonce", "code");
-    String callbackUrl = openLoginPageAndGetCallbackUrl(firstRequest);
+    String callbackUrl = openLoginPageAndGetCallbackUrl(firstRequest, webClient);
 
     // simulate login
-    String authorizationCode = loginAndValidateAndReturnAuthCode(firstRequest, callbackUrl);
+    String authorizationCode =
+        loginAndValidateAndReturnAuthCode(firstRequest, callbackUrl, webClient);
     String refreshToken =
-        validateAuthorizationAndRetrieveToken(authorizationCode, firstRequest.getNonce());
+        validateAuthorizationAndRetrieveToken(
+            authorizationCode, firstRequest.getNonce(), webClient);
 
     // refresh token flow
-    validateRefreshTokenFlow(refreshToken, firstRequest.getNonce());
+    validateRefreshTokenFlow(refreshToken, firstRequest.getNonce(), webClient);
 
     // logout
-    logoutAndExpectSessionCookieReset(Method.GET);
+    logoutAndExpectSessionCookieReset(HttpMethod.GET, webClient, testContext);
   }
 
-  private String openLoginPageAndGetCallbackUrl(ClientRequest request) {
-    return given()
-        .when()
-        .get(request.getLoginPageUrl())
-        .then()
-        .assertThat()
-        .statusCode(200)
-        .extract()
-        .htmlPath()
-        .getNode("html")
-        .getNode("body")
-        .getNode("form")
-        .getAttribute("action");
+  private String openLoginPageAndGetCallbackUrl(ClientRequest request, WebClient webClient) {
+    String body =
+        Future.await(
+            webClient
+                .get(request.getLoginPageUrl())
+                .port(8000)
+                .send()
+                .expecting(SC_OK.and(HTML))
+                .map(HttpResponse::bodyAsString));
+    return Optional.ofNullable(Jsoup.parse(body).body().selectFirst("form"))
+        .map(e -> e.attr("action"))
+        .orElse("");
   }
 
-  private Cookie loginAndValidateAndReturnSessionCookie(ClientRequest request, String callbackUrl)
-      throws URISyntaxException {
-    ExtractableResponse<Response> extractableResponse =
-        given()
-            .config(config().redirect(redirectConfig().followRedirects(false)))
-            .when()
-            .formParam("username", "username")
-            .formParam("password", "role1,role2,role3")
-            .post(callbackUrl)
-            .then()
-            .assertThat()
-            .statusCode(302)
-            .extract();
-    String location = extractableResponse.header("location");
-    Cookie keycloakSession = extractableResponse.detailedCookie("KEYCLOAK_SESSION");
+  private String loginAndValidateAndReturnSessionCookie(
+      ClientRequest request, String callbackUrl, WebClient webClient) throws URISyntaxException {
+    HttpResponse<Buffer> response =
+        Future.await(
+            webClient
+                .post(callbackUrl)
+                .port(8000)
+                .followRedirects(false)
+                .sendForm(
+                    MultiMap.caseInsensitiveMultiMap()
+                        .add("username", "username")
+                        .add("password", "role1,role2,role3"))
+                .expecting(SC_FOUND));
+    String location = response.getHeader("location");
+    Cookie keycloakSession =
+        response.cookies().stream()
+            .map(ClientCookieDecoder.STRICT::decode)
+            .filter(c -> c.name().equals("KEYCLOAK_SESSION"))
+            .findFirst()
+            .orElse(new DefaultCookie("KEYCLOAK_SESSION", ""));
+    String sessionId = validateCookieAndReturnSessionId(keycloakSession);
 
-    validateProperlyLoggedInAndRedirected(request, keycloakSession, location);
-    return keycloakSession;
+    validateProperlyLoggedInAndRedirected(request, sessionId, location);
+    return sessionId;
   }
 
-  private String loginAndValidateAndReturnAuthCode(ClientRequest request, String callbackUrl)
-      throws URISyntaxException {
-    ExtractableResponse<Response> extractableResponse =
-        given()
-            .config(config().redirect(redirectConfig().followRedirects(false)))
-            .when()
-            .formParam("username", "username")
-            .formParam("password", "role1,role2,role3")
-            .post(callbackUrl)
-            .then()
-            .assertThat()
-            .statusCode(302)
-            .extract();
-    String location = extractableResponse.header("location");
-    Cookie keycloakSession = extractableResponse.detailedCookie("KEYCLOAK_SESSION");
+  private String loginAndValidateAndReturnAuthCode(
+      ClientRequest request, String callbackUrl, WebClient webClient) throws URISyntaxException {
+    HttpResponse<Buffer> response =
+        Future.await(
+            webClient
+                .post(callbackUrl)
+                .port(8000)
+                .followRedirects(false)
+                .sendForm(
+                    MultiMap.caseInsensitiveMultiMap()
+                        .add("username", "username")
+                        .add("password", "role1,role2,role3"))
+                .expecting(SC_FOUND));
+    String location = response.getHeader("location");
+    Cookie keycloakSession =
+        response.cookies().stream()
+            .map(ClientCookieDecoder.STRICT::decode)
+            .filter(c -> c.name().equals("KEYCLOAK_SESSION"))
+            .findFirst()
+            .orElse(new DefaultCookie("KEYCLOAK_SESSION", ""));
 
     return validateProperlyRedirectedWithAuthorizationCode(request, keycloakSession, location);
   }
 
-  private String validateAuthorizationAndRetrieveToken(String authorizationCode, String nonce) {
-    ExtractableResponse<Response> extractableResponse =
-        given()
-            .config(config().redirect(redirectConfig().followRedirects(false)))
-            .when()
-            .formParam("grant_type", "authorization_code")
-            .formParam("code", authorizationCode)
-            .post(TOKEN_ENDPOINT_URL)
-            .then()
-            .assertThat()
-            .statusCode(200)
-            .extract();
-    JsonPath body = extractableResponse.body().jsonPath();
-    String accessToken = body.getString("access_token");
+  private String validateAuthorizationAndRetrieveToken(
+      String authorizationCode, String nonce, WebClient webClient) {
+    JsonObject json =
+        Future.await(
+            webClient
+                .post(TOKEN_ENDPOINT_URL)
+                .port(8000)
+                .followRedirects(false)
+                .sendForm(
+                    MultiMap.caseInsensitiveMultiMap()
+                        .add("grant_type", "authorization_code")
+                        .add("code", authorizationCode))
+                .expecting(SC_OK)
+                .map(HttpResponse::bodyAsJsonObject));
+    String accessToken = json.getString("access_token");
 
     validateToken(accessToken, nonce);
 
-    return body.getString("refresh_token");
+    return json.getString("refresh_token");
   }
 
-  private void validateRefreshTokenFlow(String refreshToken, String nonce) {
-    ExtractableResponse<Response> extractableResponse =
-        given()
-            .config(config().redirect(redirectConfig().followRedirects(false)))
-            .when()
-            .formParam("grant_type", "refresh_token")
-            .formParam("refresh_token", refreshToken)
-            .post(TOKEN_ENDPOINT_URL)
-            .then()
-            .assertThat()
-            .statusCode(200)
-            .extract();
-    String accessToken = extractableResponse.body().jsonPath().getString("access_token");
+  private void validateRefreshTokenFlow(String refreshToken, String nonce, WebClient webClient) {
+    JsonObject json =
+        Future.await(
+            webClient
+                .post(TOKEN_ENDPOINT_URL)
+                .port(8000)
+                .followRedirects(false)
+                .sendForm(
+                    MultiMap.caseInsensitiveMultiMap()
+                        .add("grant_type", "refresh_token")
+                        .add("refresh_token", refreshToken))
+                .expecting(SC_OK)
+                .map(HttpResponse::bodyAsJsonObject));
+    String accessToken = json.getString("access_token");
 
     validateToken(accessToken, nonce);
   }
@@ -483,26 +512,22 @@ class KeycloakMockIntegrationTest {
   }
 
   private void openLoginPageAgainAndExpectToBeLoggedInAlready(
-      ClientRequest request, Cookie keycloakSession) throws URISyntaxException {
-    String location =
-        given()
-            .config(config().redirect(redirectConfig().followRedirects(false)))
-            .when()
-            .cookie(keycloakSession)
-            .get(request.getLoginPageUrl())
-            .then()
-            .assertThat()
-            .statusCode(302)
-            .extract()
-            .header("location");
+      ClientRequest request, String sessionId, WebClient webClient) throws URISyntaxException {
+    HttpResponse<Buffer> response =
+        Future.await(
+            webClient
+                .get(request.getLoginPageUrl())
+                .port(8000)
+                .followRedirects(false)
+                .send()
+                .expecting(SC_FOUND));
+    String location = response.getHeader("location");
 
-    validateProperlyLoggedInAndRedirected(request, keycloakSession, location);
+    validateProperlyLoggedInAndRedirected(request, sessionId, location);
   }
 
   private void validateProperlyLoggedInAndRedirected(
-      ClientRequest request, Cookie keycloakSession, String location) throws URISyntaxException {
-    String sessionId = validateCookieAndReturnSessionId(keycloakSession);
-
+      ClientRequest request, String sessionId, String location) throws URISyntaxException {
     assertThat(location).contains("#").doesNotContain("?");
     // neither Java nor AssertJ currently support extracting parameters from a fragment, so use a
     // query instead
@@ -538,196 +563,223 @@ class KeycloakMockIntegrationTest {
   }
 
   private String validateCookieAndReturnSessionId(Cookie keycloakSession) {
-    assertThat(keycloakSession.getPath()).isEqualTo("/auth/realms/realm/");
-    assertThat(keycloakSession.getMaxAge()).isEqualTo(36000);
-    String[] components = keycloakSession.getValue().split("/");
+    assertThat(keycloakSession.path()).isEqualTo("/auth/realms/realm/");
+    assertThat(keycloakSession.maxAge()).isEqualTo(36000);
+    String[] components = keycloakSession.value().split("/");
     assertThat(components).hasSize(3);
     assertThat(components[0]).isEqualTo("realm");
     return components[2];
   }
 
-  private void logoutAndExpectSessionCookieReset(Method method) {
-    given()
-        .config(config().redirect(redirectConfig().followRedirects(false)))
-        .when()
+  private void logoutAndExpectSessionCookieReset(
+      HttpMethod method, WebClient webClient, VertxTestContext testContext) {
+    webClient
         .request(
             method,
-            "http://localhost:8000/auth/realms/realm/protocol/openid-connect/logout?post_logout_redirect_uri=redirect_uri")
-        .then()
-        .assertThat()
-        .statusCode(302)
-        .header("location", "redirect_uri")
-        .cookie("KEYCLOAK_SESSION", "realm/dummy-user-id");
+            "/auth/realms/realm/protocol/openid-connect/logout?post_logout_redirect_uri=redirect_uri")
+        .port(8000)
+        .followRedirects(false)
+        .send()
+        .expecting(SC_FOUND)
+        .expecting(
+            response -> {
+              assertThat(response.getHeader("Location")).isEqualTo("redirect_uri");
+              assertThat(response.cookies())
+                  .hasSize(1)
+                  .first()
+                  .asString()
+                  .startsWith("KEYCLOAK_SESSION=realm/dummy-user-id;");
+              return true;
+            })
+        .onComplete(testContext.succeedingThenComplete());
   }
 
   @Test
   void
-      mock_server_login_with_resource_owner_password_credentials_flow_works_with_client_id_parameter() {
+      mock_server_login_with_resource_owner_password_credentials_flow_works_with_client_id_parameter(
+          Vertx vertx, VertxTestContext testContext) {
     keycloakMock = new KeycloakMock();
     keycloakMock.start();
 
-    ExtractableResponse<Response> extractableResponse =
-        given()
-            .when()
-            .formParam("client_id", "client")
-            .formParam("username", "username")
-            .formParam("password", "role1,role2,role3")
-            .formParam("grant_type", "password")
-            .post(TOKEN_ENDPOINT_URL)
-            .then()
-            .assertThat()
-            .statusCode(200)
-            .extract();
+    WebClient.create(vertx)
+        .post(TOKEN_ENDPOINT_URL)
+        .port(8000)
+        .sendForm(
+            MultiMap.caseInsensitiveMultiMap()
+                .add("client_id", "client")
+                .add("username", "username")
+                .add("password", "role1,role2,role3")
+                .add("grant_type", "password"))
+        .expecting(SC_OK)
+        .map(HttpResponse::bodyAsJsonObject)
+        .expecting(
+            json -> {
+              String accessToken = json.getString("access_token");
 
-    String accessToken = extractableResponse.body().jsonPath().getString("access_token");
-
-    Jws<Claims> jwt = jwtParser.parseSignedClaims(accessToken);
-    assertThat(jwt.getPayload().getIssuer()).isEqualTo("http://localhost:8000/auth/realms/realm");
-    TokenConfig tokenConfig = aTokenConfig().withSourceToken(accessToken).build();
-    assertThat(tokenConfig.getPreferredUsername()).isEqualTo("username");
-    assertThat(tokenConfig.getRealmAccess().getRoles())
-        .containsExactlyInAnyOrder("role1", "role2", "role3");
-    assertThat(tokenConfig.getAudience()).containsExactlyInAnyOrder("client", "server");
+              Jws<Claims> jwt = jwtParser.parseSignedClaims(accessToken);
+              assertThat(jwt.getPayload().getIssuer())
+                  .isEqualTo("http://localhost:8000/auth/realms/realm");
+              TokenConfig tokenConfig = aTokenConfig().withSourceToken(accessToken).build();
+              assertThat(tokenConfig.getPreferredUsername()).isEqualTo("username");
+              assertThat(tokenConfig.getRealmAccess().getRoles())
+                  .containsExactlyInAnyOrder("role1", "role2", "role3");
+              assertThat(tokenConfig.getAudience()).containsExactlyInAnyOrder("client", "server");
+              return true;
+            })
+        .onComplete(testContext.succeedingThenComplete());
   }
 
   @Test
-  void mock_server_login_with_resource_owner_password_credentials_flow_works() {
+  void mock_server_login_with_resource_owner_password_credentials_flow_works(
+      Vertx vertx, VertxTestContext testContext) {
     keycloakMock = new KeycloakMock();
     keycloakMock.start();
 
-    ExtractableResponse<Response> extractableResponse =
-        given()
-            .auth()
-            .preemptive()
-            .basic("client", "does not matter")
-            .when()
-            .formParam("username", "username")
-            .formParam("password", "role1,role2,role3")
-            .formParam("grant_type", "password")
-            .post(TOKEN_ENDPOINT_URL)
-            .then()
-            .assertThat()
-            .statusCode(200)
-            .extract();
+    WebClient.create(vertx)
+        .post(TOKEN_ENDPOINT_URL)
+        .port(8000)
+        .basicAuthentication("client", "does not matter")
+        .sendForm(
+            MultiMap.caseInsensitiveMultiMap()
+                .add("username", "username")
+                .add("password", "role1,role2,role3")
+                .add("grant_type", "password"))
+        .expecting(SC_OK)
+        .map(HttpResponse::bodyAsJsonObject)
+        .expecting(
+            json -> {
+              String accessToken = json.getString("access_token");
 
-    String accessToken = extractableResponse.body().jsonPath().getString("access_token");
-
-    Jws<Claims> jwt = jwtParser.parseSignedClaims(accessToken);
-    assertThat(jwt.getPayload().getIssuer()).isEqualTo("http://localhost:8000/auth/realms/realm");
-    TokenConfig tokenConfig = aTokenConfig().withSourceToken(accessToken).build();
-    assertThat(tokenConfig.getPreferredUsername()).isEqualTo("username");
-    assertThat(tokenConfig.getRealmAccess().getRoles())
-        .containsExactlyInAnyOrder("role1", "role2", "role3");
-    assertThat(tokenConfig.getAudience()).containsExactlyInAnyOrder("client", "server");
+              Jws<Claims> jwt = jwtParser.parseSignedClaims(accessToken);
+              assertThat(jwt.getPayload().getIssuer())
+                  .isEqualTo("http://localhost:8000/auth/realms/realm");
+              TokenConfig tokenConfig = aTokenConfig().withSourceToken(accessToken).build();
+              assertThat(tokenConfig.getPreferredUsername()).isEqualTo("username");
+              assertThat(tokenConfig.getRealmAccess().getRoles())
+                  .containsExactlyInAnyOrder("role1", "role2", "role3");
+              assertThat(tokenConfig.getAudience()).containsExactlyInAnyOrder("client", "server");
+              return true;
+            })
+        .onComplete(testContext.succeedingThenComplete());
   }
 
   @Test
-  void mock_server_login_with_client_credentials_flow_works() {
+  void mock_server_login_with_client_credentials_flow_works(
+      Vertx vertx, VertxTestContext testContext) {
     keycloakMock = new KeycloakMock();
     keycloakMock.start();
 
-    ExtractableResponse<Response> extractableResponse =
-        given()
-            .auth()
-            .preemptive()
-            .basic("client", "role1,role2,role3")
-            .when()
-            .formParam("grant_type", "client_credentials")
-            .post(TOKEN_ENDPOINT_URL)
-            .then()
-            .assertThat()
-            .statusCode(200)
-            .extract();
+    WebClient.create(vertx)
+        .post(TOKEN_ENDPOINT_URL)
+        .port(8000)
+        .basicAuthentication("client", "role1,role2,role3")
+        .sendForm(MultiMap.caseInsensitiveMultiMap().add("grant_type", "client_credentials"))
+        .expecting(SC_OK)
+        .map(HttpResponse::bodyAsJsonObject)
+        .expecting(
+            json -> {
+              String accessToken = json.getString("access_token");
 
-    String accessToken = extractableResponse.body().jsonPath().getString("access_token");
-
-    Jws<Claims> jwt = jwtParser.parseSignedClaims(accessToken);
-    assertThat(jwt.getPayload().getIssuer()).isEqualTo("http://localhost:8000/auth/realms/realm");
-    TokenConfig tokenConfig = aTokenConfig().withSourceToken(accessToken).build();
-    assertThat(tokenConfig.getPreferredUsername()).isEqualTo("client");
-    assertThat(tokenConfig.getRealmAccess().getRoles())
-        .containsExactlyInAnyOrder("role1", "role2", "role3");
-    assertThat(tokenConfig.getAudience()).containsExactlyInAnyOrder("client", "server");
+              Jws<Claims> jwt = jwtParser.parseSignedClaims(accessToken);
+              assertThat(jwt.getPayload().getIssuer())
+                  .isEqualTo("http://localhost:8000/auth/realms/realm");
+              TokenConfig tokenConfig = aTokenConfig().withSourceToken(accessToken).build();
+              assertThat(tokenConfig.getPreferredUsername()).isEqualTo("client");
+              assertThat(tokenConfig.getRealmAccess().getRoles())
+                  .containsExactlyInAnyOrder("role1", "role2", "role3");
+              assertThat(tokenConfig.getAudience()).containsExactlyInAnyOrder("client", "server");
+              return true;
+            })
+        .onComplete(testContext.succeedingThenComplete());
   }
 
   @Test
-  void mock_server_login_with_client_credentials_flow_using_form_works() {
+  void mock_server_login_with_client_credentials_flow_using_form_works(
+      Vertx vertx, VertxTestContext testContext) {
     keycloakMock = new KeycloakMock();
     keycloakMock.start();
 
-    ExtractableResponse<Response> extractableResponse =
-        given()
-            .when()
-            .formParam("grant_type", "client_credentials")
-            .formParam("client_id", "client")
-            .formParam("client_secret", "role1,role2,role3")
-            .post(TOKEN_ENDPOINT_URL)
-            .then()
-            .assertThat()
-            .statusCode(200)
-            .extract();
+    WebClient.create(vertx)
+        .post(TOKEN_ENDPOINT_URL)
+        .port(8000)
+        .sendForm(
+            MultiMap.caseInsensitiveMultiMap()
+                .add("client_id", "client")
+                .add("client_secret", "role1,role2,role3")
+                .add("grant_type", "client_credentials"))
+        .expecting(SC_OK)
+        .map(HttpResponse::bodyAsJsonObject)
+        .expecting(
+            json -> {
+              String accessToken = json.getString("access_token");
 
-    String accessToken = extractableResponse.body().jsonPath().getString("access_token");
-
-    Jws<Claims> jwt = jwtParser.parseSignedClaims(accessToken);
-    assertThat(jwt.getPayload().getIssuer()).isEqualTo("http://localhost:8000/auth/realms/realm");
-    TokenConfig tokenConfig = aTokenConfig().withSourceToken(accessToken).build();
-    assertThat(tokenConfig.getPreferredUsername()).isEqualTo("client");
-    assertThat(tokenConfig.getRealmAccess().getRoles())
-        .containsExactlyInAnyOrder("role1", "role2", "role3");
-    assertThat(tokenConfig.getAudience()).containsExactlyInAnyOrder("client", "server");
+              Jws<Claims> jwt = jwtParser.parseSignedClaims(accessToken);
+              assertThat(jwt.getPayload().getIssuer())
+                  .isEqualTo("http://localhost:8000/auth/realms/realm");
+              TokenConfig tokenConfig = aTokenConfig().withSourceToken(accessToken).build();
+              assertThat(tokenConfig.getPreferredUsername()).isEqualTo("client");
+              assertThat(tokenConfig.getRealmAccess().getRoles())
+                  .containsExactlyInAnyOrder("role1", "role2", "role3");
+              assertThat(tokenConfig.getAudience()).containsExactlyInAnyOrder("client", "server");
+              return true;
+            })
+        .onComplete(testContext.succeedingThenComplete());
   }
 
   @Test
-  void documentation_works() {
+  void documentation_works(Vertx vertx, VertxTestContext testContext) {
     keycloakMock = new KeycloakMock();
     keycloakMock.start();
 
-    ExtractableResponse<Response> extractableResponse =
-        given()
-            .when()
-            .get("http://localhost:8000/docs")
-            .then()
-            .assertThat()
-            .statusCode(200)
-            .extract();
-
-    assertThat(extractableResponse.body().asPrettyString())
-        .contains(
-            "      <tr>\n"
-                + "        <td colspan=\"1\" rowspan=\"1\">GET</td>\n"
-                + "        <td colspan=\"1\" rowspan=\"1\">/docs</td>\n"
-                + "        <td colspan=\"1\" rowspan=\"1\">documentation endpoint</td>\n"
-                + "      </tr>");
+    WebClient.create(vertx)
+        .get("/docs")
+        .port(8000)
+        .send()
+        .expecting(SC_OK)
+        .map(HttpResponse::bodyAsString)
+        .expecting(
+            body -> {
+              assertThat(body)
+                  .contains(
+                      "    <tr>\n"
+                          + "      <td>GET</td>\n"
+                          + "      <td>/docs</td>\n"
+                          + "      <td>documentation endpoint</td>\n"
+                          + "    </tr>");
+              return true;
+            })
+        .onComplete(testContext.succeedingThenComplete());
   }
 
   @Test
-  void token_introspection_works() {
+  void token_introspection_works(Vertx vertx, VertxTestContext testContext) {
     keycloakMock = new KeycloakMock();
     keycloakMock.start();
 
     TokenConfig tokenConfig = aTokenConfig().withAudience("myclient").build();
     String accessToken = keycloakMock.getAccessToken(tokenConfig);
 
-    ExtractableResponse<Response> extractableResponse =
-        given()
-            .when()
-            .formParam("token", accessToken)
-            .formParam("client_id", "myclient")
-            .post(
-                "http://localhost:8000/auth/realms/realm/protocol/openid-connect/token/introspect")
-            .then()
-            .assertThat()
-            .statusCode(200)
-            .extract();
-
-    assertThat(extractableResponse.jsonPath().getBoolean("active")).isTrue();
-    assertThat(extractableResponse.jsonPath().getMap(""))
-        .containsAllEntriesOf(tokenConfig.getClaims());
+    WebClient.create(vertx)
+        .post("/auth/realms/realm/protocol/openid-connect/token/introspect")
+        .port(8000)
+        .sendForm(
+            MultiMap.caseInsensitiveMultiMap()
+                .add("token", accessToken)
+                .add("client_id", "myclient"))
+        .expecting(SC_OK)
+        .map(HttpResponse::bodyAsJsonObject)
+        .expecting(
+            json -> {
+              assertThat(json.getBoolean("active")).isTrue();
+              assertThat(json.getMap()).containsAllEntriesOf(tokenConfig.getClaims());
+              return true;
+            })
+        .onComplete(testContext.succeedingThenComplete());
   }
 
   @Test
-  void token_introspection_does_not_leak_claims_on_invalid_token() {
+  void token_introspection_does_not_leak_claims_on_invalid_token(
+      Vertx vertx, VertxTestContext testContext) {
     keycloakMock = new KeycloakMock();
     keycloakMock.start();
 
@@ -735,19 +787,21 @@ class KeycloakMockIntegrationTest {
         keycloakMock.getAccessToken(
             aTokenConfig().withExpiration(Instant.now().minus(1, ChronoUnit.HOURS)).build());
 
-    ExtractableResponse<Response> extractableResponse =
-        given()
-            .when()
-            .formParam("token", accessToken)
-            .formParam("client_id", "myclient")
-            .post(
-                "http://localhost:8000/auth/realms/realm/protocol/openid-connect/token/introspect")
-            .then()
-            .assertThat()
-            .statusCode(200)
-            .extract();
-
-    assertThat(extractableResponse.jsonPath().getMap("")).containsExactly(entry("active", false));
+    WebClient.create(vertx)
+        .post("/auth/realms/realm/protocol/openid-connect/token/introspect")
+        .port(8000)
+        .sendForm(
+            MultiMap.caseInsensitiveMultiMap()
+                .add("token", accessToken)
+                .add("client_id", "myclient"))
+        .expecting(SC_OK)
+        .map(HttpResponse::bodyAsJsonObject)
+        .expecting(
+            json -> {
+              assertThat(json.getMap()).containsExactly(entry("active", false));
+              return true;
+            })
+        .onComplete(testContext.succeedingThenComplete());
   }
 
   private static class ClientRequest {

@@ -2,10 +2,16 @@ package com.tngtech.keycloakmock.examplebackend;
 
 import static com.tngtech.keycloakmock.api.ServerConfig.aServerConfig;
 import static com.tngtech.keycloakmock.api.TokenConfig.aTokenConfig;
-import static org.hamcrest.Matchers.equalTo;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.tngtech.keycloakmock.junit.KeycloakMockRule;
-import io.restassured.RestAssured;
+import io.vertx.core.Vertx;
+import io.vertx.core.http.HttpResponseExpectation;
+import io.vertx.ext.web.client.HttpResponse;
+import io.vertx.ext.web.client.WebClient;
+import io.vertx.junit5.VertxTestContext;
+import java.util.concurrent.TimeUnit;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -26,68 +32,83 @@ public class AuthenticationJUnit4Test {
 
   @LocalServerPort private int port;
 
+  private Vertx vertx;
+  private VertxTestContext testContext;
+
   @Before
   public void setup() {
-    RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
-    RestAssured.port = port;
+    vertx = Vertx.vertx();
+    testContext = new VertxTestContext();
+  }
+
+  @After
+  public void shutdown() throws Throwable {
+    assertThat(testContext.awaitCompletion(5, TimeUnit.SECONDS)).isTrue();
+    if (testContext.failed()) {
+      throw testContext.causeOfFailure();
+    }
+    vertx.close();
   }
 
   @Test
   public void no_authentication_fails() {
-    RestAssured.given().when().get("/api/hello").then().statusCode(401);
+    WebClient.create(vertx)
+        .get("/api/hello")
+        .port(port)
+        .send()
+        .expecting(HttpResponseExpectation.SC_UNAUTHORIZED)
+        .onComplete(testContext.succeedingThenComplete());
   }
 
   @Test
   public void authentication_works() {
-    RestAssured.given()
-        .auth()
-        .preemptive()
-        .oauth2(mock.getAccessToken(aTokenConfig().withSubject("Awesome").build()))
-        .when()
+    WebClient.create(vertx)
         .get("/api/hello")
-        .then()
-        .statusCode(200)
-        .and()
-        .body(equalTo("Hello Awesome"));
+        .port(port)
+        .bearerTokenAuthentication(
+            mock.getAccessToken(aTokenConfig().withSubject("Awesome").build()))
+        .send()
+        .expecting(HttpResponseExpectation.SC_OK)
+        .map(HttpResponse::bodyAsString)
+        .expecting("Hello Awesome"::equals)
+        .onComplete(testContext.succeedingThenComplete());
   }
 
   @Test
   public void authentication_without_role_fails() {
-    RestAssured.given()
-        .auth()
-        .preemptive()
-        .oauth2(mock.getAccessToken(aTokenConfig().build()))
-        .when()
+    WebClient.create(vertx)
         .get("/api/vip")
-        .then()
-        .statusCode(403);
+        .port(port)
+        .bearerTokenAuthentication(mock.getAccessToken(aTokenConfig().build()))
+        .send()
+        .expecting(HttpResponseExpectation.SC_FORBIDDEN)
+        .onComplete(testContext.succeedingThenComplete());
   }
 
   @Test
-  public void authentication_with_role_works() {
-    RestAssured.given()
-        .auth()
-        .preemptive()
-        .oauth2(mock.getAccessToken(aTokenConfig().withRealmRole("vip").build()))
-        .when()
+  public void authentication_with_realm_role_works() {
+    WebClient.create(vertx)
         .get("/api/vip")
-        .then()
-        .statusCode(200)
-        .and()
-        .body(equalTo("you may feel very special here"));
+        .port(port)
+        .bearerTokenAuthentication(mock.getAccessToken(aTokenConfig().withRealmRole("vip").build()))
+        .send()
+        .expecting(HttpResponseExpectation.SC_OK)
+        .map(HttpResponse::bodyAsString)
+        .expecting("you may feel very special here"::equals)
+        .onComplete(testContext.succeedingThenComplete());
   }
 
   @Test
   public void authentication_with_resource_role_works() {
-    RestAssured.given()
-        .auth()
-        .preemptive()
-        .oauth2(mock.getAccessToken(aTokenConfig().withResourceRole("server", "vip").build()))
-        .when()
+    WebClient.create(vertx)
         .get("/api/vip")
-        .then()
-        .statusCode(200)
-        .and()
-        .body(equalTo("you may feel very special here"));
+        .port(port)
+        .bearerTokenAuthentication(
+            mock.getAccessToken(aTokenConfig().withResourceRole("server", "vip").build()))
+        .send()
+        .expecting(HttpResponseExpectation.SC_OK)
+        .map(HttpResponse::bodyAsString)
+        .expecting("you may feel very special here"::equals)
+        .onComplete(testContext.succeedingThenComplete());
   }
 }

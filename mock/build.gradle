@@ -26,11 +26,13 @@ dependencies {
     htmlResourceJar "org.keycloak:keycloak-services:$keycloak_version"
     htmlResourceJar "org.keycloak:keycloak-themes-vendor:$keycloak_version"
     testImplementation 'io.fusionauth:fusionauth-jwt:5.3.3'
-    testImplementation "io.rest-assured:rest-assured:$restassured_version"
     // required to mock RoutingContext
     testImplementation "io.vertx:vertx-codegen:$vertx_version"
     testImplementation 'net.javacrumbs.json-unit:json-unit-assertj:4.1.1'
+    testImplementation "io.vertx:vertx-junit5:$vertx_version"
+    testImplementation "io.vertx:vertx-web-client:$vertx_version"
     testImplementation "org.assertj:assertj-core:$assertj_version"
+    testImplementation 'org.jsoup:jsoup:1.21.2'
     testImplementation "org.junit.jupiter:junit-jupiter-api"
     testImplementation "org.junit.jupiter:junit-jupiter-params"
     testImplementation "org.mockito:mockito-junit-jupiter:$mockito_version"
