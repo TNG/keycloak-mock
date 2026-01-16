@@ -6,7 +6,7 @@ plugins {
 
 def nodeDir = 'bin/nodejs'
 def yarnDir = 'bin/yarn'
-def nodeVersionString = '18.18.0'
+def nodeVersionString = '24.12.0'
 
 node {
     // Version of node to use.

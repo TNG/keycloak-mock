@@ -7,16 +7,16 @@ buildscript {
 }
 
 plugins {
-    id 'com.github.ben-manes.versions' version '0.52.0'
-    id 'com.google.cloud.tools.jib' version '3.4.5' apply false
-    id 'com.gradleup.nmcp' version '1.2.0' apply false
-    id 'com.gradleup.nmcp.aggregation' version '1.2.0'
-    id 'org.sonarqube' version '6.2.0.5505'
-    id 'pl.allegro.tech.build.axion-release' version '1.20.1'
+    id 'com.github.ben-manes.versions' version '0.53.0'
+    id 'com.google.cloud.tools.jib' version '3.5.2' apply false
+    id 'com.gradleup.nmcp' version '1.4.3' apply false
+    id 'com.gradleup.nmcp.aggregation' version '1.4.3'
+    id 'org.sonarqube' version '7.2.2.6593'
+    id 'pl.allegro.tech.build.axion-release' version '1.21.1'
 }
 
 wrapper {
-    gradleVersion = '9.0.0'
+    gradleVersion = '9.3.0'
     distributionType = Wrapper.DistributionType.ALL
 }
 
@@ -44,19 +44,20 @@ allprojects {
 }
 
 ext {
-    assertj_version = '3.27.4'
-    jjwt_version = '0.12.7'
+    assertj_version = '3.27.6'
+    jjwt_version = '0.13.0'
     jsr305_version = '3.0.2'
     junit4_version = '4.13.2'
-    junit5_version = '5.13.4'
-    keycloak_version = '26.3.2'
+    // starting from major version 6, junit needs Java 17+
+    junit5_version = '5.14.2'
+    keycloak_version = '26.5.1'
     // the last version that was shipped together with keycloak server
     keycloak_js_version = '25.0.6'
-    mockito_version = '5.19.0'
+    mockito_version = '5.21.0'
     picocli_version = '4.7.7'
     slf4j_version = '2.0.17'
     // starting from major version 5, vert.x needs Java 11+
-    vertx_version = '4.5.18'
+    vertx_version = '4.5.24'
 
     license_name = 'The Apache License, Version 2.0'
     license_url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
