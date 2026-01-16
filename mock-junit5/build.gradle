@@ -4,6 +4,7 @@ dependencies {
     api project(':mock')
     implementation "com.google.code.findbugs:jsr305:$jsr305_version"
     implementation "org.junit.jupiter:junit-jupiter-api:$junit5_version"
-    testImplementation "io.rest-assured:rest-assured:$restassured_version"
+    testImplementation "io.vertx:vertx-junit5:$vertx_version"
+    testImplementation "io.vertx:vertx-web-client:$vertx_version"
     testImplementation "org.assertj:assertj-core:$assertj_version"
 }

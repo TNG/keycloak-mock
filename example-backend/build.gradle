@@ -33,13 +33,12 @@ dependencies {
     implementation 'org.keycloak:keycloak-policy-enforcer:26.0.6'
     testImplementation project(':mock-junit')
     testImplementation project(':mock-junit5')
-    testImplementation "org.springframework.boot:spring-boot-starter-test:$springBootVersion"
-    testImplementation "io.rest-assured:rest-assured:$restassured_version"
-    testImplementation "io.rest-assured:json-path:$restassured_version"
-    testImplementation "io.rest-assured:xml-path:$restassured_version"
+    testImplementation "io.vertx:vertx-junit5:$vertx_version"
+    testImplementation "io.vertx:vertx-web-client:$vertx_version"
     testImplementation "junit:junit:$junit4_version"
-    testImplementation 'org.junit.jupiter:junit-jupiter'
     testImplementation "org.assertj:assertj-core:$assertj_version"
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testImplementation "org.springframework.boot:spring-boot-starter-test:$springBootVersion"
 }
 
 jib {

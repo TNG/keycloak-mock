@@ -2,19 +2,19 @@ package com.tngtech.keycloakmock.junit5;
 
 import static com.tngtech.keycloakmock.api.ServerConfig.aServerConfig;
 
-import io.restassured.RestAssured;
-import io.restassured.http.ContentType;
+import io.vertx.core.Vertx;
+import io.vertx.core.http.HttpResponseExpectation;
+import io.vertx.ext.web.client.WebClient;
+import io.vertx.ext.web.client.WebClientOptions;
+import io.vertx.junit5.VertxExtension;
+import io.vertx.junit5.VertxTestContext;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
+@ExtendWith(VertxExtension.class)
 class KeycloakMockExtensionJunit5Test {
   private KeycloakMockExtension keyCloakMockExtension;
-
-  @BeforeEach
-  void setup() {
-    RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
-  }
 
   @AfterEach
   void stopMock() {
@@ -24,30 +24,28 @@ class KeycloakMockExtensionJunit5Test {
   }
 
   @Test
-  void mock_is_running() {
+  void mock_is_running(Vertx vertx, VertxTestContext testContext) {
     keyCloakMockExtension = new KeycloakMockExtension(aServerConfig().withRandomPort().build());
     keyCloakMockExtension.beforeAll(null);
-    RestAssured.port = keyCloakMockExtension.getActualPort();
 
-    RestAssured.when()
+    WebClient.create(vertx)
         .get("/auth/realms/master/protocol/openid-connect/certs")
-        .then()
-        .statusCode(200)
-        .and()
-        .contentType(ContentType.JSON);
+        .port(keyCloakMockExtension.getActualPort())
+        .send()
+        .expecting(HttpResponseExpectation.SC_OK.and(HttpResponseExpectation.JSON))
+        .onComplete(testContext.succeedingThenComplete());
   }
 
   @Test
-  void https_is_working() {
+  void https_is_working(Vertx vertx, VertxTestContext testContext) {
     keyCloakMockExtension = new KeycloakMockExtension(aServerConfig().withTls(true).build());
     keyCloakMockExtension.beforeAll(null);
-    RestAssured.port = keyCloakMockExtension.getActualPort();
 
-    RestAssured.given()
-        .relaxedHTTPSValidation()
-        .when()
-        .get("https://localhost:8000/auth/realms/master/protocol/openid-connect/certs")
-        .then()
-        .statusCode(200);
+    WebClient.create(vertx, new WebClientOptions().setSsl(true).setTrustAll(true))
+        .get("/auth/realms/master/protocol/openid-connect/certs")
+        .port(keyCloakMockExtension.getActualPort())
+        .send()
+        .expecting(HttpResponseExpectation.SC_OK.and(HttpResponseExpectation.JSON))
+        .onComplete(testContext.succeedingThenComplete());
   }
 }
