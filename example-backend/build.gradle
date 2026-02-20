@@ -41,7 +41,7 @@ dependencies {
 
 jib {
     from {
-        image = 'eclipse-temurin:21-jre'
+        image = 'eclipse-temurin:25-jre'
     }
     to {
         image = 'keycloak-mock/example-backend'

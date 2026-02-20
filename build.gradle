@@ -83,7 +83,7 @@ subprojects {
         test {
             useJUnitPlatform()
             javaLauncher = javaToolchains.launcherFor {
-                languageVersion = JavaLanguageVersion.of(21)
+                languageVersion = JavaLanguageVersion.of(25)
             }
             testLogging {
                 events "passed", "skipped", "failed"
@@ -93,7 +93,7 @@ subprojects {
 
         tasks.named('compileTestJava') {
             javaCompiler = javaToolchains.compilerFor {
-                languageVersion.set(JavaLanguageVersion.of(21))
+                languageVersion.set(JavaLanguageVersion.of(25))
             }
         }
 
