@@ -29,7 +29,7 @@
     "not op_mini all"
   ],
   "devDependencies": {
-    "cypress": "^15.9.0",
+    "cypress": "^15.10.0",
     "cypress-keycloak": "^2.0.2"
   }
 }
