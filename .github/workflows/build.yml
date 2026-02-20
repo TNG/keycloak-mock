@@ -58,7 +58,7 @@ jobs:
           report_paths: '**/build/test-results/test/TEST-*.xml'
           check_name: JUnit Test Report
       - name: Upload cypress output
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         if: failure()
         with:
           name: test-reports-js
