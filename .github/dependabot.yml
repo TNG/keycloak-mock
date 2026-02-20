@@ -1,0 +1,11 @@
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "npm"
+    directory: "/example-frontend-react/"
+    schedule:
+      interval: "weekly"
+# no gradle updates for now, since some dependencies cannot be updated due to missing Java 8 compatibility
