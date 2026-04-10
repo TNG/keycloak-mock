@@ -1,5 +1,20 @@
 package com.tngtech.keycloakmock.impl;
 
+import static com.tngtech.keycloakmock.api.ServerConfig.DEFAULT_SCOPE;
+import static com.tngtech.keycloakmock.api.TokenConfig.CLAIM_AUTHENTICATION_CONTEXT_REFERENCE;
+import static com.tngtech.keycloakmock.api.TokenConfig.CLAIM_AUTHORIZED_PARTY;
+import static com.tngtech.keycloakmock.api.TokenConfig.CLAIM_AUTH_TIME;
+import static com.tngtech.keycloakmock.api.TokenConfig.CLAIM_EMAIL;
+import static com.tngtech.keycloakmock.api.TokenConfig.CLAIM_FAMILY_NAME;
+import static com.tngtech.keycloakmock.api.TokenConfig.CLAIM_GIVEN_NAME;
+import static com.tngtech.keycloakmock.api.TokenConfig.CLAIM_NAME;
+import static com.tngtech.keycloakmock.api.TokenConfig.CLAIM_PREFERRED_USERNAME;
+import static com.tngtech.keycloakmock.api.TokenConfig.CLAIM_REALM_ACCESS;
+import static com.tngtech.keycloakmock.api.TokenConfig.CLAIM_RESOURCE_ACCESS;
+import static com.tngtech.keycloakmock.api.TokenConfig.CLAIM_SCOPE;
+import static com.tngtech.keycloakmock.api.TokenConfig.CLAIM_SESSION_ID;
+import static com.tngtech.keycloakmock.api.TokenConfig.CLAIM_SESSION_STATE;
+import static com.tngtech.keycloakmock.api.TokenConfig.CLAIM_TYPE;
 import static java.util.Optional.ofNullable;
 
 import com.tngtech.keycloakmock.api.TokenConfig;
@@ -59,14 +74,14 @@ public class TokenGenerator {
             .add(tokenConfig.getAudience().isEmpty() ? defaultAudiences : tokenConfig.getAudience())
             .and()
             .issuedAt(new Date(tokenConfig.getIssuedAt().toEpochMilli()))
-            .claim("auth_time", tokenConfig.getAuthenticationTime().getEpochSecond())
+            .claim(CLAIM_AUTH_TIME, tokenConfig.getAuthenticationTime().getEpochSecond())
             .issuer(requestConfiguration.getIssuer().toASCIIString())
             .subject(tokenConfig.getSubject())
-            .claim("scope", encodeGivenOrDefaultScopes(tokenConfig.getScopes()))
-            .claim("typ", "Bearer")
-            .claim("azp", tokenConfig.getAuthorizedParty())
-            .claim("sid", tokenConfig.getSessionId())
-            .claim("session_state", tokenConfig.getSessionId());
+            .claim(CLAIM_SCOPE, encodeGivenOrDefaultScopes(tokenConfig.getScopes()))
+            .claim(CLAIM_TYPE, "Bearer")
+            .claim(CLAIM_AUTHORIZED_PARTY, tokenConfig.getAuthorizedParty())
+            .claim(CLAIM_SESSION_ID, tokenConfig.getSessionId())
+            .claim(CLAIM_SESSION_STATE, tokenConfig.getSessionId());
     if (tokenConfig.getNotBefore() != null) {
       builder.notBefore(new Date(tokenConfig.getNotBefore().toEpochMilli()));
     }
@@ -81,30 +96,33 @@ public class TokenGenerator {
           UserData.fromUsernameAndHostname(
               tokenConfig.getSubject(), requestConfiguration.getHostname());
       builder
-          .claim("name", ofNullable(tokenConfig.getName()).orElse(generatedUserData.getName()))
+          .claim(CLAIM_NAME, ofNullable(tokenConfig.getName()).orElse(generatedUserData.getName()))
           .claim(
-              "given_name",
+              CLAIM_GIVEN_NAME,
               ofNullable(tokenConfig.getGivenName()).orElse(generatedUserData.getGivenName()))
           .claim(
-              "family_name",
+              CLAIM_FAMILY_NAME,
               ofNullable(tokenConfig.getFamilyName()).orElse(generatedUserData.getFamilyName()))
-          .claim("email", ofNullable(tokenConfig.getEmail()).orElse(generatedUserData.getEmail()))
           .claim(
-              "preferred_username",
+              CLAIM_EMAIL, ofNullable(tokenConfig.getEmail()).orElse(generatedUserData.getEmail()))
+          .claim(
+              CLAIM_PREFERRED_USERNAME,
               ofNullable(tokenConfig.getPreferredUsername())
                   .orElse(generatedUserData.getPreferredUsername()));
     } else {
       builder
-          .claim("name", tokenConfig.getName())
-          .claim("given_name", tokenConfig.getGivenName())
-          .claim("family_name", tokenConfig.getFamilyName())
-          .claim("email", tokenConfig.getEmail())
-          .claim("preferred_username", tokenConfig.getPreferredUsername());
+          .claim(CLAIM_NAME, tokenConfig.getName())
+          .claim(CLAIM_GIVEN_NAME, tokenConfig.getGivenName())
+          .claim(CLAIM_FAMILY_NAME, tokenConfig.getFamilyName())
+          .claim(CLAIM_EMAIL, tokenConfig.getEmail())
+          .claim(CLAIM_PREFERRED_USERNAME, tokenConfig.getPreferredUsername());
     }
     return builder
-        .claim("acr", tokenConfig.getAuthenticationContextClassReference())
-        .claim("realm_access", tokenConfig.getRealmAccess())
-        .claim("resource_access", tokenConfig.getResourceAccess())
+        .claim(
+            CLAIM_AUTHENTICATION_CONTEXT_REFERENCE,
+            tokenConfig.getAuthenticationContextClassReference())
+        .claim(CLAIM_REALM_ACCESS, tokenConfig.getRealmAccess())
+        .claim(CLAIM_RESOURCE_ACCESS, tokenConfig.getResourceAccess())
         .claims()
         .add(tokenConfig.getClaims())
         .and()
@@ -114,11 +132,11 @@ public class TokenGenerator {
 
   private String encodeGivenOrDefaultScopes(List<String> scopes) {
     if (scopes.isEmpty()) {
-      return Stream.concat(Stream.of("openid"), defaultScopes.stream())
+      return Stream.concat(Stream.of(DEFAULT_SCOPE), defaultScopes.stream())
           .distinct()
           .collect(Collectors.joining(" "));
     } else {
-      return Stream.concat(Stream.of("openid"), scopes.stream())
+      return Stream.concat(Stream.of(DEFAULT_SCOPE), scopes.stream())
           .distinct()
           .collect(Collectors.joining(" "));
     }

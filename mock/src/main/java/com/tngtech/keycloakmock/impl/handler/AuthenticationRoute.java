@@ -24,8 +24,9 @@ import org.slf4j.LoggerFactory;
 public class AuthenticationRoute implements Handler<RoutingContext> {
 
   private static final Logger LOG = LoggerFactory.getLogger(AuthenticationRoute.class);
-  private static final String USERNAME_PARAMETER = "username";
-  private static final String ROLES_PARAMETER = "password";
+  public static final String AUTHENTICATE_PATH_PARAM_SESSION_ID = "sessionId";
+  static final String AUTHENTICATE_PARAM_USERNAME = "username";
+  static final String AUTHENTICATE_PARAM_ROLES = "password";
 
   @Nonnull private final SessionRepository sessionRepository;
   @Nonnull private final RedirectHelper redirectHelper;
@@ -43,20 +44,20 @@ public class AuthenticationRoute implements Handler<RoutingContext> {
 
   @Override
   public void handle(@Nonnull RoutingContext routingContext) {
-    String sessionId = routingContext.pathParam("sessionId");
+    String sessionId = routingContext.pathParam(AUTHENTICATE_PATH_PARAM_SESSION_ID);
     SessionRequest request = sessionRepository.getRequest(sessionId);
     if (request == null) {
       LOG.warn("Login for unknown session {} requested!", new UserInputSanitizer(sessionId));
       routingContext.fail(404);
       return;
     }
-    String username = routingContext.request().getFormAttribute(USERNAME_PARAMETER);
+    String username = routingContext.request().getFormAttribute(AUTHENTICATE_PARAM_USERNAME);
     if (username == null) {
-      LOG.warn("Missing username {}", new UserInputSanitizer(username));
+      LOG.warn("Missing username");
       routingContext.fail(400);
       return;
     }
-    String rolesString = routingContext.request().getFormAttribute(ROLES_PARAMETER);
+    String rolesString = routingContext.request().getFormAttribute(AUTHENTICATE_PARAM_ROLES);
     List<String> roles =
         Optional.ofNullable(rolesString)
             .map(s -> Arrays.asList(s.split(",")))

@@ -37,6 +37,29 @@ import javax.annotation.Nullable;
 public class TokenConfig {
   private static final Pattern ISSUER_PATH_PATTERN = Pattern.compile("^.*?/realms/([^/]+)$");
 
+  // general claims
+  public static final String CLAIM_AUDIENCE = "aud";
+  public static final String CLAIM_AUTHORIZED_PARTY = "azp";
+  public static final String CLAIM_SUBJECT = "sub";
+  public static final String CLAIM_TYPE = "typ";
+  public static final String CLAIM_ISSUER = "iss";
+  public static final String CLAIM_SESSION_ID = "sid";
+  public static final String CLAIM_ISSUED_AT = "iat";
+  public static final String CLAIM_NOT_BEFORE = "nbf";
+  public static final String CLAIM_EXPIRES_AT = "exp";
+  // Keycloak claims
+  public static final String CLAIM_NAME = "name";
+  public static final String CLAIM_GIVEN_NAME = "given_name";
+  public static final String CLAIM_FAMILY_NAME = "family_name";
+  public static final String CLAIM_EMAIL = "email";
+  public static final String CLAIM_PREFERRED_USERNAME = "preferred_username";
+  public static final String CLAIM_REALM_ACCESS = "realm_access";
+  public static final String CLAIM_RESOURCE_ACCESS = "resource_access";
+  public static final String CLAIM_AUTHENTICATION_CONTEXT_REFERENCE = "acr";
+  public static final String CLAIM_SCOPE = "scope";
+  public static final String CLAIM_SESSION_STATE = "session_state";
+  public static final String CLAIM_AUTH_TIME = "auth_time";
+
   @Nonnull private final Set<String> audience;
   @Nonnull private final String authorizedParty;
   @Nonnull private final String subject;
@@ -265,7 +288,7 @@ public class TokenConfig {
       }
       for (Map.Entry<String, Object> entry : untrustedClaims.entrySet()) {
         switch (entry.getKey()) {
-          case "aud":
+          case CLAIM_AUDIENCE:
             Object aud = entry.getValue();
             if (aud instanceof String) {
               withAudience((String) aud);
@@ -273,49 +296,49 @@ public class TokenConfig {
               withAudiences((Collection<String>) aud);
             }
             break;
-          case "azp":
+          case CLAIM_AUTHORIZED_PARTY:
             withAuthorizedParty(getTypedValue(entry, String.class));
             break;
-          case "sub":
+          case CLAIM_SUBJECT:
             withSubject(getTypedValue(entry, String.class));
             break;
-          case "name":
+          case CLAIM_NAME:
             withName(getTypedValue(entry, String.class));
             break;
-          case "given_name":
+          case CLAIM_GIVEN_NAME:
             withGivenName(getTypedValue(entry, String.class));
             break;
-          case "family_name":
+          case CLAIM_FAMILY_NAME:
             withFamilyName(getTypedValue(entry, String.class));
             break;
-          case "email":
+          case CLAIM_EMAIL:
             withEmail(getTypedValue(entry, String.class));
             break;
-          case "preferred_username":
+          case CLAIM_PREFERRED_USERNAME:
             withPreferredUsername(getTypedValue(entry, String.class));
             break;
-          case "realm_access":
+          case CLAIM_REALM_ACCESS:
             Map<String, List<String>> sourceRealmAccess = getTypedValue(entry, Map.class);
             withRealmRoles(sourceRealmAccess.get("roles"));
             break;
-          case "resource_access":
+          case CLAIM_RESOURCE_ACCESS:
             Map<String, Map<String, List<String>>> sourceResourceAccess =
                 getTypedValue(entry, Map.class);
             sourceResourceAccess.forEach(
                 (key, value) -> withResourceRoles(key, value.get("roles")));
             break;
-          case "scope":
+          case CLAIM_SCOPE:
             withScopes(Arrays.asList(getTypedValue(entry, String.class).split(" ")));
             break;
-          case "acr":
+          case CLAIM_AUTHENTICATION_CONTEXT_REFERENCE:
             withAuthenticationContextClassReference(getTypedValue(entry, String.class));
             break;
-          case "typ":
+          case CLAIM_TYPE:
             if (!"Bearer".equals(getTypedValue(entry, String.class))) {
               throw new IllegalArgumentException("Only bearer tokens are allowed here!");
             }
             break;
-          case "iss":
+          case CLAIM_ISSUER:
             String issuer = getTypedValue(entry, String.class);
             try {
               URI issuerUrl = new URI(issuer);
@@ -325,14 +348,14 @@ public class TokenConfig {
               throw new IllegalArgumentException("Issuer '" + issuer + "' is not a valid URL", e);
             }
             break;
-          case "sid":
-          case "session_state":
+          case CLAIM_SESSION_ID:
+          case CLAIM_SESSION_STATE:
             // ignoring session information
             break;
-          case "iat":
-          case "nbf":
-          case "exp":
-          case "auth_time":
+          case CLAIM_ISSUED_AT:
+          case CLAIM_NOT_BEFORE:
+          case CLAIM_EXPIRES_AT:
+          case CLAIM_AUTH_TIME:
             // ignoring date information
             break;
           default:
