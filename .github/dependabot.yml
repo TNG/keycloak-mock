@@ -8,4 +8,9 @@ updates:
     directory: "/example-frontend-react/"
     schedule:
       interval: "weekly"
+    groups:
+      react:
+        patterns:
+          - "react"
+          - "react-dom"
 # no gradle updates for now, since some dependencies cannot be updated due to missing Java 8 compatibility
