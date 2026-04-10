@@ -1,5 +1,7 @@
 package com.tngtech.keycloakmock.impl.handler;
 
+import static com.tngtech.keycloakmock.impl.handler.OptionalClientAuthHandler.CTX_CLIENT_ID;
+import static com.tngtech.keycloakmock.impl.handler.TokenIntrospectionRoute.TOKEN_INTROSPECTION_PARAM_TOKEN;
 import static java.util.Collections.singletonList;
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 import static org.assertj.core.data.MapEntry.entry;
@@ -42,10 +44,10 @@ class TokenIntrospectionRouteTest {
     uut = new TokenIntrospectionRoute(tokenGenerator);
 
     when(routingContext.request()).thenReturn(request);
-    when(request.getFormAttribute("token")).thenReturn(TOKEN);
+    when(request.getFormAttribute(TOKEN_INTROSPECTION_PARAM_TOKEN)).thenReturn(TOKEN);
     when(routingContext.response()).thenReturn(response);
     when(response.putHeader(any(CharSequence.class), any(CharSequence.class))).thenReturn(response);
-    User user = User.create(JsonObject.of("client_id", "client123"));
+    User user = User.create(JsonObject.of(CTX_CLIENT_ID, "client123"));
     when(routingContext.user()).thenReturn(user);
   }
 

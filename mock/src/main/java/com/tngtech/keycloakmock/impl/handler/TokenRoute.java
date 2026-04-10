@@ -22,10 +22,25 @@ import javax.inject.Singleton;
 
 @Singleton
 public class TokenRoute implements Handler<RoutingContext> {
-
-  private static final String GRANT_TYPE = "grant_type";
-  private static final String CODE = "code";
-  private static final String SESSION_STATE = "session_state";
+  // token route parameters
+  static final String TOKEN_PARAM_GRANT_TYPE = "grant_type";
+  static final String TOKEN_PARAM_CODE = "code";
+  static final String TOKEN_PARAM_REFRESH_TOKEN = "refresh_token";
+  static final String TOKEN_PARAM_USERNAME = "username";
+  static final String TOKEN_PARAM_PASSWORD = "password";
+  // allowed grant types
+  static final String GRANT_AUTHORIZATION_CODE = "authorization_code";
+  static final String GRANT_REFRESH_TOKEN = "refresh_token";
+  static final String GRANT_PASSWORD = "password";
+  static final String GRANT_CLIENT_CREDENTIALS = "client_credentials";
+  // token response fields
+  static final String TOKEN_RESPONSE_ACCESS_TOKEN = "access_token";
+  static final String TOKEN_RESPONSE_TOKEN_TYPE = "token_type";
+  static final String TOKEN_RESPONSE_EXPIRES_IN = "expires_in";
+  static final String TOKEN_RESPONSE_REFRESH_TOKEN = "refresh_token";
+  static final String TOKEN_RESPONSE_REFRESH_EXPIRES_IN = "refresh_expires_in";
+  static final String TOKEN_RESPONSE_ID_TOKEN = "id_token";
+  static final String TOKEN_RESPONSE_SESSION_STATE = "session_state";
 
   @Nonnull private final SessionRepository sessionRepository;
   @Nonnull private final TokenHelper tokenHelper;
@@ -43,18 +58,18 @@ public class TokenRoute implements Handler<RoutingContext> {
 
   @Override
   public void handle(@Nonnull RoutingContext routingContext) {
-    String grantType = routingContext.request().getFormAttribute(GRANT_TYPE);
+    String grantType = routingContext.request().getFormAttribute(TOKEN_PARAM_GRANT_TYPE);
     switch (Objects.toString(grantType)) {
-      case "authorization_code":
+      case GRANT_AUTHORIZATION_CODE:
         handleAuthorizationCodeFlow(routingContext);
         break;
-      case "refresh_token":
+      case GRANT_REFRESH_TOKEN:
         handleRefreshTokenFlow(routingContext);
         break;
-      case "password":
+      case GRANT_PASSWORD:
         handlePasswordFlow(routingContext);
         break;
-      case "client_credentials":
+      case GRANT_CLIENT_CREDENTIALS:
         handleClientCredentialsFlow(routingContext);
         break;
       default:
@@ -64,7 +79,7 @@ public class TokenRoute implements Handler<RoutingContext> {
 
   private void handleAuthorizationCodeFlow(RoutingContext routingContext) {
     // here again we use the equality of authorization code and session ID
-    String sessionId = routingContext.request().getFormAttribute(CODE);
+    String sessionId = routingContext.request().getFormAttribute(TOKEN_PARAM_CODE);
     UrlConfiguration requestConfiguration = urlConfigurationFactory.create(routingContext);
     String token =
         Optional.ofNullable(sessionRepository.getSession(sessionId))
@@ -81,13 +96,13 @@ public class TokenRoute implements Handler<RoutingContext> {
   }
 
   private void handleRefreshTokenFlow(RoutingContext routingContext) {
-    String refreshToken = routingContext.request().getFormAttribute("refresh_token");
+    String refreshToken = routingContext.request().getFormAttribute(TOKEN_PARAM_REFRESH_TOKEN);
     if (refreshToken == null || refreshToken.isEmpty()) {
       routingContext.fail(400);
       return;
     }
     Map<String, Object> token = tokenHelper.parseToken(refreshToken);
-    String sessionId = (String) token.get(SESSION_STATE);
+    String sessionId = (String) token.get(TOKEN_RESPONSE_SESSION_STATE);
 
     routingContext
         .response()
@@ -98,19 +113,19 @@ public class TokenRoute implements Handler<RoutingContext> {
   private void handlePasswordFlow(RoutingContext routingContext) {
     String clientId =
         Optional.ofNullable(routingContext.user())
-            .map(u -> u.<String>get("client_id"))
+            .map(u -> u.<String>get(OptionalClientAuthHandler.CTX_CLIENT_ID))
             .orElse(null);
     if (clientId == null || clientId.isEmpty()) {
       routingContext.fail(400);
       return;
     }
-    String username = routingContext.request().getFormAttribute("username");
+    String username = routingContext.request().getFormAttribute(TOKEN_PARAM_USERNAME);
     if (username == null || username.isEmpty()) {
       routingContext.fail(400);
       return;
     }
     UrlConfiguration requestConfiguration = urlConfigurationFactory.create(routingContext);
-    String password = routingContext.request().getFormAttribute("password");
+    String password = routingContext.request().getFormAttribute(TOKEN_PARAM_PASSWORD);
 
     Session session =
         AdHocSession.fromClientIdUsernameAndPassword(
@@ -130,8 +145,8 @@ public class TokenRoute implements Handler<RoutingContext> {
       return;
     }
 
-    String clientId = routingContext.user().get("client_id");
-    String password = routingContext.user().get("client_secret");
+    String clientId = routingContext.user().get(OptionalClientAuthHandler.CTX_CLIENT_ID);
+    String password = routingContext.user().get(OptionalClientAuthHandler.CTX_CLIENT_SECRET);
 
     if (clientId == null || clientId.isEmpty()) {
       routingContext.fail(400);
@@ -154,13 +169,13 @@ public class TokenRoute implements Handler<RoutingContext> {
 
   private String toTokenResponse(String token, String sessionId) {
     return new JsonObject()
-        .put("access_token", token)
-        .put("token_type", "Bearer")
-        .put("expires_in", 36_000)
-        .put("refresh_token", token)
-        .put("refresh_expires_in", 36_000)
-        .put("id_token", token)
-        .put(SESSION_STATE, sessionId)
+        .put(TOKEN_RESPONSE_ACCESS_TOKEN, token)
+        .put(TOKEN_RESPONSE_TOKEN_TYPE, "Bearer")
+        .put(TOKEN_RESPONSE_EXPIRES_IN, 36_000)
+        .put(TOKEN_RESPONSE_REFRESH_TOKEN, token)
+        .put(TOKEN_RESPONSE_REFRESH_EXPIRES_IN, 36_000)
+        .put(TOKEN_RESPONSE_ID_TOKEN, token)
+        .put(TOKEN_RESPONSE_SESSION_STATE, sessionId)
         .encode();
   }
 }

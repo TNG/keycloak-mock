@@ -23,8 +23,9 @@ public final class ServerConfig {
   private static final int RANDOM_PORT = 0;
 
   private static final String DEFAULT_REALM = "master";
-  private static final String DEFAULT_SCOPE = "openid";
   private static final Duration DEFAULT_TOKEN_LIFESPAN = Duration.ofHours(10);
+  public static final String DEFAULT_SCOPE = "openid";
+  public static final String DEFAULT_AUDIENCE = "server";
 
   private final int port;
   @Nonnull private final Protocol protocol;
@@ -43,7 +44,7 @@ public final class ServerConfig {
     this.contextPath = builder.contextPath;
     this.defaultRealm = builder.defaultRealm;
     if (builder.defaultAudiences.isEmpty()) {
-      this.defaultAudiences = Collections.singletonList("server");
+      this.defaultAudiences = Collections.singletonList(DEFAULT_AUDIENCE);
     } else {
       this.defaultAudiences = builder.defaultAudiences;
     }

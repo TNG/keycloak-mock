@@ -11,7 +11,7 @@
 <h1>Keycloak Mock</h1>
 <p>This is a mocked login screen. Instead of providing a password, you can enter a comma-separated
   list of roles your user is supposed to have.</p>
-<form action="${authentication_uri}" id="authenticate" method="post">
+<form action="${ctx_authentication_uri}" id="authenticate" method="post">
   <p>
     <label for="username">User</label>
     <input type="text" name="username" id="username" placeholder="jean.doe@example.com" required>

@@ -19,7 +19,7 @@ import org.slf4j.LoggerFactory;
 public class TokenIntrospectionRoute implements Handler<RoutingContext> {
   private static final Logger LOG = LoggerFactory.getLogger(TokenIntrospectionRoute.class);
 
-  private static final String TOKEN = "token";
+  static final String TOKEN_INTROSPECTION_PARAM_TOKEN = "token";
 
   private final TokenGenerator tokenGenerator;
 
@@ -32,14 +32,14 @@ public class TokenIntrospectionRoute implements Handler<RoutingContext> {
   public void handle(@Nonnull RoutingContext routingContext) {
     String clientId =
         Optional.ofNullable(routingContext.user())
-            .map(u -> u.<String>get("client_id"))
+            .map(u -> u.<String>get(OptionalClientAuthHandler.CTX_CLIENT_ID))
             .orElse(null);
     if (clientId == null || clientId.isEmpty()) {
       routingContext.fail(401);
       return;
     }
 
-    String token = routingContext.request().getFormAttribute(TOKEN);
+    String token = routingContext.request().getFormAttribute(TOKEN_INTROSPECTION_PARAM_TOKEN);
 
     JsonObject response = new JsonObject();
     try {

@@ -1,5 +1,9 @@
 package com.tngtech.keycloakmock.impl.handler;
 
+import static com.tngtech.keycloakmock.impl.handler.OptionalClientAuthHandler.CTX_CLIENT_ID;
+import static com.tngtech.keycloakmock.impl.handler.OptionalClientAuthHandler.CTX_CLIENT_SECRET;
+import static com.tngtech.keycloakmock.impl.handler.OptionalClientAuthHandler.GENERIC_PARAM_CLIENT_ID;
+import static com.tngtech.keycloakmock.impl.handler.OptionalClientAuthHandler.GENERIC_PARAM_CLIENT_SECRET;
 import static io.netty.handler.codec.http.HttpHeaderNames.AUTHORIZATION;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -39,8 +43,8 @@ class OptionalClientAuthHandlerTest {
 
     assertThat(result.isComplete()).isTrue();
     assertThat(result.result()).isNotNull();
-    assertThat(result.result().<String>get("client_id")).isNull();
-    assertThat(result.result().<String>get("client_secret")).isNull();
+    assertThat(result.result().<String>get(CTX_CLIENT_ID)).isNull();
+    assertThat(result.result().<String>get(CTX_CLIENT_SECRET)).isNull();
   }
 
   @Test
@@ -51,8 +55,8 @@ class OptionalClientAuthHandlerTest {
 
     assertThat(result.isComplete()).isTrue();
     assertThat(result.result()).isNotNull();
-    assertThat(result.result().<String>get("client_id")).isNull();
-    assertThat(result.result().<String>get("client_secret")).isNull();
+    assertThat(result.result().<String>get(CTX_CLIENT_ID)).isNull();
+    assertThat(result.result().<String>get(CTX_CLIENT_SECRET)).isNull();
   }
 
   @Test
@@ -64,8 +68,8 @@ class OptionalClientAuthHandlerTest {
 
     assertThat(result.isComplete()).isTrue();
     assertThat(result.result()).isNotNull();
-    assertThat(result.result().<String>get("client_id")).isEqualTo("test");
-    assertThat(result.result().<String>get("client_secret")).isNull();
+    assertThat(result.result().<String>get(CTX_CLIENT_ID)).isEqualTo("test");
+    assertThat(result.result().<String>get(CTX_CLIENT_SECRET)).isNull();
   }
 
   @Test
@@ -78,34 +82,34 @@ class OptionalClientAuthHandlerTest {
 
     assertThat(result.isComplete()).isTrue();
     assertThat(result.result()).isNotNull();
-    assertThat(result.result().<String>get("client_id")).isEqualTo("test");
-    assertThat(result.result().<String>get("client_secret")).isEqualTo("secret");
+    assertThat(result.result().<String>get(CTX_CLIENT_ID)).isEqualTo("test");
+    assertThat(result.result().<String>get(CTX_CLIENT_SECRET)).isEqualTo("secret");
   }
 
   @Test
   void forward_form_client_id() {
     when(request.getHeader(AUTHORIZATION)).thenReturn(null);
-    when(request.getFormAttribute("client_id")).thenReturn("test");
+    when(request.getFormAttribute(GENERIC_PARAM_CLIENT_ID)).thenReturn("test");
 
     Future<User> result = uut.handle(routingContext);
 
     assertThat(result.isComplete()).isTrue();
     assertThat(result.result()).isNotNull();
-    assertThat(result.result().<String>get("client_id")).isEqualTo("test");
-    assertThat(result.result().<String>get("client_secret")).isNull();
+    assertThat(result.result().<String>get(CTX_CLIENT_ID)).isEqualTo("test");
+    assertThat(result.result().<String>get(CTX_CLIENT_SECRET)).isNull();
   }
 
   @Test
   void forward_form_client_id_and_client_secret() {
     when(request.getHeader(AUTHORIZATION)).thenReturn(null);
-    when(request.getFormAttribute("client_id")).thenReturn("test");
-    when(request.getFormAttribute("client_secret")).thenReturn("secret");
+    when(request.getFormAttribute(GENERIC_PARAM_CLIENT_ID)).thenReturn("test");
+    when(request.getFormAttribute(GENERIC_PARAM_CLIENT_SECRET)).thenReturn("secret");
 
     Future<User> result = uut.handle(routingContext);
 
     assertThat(result.isComplete()).isTrue();
     assertThat(result.result()).isNotNull();
-    assertThat(result.result().<String>get("client_id")).isEqualTo("test");
-    assertThat(result.result().<String>get("client_secret")).isEqualTo("secret");
+    assertThat(result.result().<String>get(CTX_CLIENT_ID)).isEqualTo("test");
+    assertThat(result.result().<String>get(CTX_CLIENT_SECRET)).isEqualTo("secret");
   }
 }

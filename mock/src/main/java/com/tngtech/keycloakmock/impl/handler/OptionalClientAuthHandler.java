@@ -31,6 +31,13 @@ import org.slf4j.LoggerFactory;
 @Singleton
 public class OptionalClientAuthHandler {
   private static final Logger LOG = LoggerFactory.getLogger(OptionalClientAuthHandler.class);
+  private static final String BASIC_AUTH_PREFIX = "Basic ";
+  // generic form parameters
+  static final String GENERIC_PARAM_CLIENT_ID = "client_id";
+  static final String GENERIC_PARAM_CLIENT_SECRET = "client_secret";
+  // custom vertx context parameters
+  public static final String CTX_CLIENT_ID = "ctx_client_id";
+  public static final String CTX_CLIENT_SECRET = "ctx_client_secret";
 
   @Inject
   OptionalClientAuthHandler() {}
@@ -39,7 +46,7 @@ public class OptionalClientAuthHandler {
     JsonObject clientCredentials;
     String authorization = routingContext.request().getHeader(AUTHORIZATION);
     if (authorization != null) {
-      if (authorization.startsWith("Basic ")) {
+      if (authorization.startsWith(BASIC_AUTH_PREFIX)) {
         clientCredentials = extractFromBasicAuth(authorization);
       } else {
         // While RFC 7662 talks about allowing Bearer tokens for client authentication,
@@ -57,13 +64,13 @@ public class OptionalClientAuthHandler {
     try {
       String clientIdClientSecret =
           new String(
-              Base64.getDecoder().decode(authorization.replace("Basic ", "")),
+              Base64.getDecoder().decode(authorization.replace(BASIC_AUTH_PREFIX, "")),
               StandardCharsets.UTF_8);
       String[] split = clientIdClientSecret.split(":", 2);
       JsonObject clientCredentials = new JsonObject();
-      clientCredentials.put("client_id", split[0]);
+      clientCredentials.put(CTX_CLIENT_ID, split[0]);
       if (split.length == 2) {
-        clientCredentials.put("client_secret", split[1]);
+        clientCredentials.put(CTX_CLIENT_SECRET, split[1]);
       }
       return clientCredentials;
     } catch (RuntimeException e) {
@@ -74,13 +81,13 @@ public class OptionalClientAuthHandler {
 
   private JsonObject extractFromFormAttributes(RoutingContext routingContext) {
     JsonObject clientCredentials = new JsonObject();
-    String clientId = routingContext.request().getFormAttribute("client_id");
+    String clientId = routingContext.request().getFormAttribute(GENERIC_PARAM_CLIENT_ID);
     if (clientId != null && !clientId.isEmpty()) {
-      clientCredentials.put("client_id", clientId);
+      clientCredentials.put(CTX_CLIENT_ID, clientId);
     }
-    String clientSecret = routingContext.request().getFormAttribute("client_secret");
+    String clientSecret = routingContext.request().getFormAttribute(GENERIC_PARAM_CLIENT_SECRET);
     if (clientSecret != null && !clientSecret.isEmpty()) {
-      clientCredentials.put("client_secret", clientSecret);
+      clientCredentials.put(CTX_CLIENT_SECRET, clientSecret);
     }
     return clientCredentials;
   }

@@ -1,5 +1,6 @@
 package com.tngtech.keycloakmock.impl.handler;
 
+import static com.tngtech.keycloakmock.impl.handler.AuthenticationRoute.AUTHENTICATE_PATH_PARAM_SESSION_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -58,7 +59,7 @@ class AuthenticationRouteTest {
 
   @BeforeEach
   void setup() {
-    doReturn(SESSION_ID).when(routingContext).pathParam("sessionId");
+    doReturn(SESSION_ID).when(routingContext).pathParam(AUTHENTICATE_PATH_PARAM_SESSION_ID);
   }
 
   @Test

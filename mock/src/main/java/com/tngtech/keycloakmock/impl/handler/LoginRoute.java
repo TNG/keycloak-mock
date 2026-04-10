@@ -26,13 +26,15 @@ import org.slf4j.LoggerFactory;
 public class LoginRoute implements Handler<RoutingContext> {
 
   private static final Logger LOG = LoggerFactory.getLogger(LoginRoute.class);
-  private static final String AUTHENTICATION_URI = "authentication_uri";
-  private static final String CLIENT_ID = "client_id";
-  private static final String STATE = "state";
-  private static final String NONCE = "nonce";
-  private static final String REDIRECT_URI = "redirect_uri";
-  private static final String RESPONSE_TYPE = "response_type";
-  private static final String RESPONSE_MODE = "response_mode";
+  private static final String CTX_AUTHENTICATION_URI = "ctx_authentication_uri";
+  // authentication parameters
+  private static final String LOGIN_PARAM_CLIENT_ID = "client_id";
+  private static final String LOGIN_PARAM_STATE = "state";
+  private static final String LOGIN_PARAM_NONCE = "nonce";
+  private static final String LOGIN_PARAM_REDIRECT_URI = "redirect_uri";
+  private static final String LOGIN_PARAM_RESPONSE_TYPE = "response_type";
+  private static final String LOGIN_PARAM_RESPONSE_MODE = "response_mode";
+
   @Nonnull private final SessionRepository sessionRepository;
   @Nonnull private final RedirectHelper redirectHelper;
   @Nonnull private final TemplateEngine engine;
@@ -66,17 +68,17 @@ public class LoginRoute implements Handler<RoutingContext> {
     try {
       request =
           new SessionRequest.Builder()
-              .setClientId(routingContext.queryParams().get(CLIENT_ID))
-              .setRedirectUri(routingContext.queryParams().get(REDIRECT_URI))
+              .setClientId(routingContext.queryParams().get(LOGIN_PARAM_CLIENT_ID))
+              .setRedirectUri(routingContext.queryParams().get(LOGIN_PARAM_REDIRECT_URI))
               .setSessionId(
                   existingSession
                       .map(PersistentSession::getSessionId)
                       .orElseGet(() -> UUID.randomUUID().toString()))
-              .setResponseType(routingContext.queryParams().get(RESPONSE_TYPE))
+              .setResponseType(routingContext.queryParams().get(LOGIN_PARAM_RESPONSE_TYPE))
               // optional parameter
-              .setState(routingContext.queryParams().get(STATE))
-              .setNonce(routingContext.queryParams().get(NONCE))
-              .setResponseMode(routingContext.queryParams().get(RESPONSE_MODE))
+              .setState(routingContext.queryParams().get(LOGIN_PARAM_STATE))
+              .setNonce(routingContext.queryParams().get(LOGIN_PARAM_NONCE))
+              .setResponseMode(routingContext.queryParams().get(LOGIN_PARAM_RESPONSE_MODE))
               .build();
     } catch (NullPointerException e) {
       LOG.warn("Mandatory parameter missing", e);
@@ -100,7 +102,7 @@ public class LoginRoute implements Handler<RoutingContext> {
     } else {
       sessionRepository.putRequest(request);
       routingContext.put(
-          AUTHENTICATION_URI,
+          CTX_AUTHENTICATION_URI,
           requestConfiguration.getAuthenticationCallbackEndpoint(request.getSessionId()));
       engine
           .render(routingContext.data(), "loginPage.ftl")

@@ -1,5 +1,14 @@
 package com.tngtech.keycloakmock.impl.handler;
 
+import static com.tngtech.keycloakmock.impl.handler.OptionalClientAuthHandler.CTX_CLIENT_ID;
+import static com.tngtech.keycloakmock.impl.handler.TokenRoute.GRANT_AUTHORIZATION_CODE;
+import static com.tngtech.keycloakmock.impl.handler.TokenRoute.GRANT_CLIENT_CREDENTIALS;
+import static com.tngtech.keycloakmock.impl.handler.TokenRoute.GRANT_PASSWORD;
+import static com.tngtech.keycloakmock.impl.handler.TokenRoute.GRANT_REFRESH_TOKEN;
+import static com.tngtech.keycloakmock.impl.handler.TokenRoute.TOKEN_PARAM_CODE;
+import static com.tngtech.keycloakmock.impl.handler.TokenRoute.TOKEN_PARAM_GRANT_TYPE;
+import static com.tngtech.keycloakmock.impl.handler.TokenRoute.TOKEN_PARAM_REFRESH_TOKEN;
+import static com.tngtech.keycloakmock.impl.handler.TokenRoute.TOKEN_PARAM_USERNAME;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
@@ -19,10 +28,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class TokenRouteTest {
 
-  private static final String AUTH_CODE_GRANT_TYPE = "authorization_code";
-  private static final String REFRESH_TOKEN_GRANT_TYPE = "refresh_token";
-  private static final String PASSWORD_GRANT_TYPE = "password";
-  private static final String CLIENT_CREDENTIALS_GRANT_TYPE = "client_credentials";
   private static final String UNKNOWN_SESSION = "unknown";
 
   @Mock SessionRepository sessionRepository;
@@ -42,7 +47,7 @@ class TokenRouteTest {
 
   @Test
   void missing_grant_type_causes_error() {
-    when(request.getFormAttribute("grant_type")).thenReturn(null);
+    when(request.getFormAttribute(TOKEN_PARAM_GRANT_TYPE)).thenReturn(null);
 
     uut = new TokenRoute(sessionRepository, tokenHelper, urlConfigurationFactory);
 
@@ -54,8 +59,8 @@ class TokenRouteTest {
 
   @Test
   void missing_authorization_code_causes_error_for_type_authorization_code() {
-    when(request.getFormAttribute("grant_type")).thenReturn(AUTH_CODE_GRANT_TYPE);
-    when(request.getFormAttribute("code")).thenReturn(null);
+    when(request.getFormAttribute(TOKEN_PARAM_GRANT_TYPE)).thenReturn(GRANT_AUTHORIZATION_CODE);
+    when(request.getFormAttribute(TOKEN_PARAM_CODE)).thenReturn(null);
 
     uut = new TokenRoute(sessionRepository, tokenHelper, urlConfigurationFactory);
 
@@ -67,8 +72,8 @@ class TokenRouteTest {
 
   @Test
   void unknown_authorization_code_causes_error_for_type_authorization_code() {
-    when(request.getFormAttribute("grant_type")).thenReturn(AUTH_CODE_GRANT_TYPE);
-    when(request.getFormAttribute("code")).thenReturn(UNKNOWN_SESSION);
+    when(request.getFormAttribute(TOKEN_PARAM_GRANT_TYPE)).thenReturn(GRANT_AUTHORIZATION_CODE);
+    when(request.getFormAttribute(TOKEN_PARAM_CODE)).thenReturn(UNKNOWN_SESSION);
     when(sessionRepository.getSession(UNKNOWN_SESSION)).thenReturn(null);
 
     uut = new TokenRoute(sessionRepository, tokenHelper, urlConfigurationFactory);
@@ -81,8 +86,8 @@ class TokenRouteTest {
 
   @Test
   void missing_token_causes_error_for_type_refresh_token() {
-    when(request.getFormAttribute("grant_type")).thenReturn(REFRESH_TOKEN_GRANT_TYPE);
-    when(request.getFormAttribute("refresh_token")).thenReturn(null);
+    when(request.getFormAttribute(TOKEN_PARAM_GRANT_TYPE)).thenReturn(GRANT_REFRESH_TOKEN);
+    when(request.getFormAttribute(TOKEN_PARAM_REFRESH_TOKEN)).thenReturn(null);
 
     uut = new TokenRoute(sessionRepository, tokenHelper, urlConfigurationFactory);
 
@@ -94,7 +99,7 @@ class TokenRouteTest {
 
   @Test
   void missing_authentication_causes_error_for_type_password() {
-    when(request.getFormAttribute("grant_type")).thenReturn(PASSWORD_GRANT_TYPE);
+    when(request.getFormAttribute(TOKEN_PARAM_GRANT_TYPE)).thenReturn(GRANT_PASSWORD);
     when(routingContext.user()).thenReturn(null);
 
     uut = new TokenRoute(sessionRepository, tokenHelper, urlConfigurationFactory);
@@ -107,9 +112,9 @@ class TokenRouteTest {
 
   @Test
   void missing_client_id_causes_error_for_type_password() {
-    when(request.getFormAttribute("grant_type")).thenReturn(PASSWORD_GRANT_TYPE);
+    when(request.getFormAttribute(TOKEN_PARAM_GRANT_TYPE)).thenReturn(GRANT_PASSWORD);
     when(routingContext.user()).thenReturn(user);
-    when(user.get("client_id")).thenReturn(null);
+    when(user.get(CTX_CLIENT_ID)).thenReturn(null);
 
     uut = new TokenRoute(sessionRepository, tokenHelper, urlConfigurationFactory);
 
@@ -121,10 +126,10 @@ class TokenRouteTest {
 
   @Test
   void missing_username_causes_error_for_type_password() {
-    when(request.getFormAttribute("grant_type")).thenReturn(PASSWORD_GRANT_TYPE);
+    when(request.getFormAttribute(TOKEN_PARAM_GRANT_TYPE)).thenReturn(GRANT_PASSWORD);
     when(routingContext.user()).thenReturn(user);
-    when(user.get("client_id")).thenReturn("myclient");
-    when(request.getFormAttribute("username")).thenReturn(null);
+    when(user.get(CTX_CLIENT_ID)).thenReturn("myclient");
+    when(request.getFormAttribute(TOKEN_PARAM_USERNAME)).thenReturn(null);
 
     uut = new TokenRoute(sessionRepository, tokenHelper, urlConfigurationFactory);
 
@@ -136,7 +141,7 @@ class TokenRouteTest {
 
   @Test
   void missing_authentication_causes_error_for_type_client_credentials() {
-    when(request.getFormAttribute("grant_type")).thenReturn(CLIENT_CREDENTIALS_GRANT_TYPE);
+    when(request.getFormAttribute(TOKEN_PARAM_GRANT_TYPE)).thenReturn(GRANT_CLIENT_CREDENTIALS);
     when(routingContext.user()).thenReturn(null);
 
     uut = new TokenRoute(sessionRepository, tokenHelper, urlConfigurationFactory);
@@ -149,9 +154,9 @@ class TokenRouteTest {
 
   @Test
   void missing_clientId_causes_error_for_type_client_credentials() {
-    when(request.getFormAttribute("grant_type")).thenReturn(CLIENT_CREDENTIALS_GRANT_TYPE);
+    when(request.getFormAttribute(TOKEN_PARAM_GRANT_TYPE)).thenReturn(GRANT_CLIENT_CREDENTIALS);
     when(routingContext.user()).thenReturn(user);
-    when(user.get("client_id")).thenReturn(null);
+    when(user.get(CTX_CLIENT_ID)).thenReturn(null);
 
     uut = new TokenRoute(sessionRepository, tokenHelper, urlConfigurationFactory);
 

@@ -1,5 +1,7 @@
 package com.tngtech.keycloakmock.standalone;
 
+import static com.tngtech.keycloakmock.api.ServerConfig.DEFAULT_AUDIENCE;
+import static com.tngtech.keycloakmock.api.ServerConfig.DEFAULT_SCOPE;
 import static com.tngtech.keycloakmock.api.ServerConfig.aServerConfig;
 
 import com.tngtech.keycloakmock.api.KeycloakMock;
@@ -57,7 +59,7 @@ public class Main implements Callable<Void> {
 
   @Option(
       names = {"-a", "--audiences"},
-      defaultValue = "server",
+      defaultValue = DEFAULT_AUDIENCE,
       description =
           "Audiences to set in the token in addition to the client_id (default:"
               + " [${DEFAULT-VALUE}]).",
@@ -67,7 +69,7 @@ public class Main implements Callable<Void> {
 
   @Option(
       names = {"-sc", "--scopes"},
-      defaultValue = "openid",
+      defaultValue = DEFAULT_SCOPE,
       description = "Scopes to add to generated token (default: [${DEFAULT-VALUE}]).",
       paramLabel = "SCOPE",
       split = ",")

@@ -1,5 +1,6 @@
 package com.tngtech.keycloakmock.impl.dagger;
 
+import static com.tngtech.keycloakmock.impl.handler.AuthenticationRoute.AUTHENTICATE_PATH_PARAM_SESSION_ID;
 import static io.netty.handler.codec.http.HttpHeaderValues.TEXT_HTML;
 
 import com.tngtech.keycloakmock.api.LoginRoleMapping;
@@ -160,7 +161,10 @@ public class ServerModule {
         .setName("login page")
         .handler(loginRoute);
     router
-        .post(routing.getAuthenticationCallbackEndpoint(":sessionId").getPath())
+        .post(
+            routing
+                .getAuthenticationCallbackEndpoint(":" + AUTHENTICATE_PATH_PARAM_SESSION_ID)
+                .getPath())
         .setName("custom authentication endpoint used by login page")
         .handler(BodyHandler.create())
         .handler(authenticationRoute);
