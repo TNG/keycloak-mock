@@ -4,7 +4,7 @@
   "private": true,
   "license": "Apache-2.0",
   "dependencies": {
-    "axios": "^1.13.5",
+    "axios": "^1.15.0",
     "keycloak-js": "^26.2.3",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
