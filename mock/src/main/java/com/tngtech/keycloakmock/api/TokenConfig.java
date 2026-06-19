@@ -3,6 +3,7 @@ package com.tngtech.keycloakmock.api;
 import io.jsonwebtoken.ClaimJwtException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.jackson.io.JacksonDeserializer;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
@@ -66,7 +67,7 @@ public class TokenConfig {
   @Nonnull private final List<String> scopes;
   @Nonnull private final Map<String, Object> claims;
   @Nonnull private final Access realmAccess;
-  @Nonnull private final Map<String, Access> resourceAccess;
+  @Nonnull private final ResourceAccess resourceAccess;
   @Nonnull private final String sessionId;
   @Nonnull private final Instant issuedAt;
   @Nonnull private final Instant authenticationTime;
@@ -243,7 +244,7 @@ public class TokenConfig {
     @Nonnull private final List<String> scopes = new ArrayList<>();
     @Nonnull private final Map<String, Object> claims = new HashMap<>();
     @Nonnull private final Access realmRoles = new Access();
-    @Nonnull private final Map<String, Access> resourceAccess = new HashMap<>();
+    @Nonnull private final ResourceAccess resourceAccess = new ResourceAccess();
     @Nonnull private String sessionId = UUID.randomUUID().toString();
     @Nonnull private Instant issuedAt = Instant.now();
     @Nonnull private Instant authenticationTime = Instant.now();
@@ -271,82 +272,55 @@ public class TokenConfig {
      * @return builder
      */
     @Nonnull
-    @SuppressWarnings("unchecked")
     public Builder withSourceToken(@Nonnull final String originalToken) {
-      String[] split = originalToken.split("\\.", 3);
-      String noneHeader =
-          Base64.getUrlEncoder()
-              .encodeToString("{\"alg\":\"NONE\"}".getBytes(StandardCharsets.UTF_8));
-      String untrustedJwtString = noneHeader + "." + split[1] + ".";
-      Claims untrustedClaims;
-      try {
-        untrustedClaims =
-            Jwts.parser().unsecured().build().parseUnsecuredClaims(untrustedJwtString).getPayload();
-      } catch (ClaimJwtException e) {
-        // ignoring expiry exceptions
-        untrustedClaims = e.getClaims();
-      }
-      for (Map.Entry<String, Object> entry : untrustedClaims.entrySet()) {
-        switch (entry.getKey()) {
+      Claims untrustedClaims = parseClaimsFromToken(originalToken);
+      for (String key : untrustedClaims.keySet()) {
+        switch (key) {
           case CLAIM_AUDIENCE:
-            Object aud = entry.getValue();
-            if (aud instanceof String) {
-              withAudience((String) aud);
-            } else if (aud instanceof Collection) {
-              withAudiences((Collection<String>) aud);
-            }
+            withAudiences(untrustedClaims.getAudience());
             break;
           case CLAIM_AUTHORIZED_PARTY:
-            withAuthorizedParty(getTypedValue(entry, String.class));
+            withAuthorizedParty(untrustedClaims.get(key, String.class));
             break;
           case CLAIM_SUBJECT:
-            withSubject(getTypedValue(entry, String.class));
+            withSubject(untrustedClaims.getSubject());
             break;
           case CLAIM_NAME:
-            withName(getTypedValue(entry, String.class));
+            withName(untrustedClaims.get(key, String.class));
             break;
           case CLAIM_GIVEN_NAME:
-            withGivenName(getTypedValue(entry, String.class));
+            withGivenName(untrustedClaims.get(key, String.class));
             break;
           case CLAIM_FAMILY_NAME:
-            withFamilyName(getTypedValue(entry, String.class));
+            withFamilyName(untrustedClaims.get(key, String.class));
             break;
           case CLAIM_EMAIL:
-            withEmail(getTypedValue(entry, String.class));
+            withEmail(untrustedClaims.get(key, String.class));
             break;
           case CLAIM_PREFERRED_USERNAME:
-            withPreferredUsername(getTypedValue(entry, String.class));
+            withPreferredUsername(untrustedClaims.get(key, String.class));
             break;
           case CLAIM_REALM_ACCESS:
-            Map<String, List<String>> sourceRealmAccess = getTypedValue(entry, Map.class);
-            withRealmRoles(sourceRealmAccess.get("roles"));
+            withRealmRoles(untrustedClaims.get(key, Access.class).roles);
             break;
           case CLAIM_RESOURCE_ACCESS:
-            Map<String, Map<String, List<String>>> sourceResourceAccess =
-                getTypedValue(entry, Map.class);
-            sourceResourceAccess.forEach(
-                (key, value) -> withResourceRoles(key, value.get("roles")));
+            untrustedClaims
+                .get(key, ResourceAccess.class)
+                .forEach((resource, value) -> withResourceRoles(resource, value.roles));
             break;
           case CLAIM_SCOPE:
-            withScopes(Arrays.asList(getTypedValue(entry, String.class).split(" ")));
+            withScopes(Arrays.asList(untrustedClaims.get(key, String.class).split(" ")));
             break;
           case CLAIM_AUTHENTICATION_CONTEXT_REFERENCE:
-            withAuthenticationContextClassReference(getTypedValue(entry, String.class));
+            withAuthenticationContextClassReference(untrustedClaims.get(key, String.class));
             break;
           case CLAIM_TYPE:
-            if (!"Bearer".equals(getTypedValue(entry, String.class))) {
+            if (!"Bearer".equals(untrustedClaims.get(key, String.class))) {
               throw new IllegalArgumentException("Only bearer tokens are allowed here!");
             }
             break;
           case CLAIM_ISSUER:
-            String issuer = getTypedValue(entry, String.class);
-            try {
-              URI issuerUrl = new URI(issuer);
-              withHostname(issuerUrl.getHost());
-              withRealm(getRealm(issuerUrl));
-            } catch (URISyntaxException e) {
-              throw new IllegalArgumentException("Issuer '" + issuer + "' is not a valid URL", e);
-            }
+            withIssuer(untrustedClaims.getIssuer());
             break;
           case CLAIM_SESSION_ID:
           case CLAIM_SESSION_STATE:
@@ -359,37 +333,37 @@ public class TokenConfig {
             // ignoring date information
             break;
           default:
-            withClaim(entry.getKey(), entry.getValue());
+            withClaim(key, untrustedClaims.get(key, Object.class));
             break;
         }
       }
       return this;
     }
 
-    @SuppressWarnings("unchecked")
     @Nonnull
-    private <T> T getTypedValue(
-        @Nonnull final Map.Entry<String, Object> entry, @Nonnull final Class<T> clazz) {
-      if (clazz.isInstance(entry.getValue())) {
-        return (T) entry.getValue();
+    private static Claims parseClaimsFromToken(@Nonnull String originalToken) {
+      String[] split = originalToken.split("\\.", 3);
+      String noneHeader =
+          Base64.getUrlEncoder()
+              .encodeToString("{\"alg\":\"NONE\"}".getBytes(StandardCharsets.UTF_8));
+      String untrustedJwtString = noneHeader + "." + split[1] + ".";
+      Claims untrustedClaims;
+      try {
+        Map<String, Class<?>> claimTypeMap = new HashMap<>();
+        claimTypeMap.put(CLAIM_REALM_ACCESS, Access.class);
+        claimTypeMap.put(CLAIM_RESOURCE_ACCESS, ResourceAccess.class);
+        untrustedClaims =
+            Jwts.parser()
+                .json(new JacksonDeserializer<>(claimTypeMap))
+                .unsecured()
+                .build()
+                .parseUnsecuredClaims(untrustedJwtString)
+                .getPayload();
+      } catch (ClaimJwtException e) {
+        // ignoring expiry exceptions
+        untrustedClaims = e.getClaims();
       }
-      throw new IllegalArgumentException(
-          String.format(
-              "Expected %s for key %s, but found %s",
-              clazz, entry.getKey(), entry.getValue().getClass()));
-    }
-
-    @Nonnull
-    private String getRealm(@Nonnull final URI issuer) {
-      Matcher matcher = ISSUER_PATH_PATTERN.matcher(issuer.getPath());
-      if (!matcher.matches()) {
-        throw new IllegalArgumentException(
-            "The issuer '"
-                + issuer
-                + "' did not conform to the expected format"
-                + " 'http[s]://$HOSTNAME[:$PORT][/$CONTEXT_PATH]/realms/$REALM'.");
-      }
-      return matcher.group(1);
+      return untrustedClaims;
     }
 
     /**
@@ -531,6 +505,7 @@ public class TokenConfig {
      * @param hostname the hostname
      * @return builder
      * @see #withRealm(String)
+     * @see #withIssuer(String)
      * @see ServerConfig#getProtocol()
      */
     @Nonnull
@@ -552,12 +527,57 @@ public class TokenConfig {
      * @param realm the realm
      * @return builder
      * @see #withHostname(String)
+     * @see #withIssuer(String)
      * @see ServerConfig#getProtocol()
      */
     @Nonnull
     public Builder withRealm(@Nonnull final String realm) {
       this.realm = Objects.requireNonNull(realm);
       return this;
+    }
+
+    /**
+     * Use issuer URI to set both hostname and authorization realm.
+     *
+     * <p>Important: The mock currently only uses the given issuer URI to extract the hostname and
+     * authorization realm. It does not retain the actual issuer given here, so the generated token
+     * may have a different issuer.
+     *
+     * <p>The actual issuer "iss" will be constructed as:
+     * http[s]://$HOSTNAME/$CONTEXT_PATH/realms/$REALM. The protocol is taken from the server
+     * configuration.
+     *
+     * @param issuer the issuer URI
+     * @return builder
+     * @see #withHostname(String)
+     * @see #withRealm(String)
+     * @see ServerConfig#getProtocol()
+     * @throws IllegalArgumentException if the {@code issuer} is not a valid URI or the realm could
+     *     not be extracted
+     */
+    @Nonnull
+    public Builder withIssuer(@Nonnull final String issuer) {
+      try {
+        URI issuerUrl = new URI(issuer);
+        withHostname(issuerUrl.getHost());
+        withRealm(getRealm(issuerUrl));
+      } catch (URISyntaxException e) {
+        throw new IllegalArgumentException("Issuer '" + issuer + "' is not a valid URL", e);
+      }
+      return this;
+    }
+
+    @Nonnull
+    private static String getRealm(@Nonnull final URI issuer) {
+      Matcher matcher = ISSUER_PATH_PATTERN.matcher(issuer.getPath());
+      if (!matcher.matches()) {
+        throw new IllegalArgumentException(
+            "The issuer '"
+                + issuer
+                + "' did not conform to the expected format"
+                + " 'http[s]://$HOSTNAME[:$PORT][/$CONTEXT_PATH]/realms/$REALM'.");
+      }
+      return matcher.group(1);
     }
 
     /**
@@ -894,4 +914,13 @@ public class TokenConfig {
       roles.addAll(newRoles);
     }
   }
+
+  /**
+   * A container for resource roles, where the resource name is key, to be used in claim {@code
+   * resource_access}.
+   *
+   * @see Access
+   * @see Builder#withResourceRole(String, String)
+   */
+  public static class ResourceAccess extends HashMap<String, Access> {}
 }
