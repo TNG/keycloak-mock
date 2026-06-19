@@ -13,7 +13,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-public class HandlerTestBase {
+class HandlerTestBase {
   @Mock protected RoutingContext routingContext;
 
   @Mock protected HttpServerResponse serverResponse;

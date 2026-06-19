@@ -96,11 +96,11 @@ class KeycloakMockIntegrationTest {
   void mock_server_can_be_started_and_stopped(Vertx vertx, VertxTestContext testContext) {
     WebClient webClient = WebClient.create(vertx);
     keycloakMock = new KeycloakMock();
-    assertServerMockRunnning(webClient, testContext, false);
+    assertServerMockRunnning(webClient, false);
     keycloakMock.start();
-    assertServerMockRunnning(webClient, testContext, true);
+    assertServerMockRunnning(webClient, true);
     keycloakMock.stop();
-    assertServerMockRunnning(webClient, testContext, false);
+    assertServerMockRunnning(webClient, false);
     testContext.completeNow();
   }
 
@@ -108,20 +108,19 @@ class KeycloakMockIntegrationTest {
   void mock_server_can_be_started_and_stopped_twice(Vertx vertx, VertxTestContext testContext) {
     WebClient webClient = WebClient.create(vertx);
     keycloakMock = new KeycloakMock();
-    assertServerMockRunnning(webClient, testContext, false);
+    assertServerMockRunnning(webClient, false);
     keycloakMock.start();
-    assertServerMockRunnning(webClient, testContext, true);
+    assertServerMockRunnning(webClient, true);
     keycloakMock.stop();
-    assertServerMockRunnning(webClient, testContext, false);
+    assertServerMockRunnning(webClient, false);
     keycloakMock.start();
-    assertServerMockRunnning(webClient, testContext, true);
+    assertServerMockRunnning(webClient, true);
     keycloakMock.stop();
-    assertServerMockRunnning(webClient, testContext, false);
+    assertServerMockRunnning(webClient, false);
     testContext.completeNow();
   }
 
-  private void assertServerMockRunnning(
-      WebClient webClient, VertxTestContext testContext, boolean running) {
+  private void assertServerMockRunnning(WebClient webClient, boolean running) {
     try {
       Future.await(
           webClient
