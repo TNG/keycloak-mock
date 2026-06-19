@@ -1,6 +1,6 @@
 buildscript {
     ext {
-        springBootVersion = '4.0.1'
+        springBootVersion = '4.1.0'
     }
     repositories {
         mavenCentral()
@@ -13,6 +13,12 @@ buildscript {
 apply plugin: 'com.google.cloud.tools.jib'
 apply plugin: 'io.spring.dependency-management'
 apply plugin: 'org.springframework.boot'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
+}
 
 dependencies {
     // Using multiple engines in a single project may lead to different JUnit
@@ -28,7 +34,7 @@ dependencies {
     implementation "org.springframework.boot:spring-boot-starter-oauth2-resource-server:$springBootVersion"
     implementation "org.springframework.boot:spring-boot-configuration-processor:$springBootVersion"
     // the enforcer has become decoupled from the keycloak release, see https://github.com/keycloak/keycloak/issues/30787
-    implementation 'org.keycloak:keycloak-policy-enforcer:26.0.8'
+    implementation 'org.keycloak:keycloak-policy-enforcer:26.0.11'
     testImplementation project(':mock-junit')
     testImplementation project(':mock-junit5')
     testImplementation "io.vertx:vertx-junit5:$vertx_version"
