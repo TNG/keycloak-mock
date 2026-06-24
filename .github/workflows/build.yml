@@ -23,7 +23,7 @@ jobs:
           distribution: 'temurin'
           java-version: '25'
       - name: Run pre-commit check
-        uses: cloudposse/github-action-pre-commit@828247764461bc41b2bd267e24d76e91a279b093 #v4.0.0
+        uses: cloudposse/github-action-pre-commit@ed9906221c8a4ee1dcb1e665da895998e0f7b396 #v4.1.0
 
   build_java:
     runs-on: ubuntu-latest
