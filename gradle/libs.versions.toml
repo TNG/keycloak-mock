@@ -1,0 +1,100 @@
+[versions]
+# --- build & plugin versions ---
+gradle = "9.6.1"
+axionRelease = "1.21.2"
+buildconfig = "6.0.10"
+dependencyVersions = "0.54.0"
+dockerCompose = "0.17.21"
+jib = "3.5.4"
+nmcp = "1.6.1"
+nodeGradle = "7.1.0"
+shadow = "9.6.0"
+sonarqube = "7.3.1.8318"
+springDependencyManagement = "1.1.7"
+jvmProd = "8"
+jvmTest = "25"
+
+# --- runtime dependency versions (need to be compatible with jvmProd) ---
+# starting with version 2.52, the included shadowed room library has Java compile version 11
+dagger = "2.51.1"
+jjwt = "0.13.0"
+jsr305 = "3.0.2"
+junit4 = "4.13.2"
+# starting with version 6, needs Java compile version 17
+junit5 = "5.14.4"
+keycloak = "26.7.0"
+# the last version that was shipped together with keycloak server
+keycloakJs = "25.0.6"
+picocli = "4.7.7"
+slf4j = "2.0.18"
+# starting with version 5, needs Java compile version 11
+vertx = "4.5.30"
+
+# --- test runtime dependency versions (need to be compatible with jvmTest) ---
+assertj = "3.27.7"
+fusionauthJwt = "7.0.0"
+jsonUnit = "6.0.1"
+jsoup = "1.22.2"
+# the enforcer has become decoupled from the keycloak release, see https://github.com/keycloak/keycloak/issues/30787
+keycloakPolicyEnforcer = "26.0.11"
+mockito = "5.23.0"
+springBoot = "4.1.0"
+
+# --- container & node tooling ---
+temurinJre = "25.0.3_9-jre"
+node = "24.18.0"
+
+[libraries]
+assertj-core = { group = "org.assertj", name = "assertj-core", version.ref = "assertj" }
+dagger = { group = "com.google.dagger", name = "dagger", version.ref = "dagger" }
+dagger-compiler = { group = "com.google.dagger", name = "dagger-compiler", version.ref = "dagger" }
+fusionauth-jwt = { group = "io.fusionauth", name = "fusionauth-jwt", version.ref = "fusionauthJwt" }
+jjwt-impl = { group = "io.jsonwebtoken", name = "jjwt-impl", version.ref = "jjwt" }
+jjwt-jackson = { group = "io.jsonwebtoken", name = "jjwt-jackson", version.ref = "jjwt" }
+jsr305 = { group = "com.google.code.findbugs", name = "jsr305", version.ref = "jsr305" }
+json-unit-assertj = { group = "net.javacrumbs.json-unit", name = "json-unit-assertj", version.ref = "jsonUnit" }
+jsoup = { group = "org.jsoup", name = "jsoup", version.ref = "jsoup" }
+junit4 = { group = "junit", name = "junit", version.ref = "junit4" }
+junit-bom = { group = "org.junit", name = "junit-bom", version.ref = "junit5" }
+junit-jupiter = { group = "org.junit.jupiter", name = "junit-jupiter" }
+junit-jupiter-api = { group = "org.junit.jupiter", name = "junit-jupiter-api" }
+junit-jupiter-params = { group = "org.junit.jupiter", name = "junit-jupiter-params" }
+# versions for the platform/engines are managed by the junit-bom
+junit-platform-launcher = { group = "org.junit.platform", name = "junit-platform-launcher" }
+junit-jupiter-engine = { group = "org.junit.jupiter", name = "junit-jupiter-engine" }
+junit-vintage-engine = { group = "org.junit.vintage", name = "junit-vintage-engine" }
+keycloak-services = { group = "org.keycloak", name = "keycloak-services", version.ref = "keycloak" }
+keycloak-themes-vendor = { group = "org.keycloak", name = "keycloak-themes-vendor", version.ref = "keycloak" }
+keycloak-policy-enforcer = { group = "org.keycloak", name = "keycloak-policy-enforcer", version.ref = "keycloakPolicyEnforcer" }
+mockito-junit-jupiter = { group = "org.mockito", name = "mockito-junit-jupiter", version.ref = "mockito" }
+picocli = { group = "info.picocli", name = "picocli", version.ref = "picocli" }
+slf4j-api = { group = "org.slf4j", name = "slf4j-api", version.ref = "slf4j" }
+slf4j-simple = { group = "org.slf4j", name = "slf4j-simple", version.ref = "slf4j" }
+spring-boot-starter-web = { module = "org.springframework.boot:spring-boot-starter-web", version.ref = "springBoot" }
+spring-boot-starter-security = { module = "org.springframework.boot:spring-boot-starter-security", version.ref = "springBoot" }
+spring-boot-starter-oauth2-resource-server = { module = "org.springframework.boot:spring-boot-starter-oauth2-resource-server", version.ref = "springBoot" }
+spring-boot-configuration-processor = { module = "org.springframework.boot:spring-boot-configuration-processor", version.ref = "springBoot" }
+spring-boot-starter-test = { module = "org.springframework.boot:spring-boot-starter-test", version.ref = "springBoot" }
+vertx-web = { module = "io.vertx:vertx-web", version.ref = "vertx" }
+vertx-web-templ-freemarker = { module = "io.vertx:vertx-web-templ-freemarker", version.ref = "vertx" }
+vertx-codegen = { module = "io.vertx:vertx-codegen", version.ref = "vertx" }
+vertx-junit5 = { module = "io.vertx:vertx-junit5", version.ref = "vertx" }
+vertx-web-client = { module = "io.vertx:vertx-web-client", version.ref = "vertx" }
+
+[bundles]
+vertx-test = ["vertx-junit5", "vertx-web-client"]
+junit-runtime = ["junit-platform-launcher", "junit-jupiter-engine", "junit-vintage-engine"]
+
+[plugins]
+axion-release = { id = "pl.allegro.tech.build.axion-release", version.ref = "axionRelease" }
+buildconfig = { id = "com.github.gmazzo.buildconfig", version.ref = "buildconfig" }
+dependencyVersions = { id = "com.github.ben-manes.versions", version.ref = "dependencyVersions" }
+docker-compose = { id = "com.avast.gradle.docker-compose", version.ref = "dockerCompose" }
+jib = { id = "com.google.cloud.tools.jib", version.ref = "jib" }
+nmcp = { id = "com.gradleup.nmcp", version.ref = "nmcp" }
+nmcp-aggregation = { id = "com.gradleup.nmcp.aggregation", version.ref = "nmcp" }
+node = { id = "com.github.node-gradle.node", version.ref = "nodeGradle" }
+shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }
+sonarqube = { id = "org.sonarqube", version.ref = "sonarqube" }
+spring-boot = { id = "org.springframework.boot", version.ref = "springBoot" }
+spring-dependency-management = { id = "io.spring.dependency-management", version.ref = "springDependencyManagement" }
