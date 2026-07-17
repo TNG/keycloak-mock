@@ -1,11 +1,10 @@
-version: '3'
 services:
   keycloak:
     image: keycloak/keycloak
     command:
       - start-dev
     ports:
-      - 8000:8080
+      - "8000:8080"
     environment:
       - KEYCLOAK_USER=admin
       - KEYCLOAK_PASSWORD=admin
@@ -21,7 +20,7 @@ services:
   backend:
     image: keycloak-mock/example-backend
     ports:
-      - 8080:8080
+      - "8080:8080"
     # make sure localhost is not looped back into this container but can be used to access the
     # keycloak container
     volumes:
