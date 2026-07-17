@@ -35,7 +35,7 @@ val jvmTestVersion = libs.versions.jvmTest.get().toInt()
 val releaseProjects = listOf("mock", "mock-junit", "mock-junit5", "standalone")
 
 val licenseName = "The Apache License, Version 2.0"
-val licenseUrl = "http://www.apache.org/licenses/LICENSE-2.0.txt"
+val licenseUrl = "https://www.apache.org/licenses/LICENSE-2.0.txt"
 val companyName = "TNG Technology Consulting GmbH"
 val companyUrl = "https://www.tngtech.com"
 
