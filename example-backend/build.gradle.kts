@@ -1,4 +1,5 @@
 plugins {
+    id("keycloak-mock.java-library")
     alias(libs.plugins.spring.boot)
     // ensure Spring uses a compatible JUnit version in tests
     alias(libs.plugins.spring.dependency.management)

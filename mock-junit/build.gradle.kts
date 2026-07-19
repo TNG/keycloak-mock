@@ -1,3 +1,9 @@
+plugins {
+    id("keycloak-mock.java-library")
+    id("keycloak-mock.publishing")
+    id("keycloak-mock.maven-java-publication")
+}
+
 description = "JUnit4 helper for keycloak-mock"
 
 dependencies {

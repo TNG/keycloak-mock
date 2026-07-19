@@ -4,8 +4,11 @@ import com.github.jengelman.gradle.plugins.shadow.transformers.PreserveFirstFoun
 
 plugins {
     application
+    id("keycloak-mock.base")
+    id("keycloak-mock.testing")
+    id("keycloak-mock.publishing")
+    id("keycloak-mock.shadow-publication")
     alias(libs.plugins.buildconfig)
-    alias(libs.plugins.shadow)
     alias(libs.plugins.jib)
 }
 
@@ -32,11 +35,6 @@ tasks.named<ShadowJar>("shadowJar") {
     }
 }
 
-tasks.register<Jar>("fakeJar") {
-    from(file("${project.projectDir}/src/main/resources/README.md"))
-    archiveClassifier.set("fake")
-}
-
 // dependencies as suggested by gradle
 tasks.named("startScripts") { dependsOn("shadowJar") }
 tasks.named("distZip") { dependsOn("shadowJar") }
@@ -44,24 +42,6 @@ tasks.named("distTar") { dependsOn("shadowJar") }
 tasks.named("startShadowScripts") { dependsOn("jar") }
 afterEvaluate {
     tasks.named("generateMetadataFileForShadowPublication").configure { dependsOn("jar") }
-}
-
-extensions.configure<PublishingExtension>("publishing") {
-    publications {
-        register<MavenPublication>("shadow") {
-            from(components.getByName("shadow"))
-            artifact(tasks.named<Jar>("fakeJar")) { classifier = "javadoc" }
-            artifact(tasks.named<Jar>("fakeJar")) { classifier = "sources" }
-        }
-    }
-}
-
-extensions.configure<SigningExtension>("signing") {
-    val signingKey = findProperty("signingKey") as String?
-    val signingPassword = findProperty("signingPassword") as String?
-    useInMemoryPgpKeys(signingKey, signingPassword)
-    val publishing = extensions.getByType<PublishingExtension>()
-    sign(publishing.publications.named<MavenPublication>("shadow").get())
 }
 
 configurations {
