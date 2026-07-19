@@ -11,6 +11,8 @@ plugins {
 val javaExtension = extensions.getByType<JavaPluginExtension>()
 
 tasks.register<Jar>("javadocJar") {
+    group = "documentation"
+    description = "Packages Javadoc into a JAR"
     from(project.tasks.named("javadoc"))
     archiveClassifier.set("javadoc")
     metaInf {
@@ -19,6 +21,8 @@ tasks.register<Jar>("javadocJar") {
 }
 
 tasks.register<Jar>("sourceJar") {
+    group = "build"
+    description = "Packages sources into a JAR"
     from(javaExtension.sourceSets.getByName("main").allSource)
     archiveClassifier.set("sources")
     metaInf {

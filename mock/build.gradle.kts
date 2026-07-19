@@ -38,6 +38,8 @@ dependencies {
 }
 
 tasks.register<Copy>("addResources") {
+    group = "build"
+    description = "Extracts keycloak JS and HTML resources into the main resources"
     duplicatesStrategy = DuplicatesStrategy.FAIL
     from(tarTree(jsResourceJar.get().singleFile)) {
         include("/package/dist/keycloak.js")
