@@ -1,3 +1,9 @@
+plugins {
+    id("keycloak-mock.java-library")
+    id("keycloak-mock.publishing")
+    id("keycloak-mock.maven-java-publication")
+}
+
 description = "Base module of keycloak-mock"
 
 val jsResourceJar = configurations.register("jsResourceJar") {

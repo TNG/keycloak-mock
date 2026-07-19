@@ -11,6 +11,8 @@ plugins {
 
 rootProject.name = "keycloak-mock"
 
+includeBuild("build-logic")
+
 include("mock")
 include("mock-junit")
 include("mock-junit5")

@@ -1,6 +1,7 @@
 import org.gradle.internal.os.OperatingSystem
 
 plugins {
+    id("keycloak-mock.base")
     alias(libs.plugins.node)
 }
 

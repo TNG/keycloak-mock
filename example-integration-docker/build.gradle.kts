@@ -1,4 +1,5 @@
 plugins {
+    id("keycloak-mock.base")
     alias(libs.plugins.docker.compose)
 }
 
