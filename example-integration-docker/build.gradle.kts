@@ -21,6 +21,7 @@ afterEvaluate {
 }
 
 tasks.register("e2e") {
+    group = "verification"
     description = "Run end-to-end test using docker containers"
     dependsOn("composeUp")
     dependsOn(":example-frontend-react:yarn_e2e")

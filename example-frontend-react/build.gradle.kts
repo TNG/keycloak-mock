@@ -45,6 +45,7 @@ tasks.named("yarn_build") {
 }
 
 tasks.register<Copy>("copyNode") {
+    group = "build setup"
     description = "Move node version into unversioned directory to be used by wrapper script"
     dependsOn("nodeSetup")
     val os = OperatingSystem.current()
@@ -61,6 +62,7 @@ tasks.register<Copy>("copyNode") {
 tasks.named("yarnSetup") { dependsOn("copyNode") }
 
 tasks.register("build") {
+    group = "build"
     description = "Hook yarn build into regular build task"
     dependsOn("yarn_build")
 }

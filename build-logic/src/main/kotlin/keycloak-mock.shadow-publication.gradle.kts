@@ -9,6 +9,8 @@ plugins {
 }
 
 tasks.register<Jar>("fakeJar") {
+    group = "documentation"
+    description = "Creates a placeholder JAR used as javadoc and sources for the shadow publication"
     from(file("${project.projectDir}/src/main/resources/README.md"))
     archiveClassifier.set("fake")
 }
