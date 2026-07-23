@@ -29,14 +29,14 @@ You can create and start the mock directly from the `mock` artifact using Maven
     <groupId>com.tngtech.keycloakmock</groupId>
     <artifactId>mock</artifactId>
     <scope>test</scope>
-    <version>0.20.0</version>
+    <version>0.21.0</version>
 </dependency>
 ```
 
 or Gradle
 
 ```gradle
-testImplementation 'com.tngtech.keycloakmock:mock:0.20.0'
+testImplementation 'com.tngtech.keycloakmock:mock:0.21.0'
 ```
 
 like this:
