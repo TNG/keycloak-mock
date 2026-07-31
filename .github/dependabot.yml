@@ -4,13 +4,57 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
   - package-ecosystem: "npm"
     directory: "/example-frontend-react/"
     schedule:
       interval: "weekly"
     groups:
-      react:
+      javascript:
         patterns:
-          - "react"
-          - "react-dom"
-# no gradle updates for now, since some dependencies cannot be updated due to missing Java 8 compatibility
+          - "*"
+  - package-ecosystem: "gradle"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      # mirrors the "build & plugin versions" section of gradle/libs.versions.toml
+      build-and-plugins:
+        patterns:
+          - "pl.allegro.tech.build.axion-release*"
+          - "com.github.gmazzo.buildconfig*"
+          - "com.github.ben-manes.versions*"
+          - "com.avast.gradle.docker-compose*"
+          - "com.google.cloud.tools.jib*"
+          - "com.gradleup.nmcp*"
+          - "com.gradleup.shadow*"
+          - "com.github.node-gradle.node*"
+          - "org.sonarqube*"
+          - "org.sonarsource.scanner.gradle*"
+          - "io.spring.dependency-management*"
+          - "gradle"
+      # mirrors the "test runtime dependency versions" section (jvmTest-compatible)
+      test-runtime-dependencies:
+        patterns:
+          - "org.assertj:*"
+          - "io.fusionauth:*"
+          - "net.javacrumbs.json-unit:*"
+          - "org.jsoup:*"
+          - "org.keycloak:keycloak-policy-enforcer"
+          - "org.mockito:*"
+          - "org.springframework.boot*"
+    ignore:
+      # dagger: starting with 2.52, the shadowed room library requires Java compile version 11 (jvmProd is 8)
+      - dependency-name: "com.google.dagger:*"
+      # junit5: starting with 6, requires Java compile version 17 (jvmProd is 8)
+      - dependency-name: "org.junit.jupiter:*"
+      - dependency-name: "org.junit.platform:junit-platform-launcher"
+      - dependency-name: "org.junit.vintage:junit-vintage-engine"
+      - dependency-name: "org.junit:junit-bom"
+      # keycloak-js-adapter: the last version shipped together with keycloak server
+      - dependency-name: "org.keycloak:keycloak-js-adapter"
+      # vertx: starting with 5, requires Java compile version 11 (jvmProd is 8)
+      - dependency-name: "io.vertx:*"
