@@ -1,0 +1,65 @@
+name: Update verification metadata
+
+on:
+  pull_request:
+    paths:
+      - 'gradle/libs.versions.toml'
+      - 'build.gradle.kts'
+      - 'settings.gradle.kts'
+      - 'build-logic/**/build.gradle.kts'
+      - '**/build.gradle.kts'
+  workflow_dispatch:
+    # manual re-run, e.g. after dependabot updated an existing PR
+
+permissions:
+  contents: write
+
+jobs:
+  regenerate:
+    # Only allow on pull requests opened by dependabot.
+    if: github.event.pull_request.user.login == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7.0.1
+        with:
+          ref: ${{ github.head_ref }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Skip if metadata already updated
+        if: github.event_name == 'pull_request'
+        id: skip
+        run: |
+          if [ "$(git log -1 --format='%s')" = "update verification metadata for dependabot dependency bump" ]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "Head commit is already the verification metadata update; nothing to do."
+          fi
+
+      - name: Set up JDK 25
+        if: steps.skip.outputs.skip != 'true'
+        uses: actions/setup-java@v5.7.0
+        with:
+          distribution: 'temurin'
+          java-version: '25'
+
+      - name: Regenerate dependency verification metadata
+        if: steps.skip.outputs.skip != 'true'
+        run: ./gradlew --write-verification-metadata sha256 --dependency-verification strict --refresh-dependencies build
+
+      - name: Guard against altered existing entries
+        if: steps.skip.outputs.skip != 'true'
+        run: bash scripts/check-verification-metadata-additive.sh
+
+      - name: Commit updated metadata
+        if: steps.skip.outputs.skip != 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet -- gradle/verification-metadata.xml; then
+            echo "No verification metadata changes."
+            exit 0
+          fi
+          git add gradle/verification-metadata.xml
+          git commit -s -m "update verification metadata for dependabot dependency bump"
+          git push
