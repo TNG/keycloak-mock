@@ -59,3 +59,13 @@ dependencies {
     nmcpAggregation(project(":mock-junit5"))
     nmcpAggregation(project(":standalone"))
 }
+
+// Run the build-logic tests as part of every subproject build, so the
+// tamper-guard script (unit-tested in build-logic) is verified before any
+// subproject is built. The root project applies no `base` plugin, so there is
+// no aggregate `build` task to hook; attach to each subproject's `build` instead.
+subprojects {
+    tasks.matching { it.name == "build" }.configureEach {
+        dependsOn(gradle.includedBuild("build-logic").task(":test"))
+    }
+}
