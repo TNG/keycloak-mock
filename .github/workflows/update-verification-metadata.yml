@@ -1,0 +1,74 @@
+name: Update verification metadata
+
+on:
+  pull_request:
+    paths:
+      - 'gradle/libs.versions.toml'
+      - 'build.gradle.kts'
+      - 'settings.gradle.kts'
+      - 'build-logic/**/build.gradle.kts'
+      - '**/build.gradle.kts'
+
+permissions:
+  contents: write
+
+jobs:
+  regenerate:
+    # Gate on the PR author (stable across force-pushes/rebases) rather than
+    # github.actor (the event triggerer, which becomes the rebasing maintainer
+    # and would wrongly skip regeneration for a rebased dependabot PR). Only
+    # dependabot can author PRs as dependabot[bot], so external contributors
+    # (human authors) are still excluded.
+    if: github.event.pull_request.user.login == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7.0.1
+        with:
+          ref: ${{ github.head_ref }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up JDK 25
+        uses: actions/setup-java@v5.7.0
+        with:
+          distribution: 'temurin'
+          java-version: '25'
+
+      - name: Regenerate dependency verification metadata
+        # strict (matching gradle.properties) is sufficient: --write-verification-metadata
+        # writes MISSING entries (new versions) without failing, so a dependabot
+        # version bump is recorded fine in strict mode. --refresh-dependencies
+        # bypasses the local cache so recorded hashes come straight from the
+        # source repository.
+        #
+        # Note: --write-verification-metadata OVERWRITES existing checksums on
+        # mismatch rather than failing, even in strict mode (verified
+        # empirically). A "same version, modified bytes" attack (e.g. a
+        # poisoned cache/mirror) would therefore be silently laundered by this
+        # step alone. The "Guard against altered existing entries" step below
+        # is what prevents that, by requiring the resulting diff to be purely
+        # additive.
+        run: ./gradlew --write-verification-metadata sha256 --dependency-verification strict --refresh-dependencies build
+
+      - name: Guard against altered existing entries
+        # The guard logic lives in scripts/check-verification-metadata-additive.sh
+        # and is unit-tested in build-logic (runs on every `./gradlew build`).
+        # It rejects any removed/altered verification line: a legitimate version
+        # bump is purely additive (new <component> blocks only), whereas a
+        # "same version, modified bytes" tamper would change an existing
+        # <sha256 value="..."> line. On failure the step exits non-zero so
+        # nothing is committed.
+        run: bash scripts/check-verification-metadata-additive.sh
+
+      - name: Commit updated metadata
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet -- gradle/verification-metadata.xml; then
+            echo "No verification metadata changes."
+            exit 0
+          fi
+          git add gradle/verification-metadata.xml
+          git commit -s -m "update verification metadata for dependabot dependency bump"
+          git push
