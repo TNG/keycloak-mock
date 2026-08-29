@@ -21,7 +21,7 @@ jsr305 = "3.0.2"
 junit4 = "4.13.2"
 # starting with version 6, needs Java compile version 17
 junit5 = "5.14.4"
-keycloak = "26.7.1"
+keycloak = "26.7.2"
 # the last version that was shipped together with keycloak server
 keycloakJs = "25.0.6"
 picocli = "4.7.7"
