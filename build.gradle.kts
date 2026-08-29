@@ -3,7 +3,6 @@ import org.sonarqube.gradle.SonarExtension
 plugins {
     idea
     alias(libs.plugins.axion.release)
-    alias(libs.plugins.dependencyVersions)
     alias(libs.plugins.jib) apply false
     alias(libs.plugins.nmcp) apply false
     alias(libs.plugins.nmcp.aggregation)
