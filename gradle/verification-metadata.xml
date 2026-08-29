@@ -3,6 +3,11 @@
    <configuration>
       <verify-metadata>true</verify-metadata>
       <verify-signatures>false</verify-signatures>
+      <trusted-artifacts>
+         <trust group="org.apache.groovy" version="4.0.32" reason="Groovy 4.0.32 ships with the Gradle 9.7.0 distribution; its artifacts are resolved by the IDE from the Gradle Libs repository and are already trusted via the Gradle installation. Scoped to this version so transitive Groovy dependencies at other versions remain verified."/>
+         <trust file=".*-javadoc[.]jar" regex="true" reason="Source and javadoc jars are not executed; trusted so IDE source download doesn't require per-artifact verification entries."/>
+         <trust file=".*-sources[.]jar" regex="true" reason="Source and javadoc jars are not executed; trusted so IDE source download doesn't require per-artifact verification entries."/>
+      </trusted-artifacts>
    </configuration>
    <components>
       <component group="biz.aQute.bnd" name="biz.aQute.bnd.annotation" version="7.1.0">
