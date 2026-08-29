@@ -3,7 +3,6 @@
 gradle = "9.7.1"
 axionRelease = "1.21.3"
 buildconfig = "6.0.10"
-dependencyVersions = "0.61.0"
 dockerCompose = "0.17.21"
 jib = "3.5.4"
 nmcp = "1.6.1"
@@ -88,7 +87,6 @@ junit-runtime = ["junit-platform-launcher", "junit-jupiter-engine", "junit-vinta
 [plugins]
 axion-release = { id = "pl.allegro.tech.build.axion-release", version.ref = "axionRelease" }
 buildconfig = { id = "com.github.gmazzo.buildconfig", version.ref = "buildconfig" }
-dependencyVersions = { id = "com.github.ben-manes.versions", version.ref = "dependencyVersions" }
 docker-compose = { id = "com.avast.gradle.docker-compose", version.ref = "dockerCompose" }
 jib = { id = "com.google.cloud.tools.jib", version.ref = "jib" }
 nmcp = { id = "com.gradleup.nmcp", version.ref = "nmcp" }
