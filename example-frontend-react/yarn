@@ -1,2 +1,0 @@
-#!/bin/bash
-./bin/nodejs/node/bin/node ./bin/yarn/yarn-latest/lib/node_modules/yarn/bin/yarn.js "$@"

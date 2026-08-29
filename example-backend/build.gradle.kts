@@ -42,8 +42,8 @@ jib {
 tasks.register<Copy>("prepareFrontend") {
     group = "build"
     description = "Copies the built frontend into the static resources"
-    dependsOn(":example-frontend-react:yarn_build")
-    from("../example-frontend-react/build/")
+    dependsOn(":example-frontend-react:pnpm_build")
+    from("../example-frontend-react/dist/")
     into("src/main/resources/static/")
 }
 

@@ -1,4 +1,5 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This is the example frontend for [keycloak-mock](https://github.com/TNG/keycloak-mock), built with
+[Vite](https://vitejs.dev/) and React.
 
 ## Prerequisites
 
@@ -35,10 +36,16 @@ Stopping:
 
 In the project directory, you can run:
 
-`./yarn start`
+`./pnpm start`
 
 This runs the app in the development mode.<br>
 Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 
-The page will reload if you make edits.<br>
-You will also see any lint errors in the console.
+The page will reload if you make edits.
+
+## Build
+
+`./pnpm build`
+
+Builds the app for production into the `dist` folder, which is copied into the example backend's
+static resources by the gradle build.

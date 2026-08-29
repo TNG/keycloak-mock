@@ -42,6 +42,7 @@ springBoot = "4.1.1"
 # --- container & node tooling ---
 temurinJre = "25.0.3_9-jre"
 node = "24.18.0"
+pnpm = "11.24.0"
 
 [libraries]
 assertj-core = { group = "org.assertj", name = "assertj-core", version.ref = "assertj" }
