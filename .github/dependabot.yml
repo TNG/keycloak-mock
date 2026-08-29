@@ -16,6 +16,10 @@ updates:
       javascript:
         patterns:
           - "*"
+      javascript-security:
+        patterns:
+          - "*"
+        applies-to: "security-updates"
   - package-ecosystem: "gradle"
     directory: "/"
     schedule:
