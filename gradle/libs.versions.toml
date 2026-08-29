@@ -1,6 +1,6 @@
 [versions]
 # --- build & plugin versions ---
-gradle = "9.6.1"
+gradle = "9.7.1"
 axionRelease = "1.21.3"
 buildconfig = "6.0.10"
 dependencyVersions = "0.61.0"
