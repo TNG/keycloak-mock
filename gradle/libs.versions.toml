@@ -25,7 +25,7 @@ keycloak = "26.7.2"
 # the last version that was shipped together with keycloak server
 keycloakJs = "25.0.6"
 picocli = "4.7.7"
-slf4j = "2.0.18"
+slf4j = "2.0.19"
 # starting with version 5, needs Java compile version 11
 vertx = "4.5.30"
 
