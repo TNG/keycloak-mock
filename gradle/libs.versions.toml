@@ -1,14 +1,14 @@
 [versions]
 # --- build & plugin versions ---
 gradle = "9.7.1"
-axionRelease = "1.21.3"
-buildconfig = "6.0.10"
+axionRelease = "1.21.4"
+buildconfig = "6.1.1"
 dockerCompose = "0.17.21"
 jib = "3.5.4"
-nmcp = "1.6.1"
+nmcp = "1.6.2"
 nodeGradle = "7.1.0"
 shadow = "9.6.1"
-sonarqube = "7.4.0.8496"
+sonarqube = "7.5.0.8588"
 springDependencyManagement = "1.1.7"
 jvmProd = "8"
 jvmTest = "25"
