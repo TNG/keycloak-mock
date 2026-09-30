@@ -36,7 +36,7 @@ jsonUnit = "6.2.0"
 jsoup = "1.23.2"
 # the enforcer has become decoupled from the keycloak release, see https://github.com/keycloak/keycloak/issues/30787
 keycloakPolicyEnforcer = "26.0.12"
-mockito = "5.23.0"
+mockito = "5.24.0"
 springBoot = "4.1.1"
 
 # --- container & node tooling ---
