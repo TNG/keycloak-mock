@@ -1,6 +1,6 @@
 [versions]
 # --- build & plugin versions ---
-gradle = "9.7.1"
+gradle = "9.8.0"
 axionRelease = "1.21.4"
 buildconfig = "6.1.1"
 dockerCompose = "0.17.21"
