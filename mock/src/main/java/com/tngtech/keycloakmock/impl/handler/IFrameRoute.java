@@ -41,11 +41,10 @@ public class IFrameRoute implements Handler<RoutingContext> {
         .render(
             routingContext.data(), "/org/keycloak/protocol/oidc/endpoints/login-status-iframe.ftl")
         .onSuccess(b -> routingContext.response().putHeader(CONTENT_TYPE, TEXT_HTML).end(b))
-        .onFailure(
-            t -> {
-              LOG.error("Unable to render login iframe", t);
-              routingContext.fail(t);
-            });
+        .onFailure(t -> {
+          LOG.error("Unable to render login iframe", t);
+          routingContext.fail(t);
+        });
   }
 
   public static URI getWebCryptoShimPath(@Nonnull UrlConfiguration urlConfiguration) {

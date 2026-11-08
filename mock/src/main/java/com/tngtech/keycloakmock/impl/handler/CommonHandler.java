@@ -19,13 +19,12 @@ public class CommonHandler implements Handler<RoutingContext> {
   public void handle(@Nonnull RoutingContext routingContext) {
     routingContext
         .response()
-        .bodyEndHandler(
-            aVoid ->
-                LOG.info(
-                    "{}: {} {}",
-                    routingContext.response().getStatusCode(),
-                    routingContext.request().method().name(),
-                    routingContext.request().uri()))
+        .bodyEndHandler(aVoid ->
+            LOG.info(
+                "{}: {} {}",
+                routingContext.response().getStatusCode(),
+                routingContext.request().method().name(),
+                routingContext.request().uri()))
         .putHeader("Access-Control-Allow-Origin", routingContext.request().headers().get("Origin"))
         .putHeader("Access-Control-Allow-Methods", "GET,POST")
         .putHeader("Access-Control-Allow-Credentials", "true");

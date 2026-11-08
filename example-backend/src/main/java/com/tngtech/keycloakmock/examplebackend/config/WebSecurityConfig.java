@@ -27,15 +27,14 @@ public class WebSecurityConfig {
 
   @Bean
   public SecurityFilterChain configure(final HttpSecurity http) {
-    http.authorizeHttpRequests(
-            authorizeRequests ->
-                authorizeRequests
-                    .requestMatchers(HttpMethod.OPTIONS, "/**")
-                    .permitAll()
-                    .requestMatchers("/api/**")
-                    .authenticated()
-                    .requestMatchers("/**")
-                    .permitAll())
+    http.authorizeHttpRequests(authorizeRequests ->
+            authorizeRequests
+                .requestMatchers(HttpMethod.OPTIONS, "/**")
+                .permitAll()
+                .requestMatchers("/api/**")
+                .authenticated()
+                .requestMatchers("/**")
+                .permitAll())
         .oauth2ResourceServer(
             server -> server.jwt(jwt -> jwt.jwtAuthenticationConverter(this::convert)));
     return http.build();
