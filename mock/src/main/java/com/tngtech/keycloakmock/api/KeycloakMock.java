@@ -97,6 +97,7 @@ public class KeycloakMock {
     serverComponent =
         DaggerServerComponent.builder()
             .serverConfig(serverConfig)
+            .urlConfigurationFactory(urlConfigurationFactory)
             .publicKey(signatureComponent.publicKey())
             .keyId(signatureComponent.keyId())
             .keyStore(signatureComponent.keyStore())
@@ -104,6 +105,7 @@ public class KeycloakMock {
             .build();
     serverComponent.server().listen(startHandler);
     startHandler.await();
+    urlConfigurationFactory.setActualPort(serverComponent.server().actualPort());
   }
 
   /**
@@ -113,6 +115,7 @@ public class KeycloakMock {
    */
   public synchronized void stop() {
     if (serverComponent != null) {
+      urlConfigurationFactory.clearActualPort();
       ResultHandler<Void> stopServerHandler = new ResultHandler<>();
       serverComponent.server().close(stopServerHandler);
       stopServerHandler.await();

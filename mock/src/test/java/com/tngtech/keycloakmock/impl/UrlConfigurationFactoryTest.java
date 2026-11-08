@@ -9,6 +9,7 @@ import com.tngtech.keycloakmock.api.ServerConfig;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.ext.web.RoutingContext;
 import java.util.stream.Stream;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -40,6 +41,25 @@ class UrlConfigurationFactoryTest {
 
     assertThat(result.getHostname()).hasToString(expectedHost);
     assertThat(result.getRealm()).hasToString(expectedRealm);
+  }
+
+  @Test
+  void actual_port_is_used_instead_of_configured_port() {
+    uut.setActualPort(12345);
+
+    UrlConfiguration result = uut.create(null, null);
+
+    assertThat(result.getHostname()).hasToString(DEFAULT_HOSTNAME + ":12345");
+  }
+
+  @Test
+  void configured_port_is_used_again_after_actual_port_was_cleared() {
+    uut.setActualPort(12345);
+    uut.clearActualPort();
+
+    UrlConfiguration result = uut.create(null, null);
+
+    assertThat(result.getHostname()).hasToString(DEFAULT_HOSTNAME + ":8000");
   }
 
   @ParameterizedTest

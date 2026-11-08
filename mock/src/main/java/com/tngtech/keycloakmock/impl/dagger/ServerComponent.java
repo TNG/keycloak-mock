@@ -2,6 +2,7 @@ package com.tngtech.keycloakmock.impl.dagger;
 
 import com.tngtech.keycloakmock.api.ServerConfig;
 import com.tngtech.keycloakmock.impl.TokenGenerator;
+import com.tngtech.keycloakmock.impl.UrlConfigurationFactory;
 import dagger.BindsInstance;
 import dagger.Component;
 import io.vertx.core.Vertx;
@@ -29,6 +30,10 @@ public interface ServerComponent {
 
     @BindsInstance
     public abstract Builder serverConfig(ServerConfig serverConfig);
+
+    @BindsInstance
+    public abstract Builder urlConfigurationFactory(
+        UrlConfigurationFactory urlConfigurationFactory);
 
     @BindsInstance
     public abstract Builder publicKey(PublicKey key);

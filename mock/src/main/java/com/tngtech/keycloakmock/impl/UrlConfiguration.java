@@ -23,17 +23,17 @@ public class UrlConfiguration {
 
   UrlConfiguration(
       @Nonnull ServerConfig serverConfig,
+      int port,
       @Nullable String requestHost,
       @Nullable String requestRealm) {
     this.protocol = serverConfig.getProtocol();
     if (requestHost != null) {
       this.hostname = requestHost;
     } else {
-      if (protocol.getDefaultPort() == serverConfig.getPort()
-          || serverConfig.getDefaultHostname().contains(":")) {
+      if (protocol.getDefaultPort() == port || serverConfig.getDefaultHostname().contains(":")) {
         this.hostname = serverConfig.getDefaultHostname();
       } else {
-        this.hostname = serverConfig.getDefaultHostname() + ":" + serverConfig.getPort();
+        this.hostname = serverConfig.getDefaultHostname() + ":" + port;
       }
     }
     if (serverConfig.getContextPath().isEmpty() || "/".equals(serverConfig.getContextPath())) {
