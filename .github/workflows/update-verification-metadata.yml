@@ -11,8 +11,10 @@ on:
   workflow_dispatch:
     # manual re-run, e.g. after dependabot updated an existing PR
 
+# The commit is pushed via a GitHub App installation token, so the default
+# token only needs read access.
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   regenerate:
@@ -22,7 +24,7 @@ jobs:
 
     steps:
       - name: Check out
-        uses: actions/checkout@v7.0.1
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.head_ref }}
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -38,7 +40,7 @@ jobs:
 
       - name: Set up JDK 25
         if: steps.skip.outputs.skip != 'true'
-        uses: actions/setup-java@v6.0.1
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
         with:
           distribution: 'temurin'
           java-version: '25'
@@ -51,15 +53,22 @@ jobs:
         if: steps.skip.outputs.skip != 'true'
         run: bash scripts/check-verification-metadata-additive.sh
 
+      - name: Generate app installation token
+        id: app-token
+        if: steps.skip.outputs.skip != 'true'
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        with:
+          client-id: ${{ secrets.METADATA_UPDATER_CLIENT_ID }}
+          private-key: ${{ secrets.METADATA_UPDATER_PRIVATE_KEY }}
+          permission-contents: write
+
       - name: Commit updated metadata
         if: steps.skip.outputs.skip != 'true'
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          if git diff --quiet -- gradle/verification-metadata.xml; then
-            echo "No verification metadata changes."
-            exit 0
-          fi
-          git add gradle/verification-metadata.xml
-          git commit -s -m "update verification metadata for dependabot dependency bump"
-          git push
+        # Committing via the REST API makes GitHub sign the commit, so it shows
+        # up as "Verified" and satisfies the signed-commits branch protection.
+        uses: suzuki-shunsuke/commit-action@5eaa5ecce3ffe93d09a85b946dc5136e3713b1b7 # v1.1.0
+        with:
+          github_token: ${{ steps.app-token.outputs.token }}
+          commit_message: update verification metadata for dependabot dependency bump
+          files: gradle/verification-metadata.xml
+          fail_on_self_push: false
