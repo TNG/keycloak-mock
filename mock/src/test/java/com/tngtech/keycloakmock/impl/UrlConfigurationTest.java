@@ -14,6 +14,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 class UrlConfigurationTest {
   private static final String DEFAULT_HOSTNAME = "defaultHost";
   private static final String DEFAULT_REALM = "defaultRealm";
+  private static final int DEFAULT_PORT = 8000;
   private static final String REQUEST_HOST = "requestHost";
   private static final String REQUEST_HOST_NO_CONTEXT_PATH = "requestHostNoContextPath";
   private static final String REQUEST_HOST_CUSTOM_CONTEXT_PATH = "requestHostCustomContextPath";
@@ -85,7 +86,7 @@ class UrlConfigurationTest {
   @MethodSource("request_host_and_realm_and_expected_issuer")
   void context_parameters_are_used_correctly(
       String requestHost, String requestRealm, String expectedIssuer) {
-    uut = new UrlConfiguration(aServerConfig().build(), 8000, requestHost, requestRealm);
+    uut = new UrlConfiguration(aServerConfig().build(), DEFAULT_PORT, requestHost, requestRealm);
 
     assertThat(uut.getIssuer()).hasToString(expectedIssuer);
   }
@@ -95,7 +96,7 @@ class UrlConfigurationTest {
     uut =
         new UrlConfiguration(
             aServerConfig().withNoContextPath().build(),
-            8000,
+            DEFAULT_PORT,
             REQUEST_HOST_NO_CONTEXT_PATH,
             REQUEST_REALM);
 
@@ -107,7 +108,7 @@ class UrlConfigurationTest {
     uut =
         new UrlConfiguration(
             aServerConfig().withContextPath("custom/context/path").build(),
-            8000,
+            DEFAULT_PORT,
             REQUEST_HOST_CUSTOM_CONTEXT_PATH,
             REQUEST_REALM);
 
@@ -117,7 +118,7 @@ class UrlConfigurationTest {
 
   @Test
   void urls_are_correct() {
-    uut = new UrlConfiguration(aServerConfig().build(), 8000, null, null);
+    uut = new UrlConfiguration(aServerConfig().build(), DEFAULT_PORT, null, null);
 
     assertThat(uut.getIssuerPath()).hasToString("http://localhost:8000/auth/realms/master/");
     assertThat(uut.getOpenIdPath("1234"))
@@ -134,7 +135,8 @@ class UrlConfigurationTest {
 
   @Test
   void urls_are_correct_with_no_context_path() {
-    uut = new UrlConfiguration(aServerConfig().withNoContextPath().build(), 8000, null, null);
+    uut =
+        new UrlConfiguration(aServerConfig().withNoContextPath().build(), DEFAULT_PORT, null, null);
 
     assertThat(uut.getIssuerPath()).hasToString("http://localhost:8000/realms/master/");
     assertThat(uut.getOpenIdPath("1234"))
@@ -153,7 +155,10 @@ class UrlConfigurationTest {
   void urls_are_correct_with_custom_context_path() {
     uut =
         new UrlConfiguration(
-            aServerConfig().withContextPath("/custom/context/path").build(), 8000, null, null);
+            aServerConfig().withContextPath("/custom/context/path").build(),
+            DEFAULT_PORT,
+            null,
+            null);
 
     assertThat(uut.getIssuerPath())
         .hasToString("http://localhost:8000/custom/context/path/realms/master/");
@@ -177,7 +182,7 @@ class UrlConfigurationTest {
   @ParameterizedTest
   @ValueSource(booleans = {true, false})
   void protocol_is_correct(boolean tls) {
-    uut = new UrlConfiguration(aServerConfig().withTls(tls).build(), 8000, null, null);
+    uut = new UrlConfiguration(aServerConfig().withTls(tls).build(), DEFAULT_PORT, null, null);
 
     assertThat(uut.getProtocol()).isEqualTo(tls ? Protocol.HTTPS : Protocol.HTTP);
   }
