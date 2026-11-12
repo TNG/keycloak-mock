@@ -107,11 +107,10 @@ public class LoginRoute implements Handler<RoutingContext> {
       engine
           .render(routingContext.data(), "loginPage.ftl")
           .onSuccess(b -> routingContext.response().putHeader(CONTENT_TYPE, TEXT_HTML).end(b))
-          .onFailure(
-              t -> {
-                LOG.error("Unable to render login page", t);
-                routingContext.fail(t);
-              });
+          .onFailure(t -> {
+            LOG.error("Unable to render login page", t);
+            routingContext.fail(t);
+          });
     }
   }
 }

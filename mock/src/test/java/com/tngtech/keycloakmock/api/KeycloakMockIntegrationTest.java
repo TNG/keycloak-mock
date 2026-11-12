@@ -162,15 +162,26 @@ class KeycloakMockIntegrationTest {
         .send()
         .expecting(SC_OK.and(JSON))
         .onComplete(
-            testContext.succeeding(
-                r -> {
-                  testContext.completeNow();
-                  keycloakMock.stop();
-                }));
+            testContext.succeeding(r -> {
+              testContext.completeNow();
+              keycloakMock.stop();
+            }));
   }
 
   private static Stream<Arguments> serverConfig() {
     return Stream.of(Arguments.of(8000, false), Arguments.of(8001, true), Arguments.of(0, true));
+  }
+
+  @Test
+  void generated_token_uses_actual_random_port() {
+    keycloakMock = new KeycloakMock(aServerConfig().withRandomPort().build());
+    keycloakMock.start();
+
+    String accessToken = keycloakMock.getAccessToken(aTokenConfig().build());
+
+    Jws<Claims> jwt = jwtParser.parseSignedClaims(accessToken);
+    assertThat(jwt.getPayload().getIssuer())
+        .isEqualTo("http://localhost:" + keycloakMock.getActualPort() + "/auth/realms/master");
   }
 
   @Test
@@ -214,26 +225,24 @@ class KeycloakMockIntegrationTest {
         .send()
         .expecting(SC_OK.and(JSON))
         .map(r -> r.bodyAsJson(ConfigurationResponse.class))
-        .expecting(
-            config -> {
-              assertThat(config.authorization_endpoint)
-                  .isEqualTo("http://server/auth/realms/test/protocol/openid-connect/auth");
-              assertThat(config.end_session_endpoint)
-                  .isEqualTo("http://server/auth/realms/test/protocol/openid-connect/logout");
-              assertThat(config.id_token_signing_alg_values_supported).containsExactly("RS256");
-              assertThat(config.issuer).isEqualTo("http://server/auth/realms/test");
-              assertThat(config.jwks_uri)
-                  .isEqualTo("http://server/auth/realms/test/protocol/openid-connect/certs");
-              assertThat(config.response_types_supported)
-                  .containsExactlyInAnyOrder("code", "code id_token", "id_token", "token id_token");
-              assertThat(config.subject_types_supported).containsExactly("public");
-              assertThat(config.token_endpoint)
-                  .isEqualTo("http://server/auth/realms/test/protocol/openid-connect/token");
-              assertThat(config.introspection_endpoint)
-                  .isEqualTo(
-                      "http://server/auth/realms/test/protocol/openid-connect/token/introspect");
-              return true;
-            })
+        .expecting(config -> {
+          assertThat(config.authorization_endpoint)
+              .isEqualTo("http://server/auth/realms/test/protocol/openid-connect/auth");
+          assertThat(config.end_session_endpoint)
+              .isEqualTo("http://server/auth/realms/test/protocol/openid-connect/logout");
+          assertThat(config.id_token_signing_alg_values_supported).containsExactly("RS256");
+          assertThat(config.issuer).isEqualTo("http://server/auth/realms/test");
+          assertThat(config.jwks_uri)
+              .isEqualTo("http://server/auth/realms/test/protocol/openid-connect/certs");
+          assertThat(config.response_types_supported)
+              .containsExactlyInAnyOrder("code", "code id_token", "id_token", "token id_token");
+          assertThat(config.subject_types_supported).containsExactly("public");
+          assertThat(config.token_endpoint)
+              .isEqualTo("http://server/auth/realms/test/protocol/openid-connect/token");
+          assertThat(config.introspection_endpoint)
+              .isEqualTo("http://server/auth/realms/test/protocol/openid-connect/token/introspect");
+          return true;
+        })
         .onComplete(testContext.succeedingThenComplete());
   }
 
@@ -282,11 +291,10 @@ class KeycloakMockIntegrationTest {
         .send()
         .expecting(SC_OK.and(contentType))
         .map(HttpResponse::bodyAsString)
-        .expecting(
-            body -> {
-              assertThat(body).contains(content);
-              return true;
-            })
+        .expecting(body -> {
+          assertThat(body).contains(content);
+          return true;
+        })
         .onComplete(testContext.succeedingThenComplete());
   }
 
@@ -303,12 +311,11 @@ class KeycloakMockIntegrationTest {
         .send()
         .expecting(SC_OK.and(HTML))
         .map(HttpResponse::bodyAsString)
-        .expecting(
-            body -> {
-              assertThat(body)
-                  .contains(IFrameRoute.getWebCryptoShimPath(configuration).toASCIIString());
-              return true;
-            })
+        .expecting(body -> {
+          assertThat(body)
+              .contains(IFrameRoute.getWebCryptoShimPath(configuration).toASCIIString());
+          return true;
+        })
         .onComplete(testContext.succeedingThenComplete());
   }
 
@@ -580,16 +587,15 @@ class KeycloakMockIntegrationTest {
         .followRedirects(false)
         .send()
         .expecting(SC_FOUND)
-        .expecting(
-            response -> {
-              assertThat(response.getHeader("Location")).isEqualTo("redirect_uri");
-              assertThat(response.cookies())
-                  .hasSize(1)
-                  .first()
-                  .asString()
-                  .startsWith("KEYCLOAK_SESSION=realm/dummy-user-id;");
-              return true;
-            })
+        .expecting(response -> {
+          assertThat(response.getHeader("Location")).isEqualTo("redirect_uri");
+          assertThat(response.cookies())
+              .hasSize(1)
+              .first()
+              .asString()
+              .startsWith("KEYCLOAK_SESSION=realm/dummy-user-id;");
+          return true;
+        })
         .onComplete(testContext.succeedingThenComplete());
   }
 
@@ -611,20 +617,19 @@ class KeycloakMockIntegrationTest {
                 .add("grant_type", "password"))
         .expecting(SC_OK)
         .map(HttpResponse::bodyAsJsonObject)
-        .expecting(
-            json -> {
-              String accessToken = json.getString("access_token");
+        .expecting(json -> {
+          String accessToken = json.getString("access_token");
 
-              Jws<Claims> jwt = jwtParser.parseSignedClaims(accessToken);
-              assertThat(jwt.getPayload().getIssuer())
-                  .isEqualTo("http://localhost:8000/auth/realms/realm");
-              TokenConfig tokenConfig = aTokenConfig().withSourceToken(accessToken).build();
-              assertThat(tokenConfig.getPreferredUsername()).isEqualTo("username");
-              assertThat(tokenConfig.getRealmAccess().getRoles())
-                  .containsExactlyInAnyOrder("role1", "role2", "role3");
-              assertThat(tokenConfig.getAudience()).containsExactlyInAnyOrder("client", "server");
-              return true;
-            })
+          Jws<Claims> jwt = jwtParser.parseSignedClaims(accessToken);
+          assertThat(jwt.getPayload().getIssuer())
+              .isEqualTo("http://localhost:8000/auth/realms/realm");
+          TokenConfig tokenConfig = aTokenConfig().withSourceToken(accessToken).build();
+          assertThat(tokenConfig.getPreferredUsername()).isEqualTo("username");
+          assertThat(tokenConfig.getRealmAccess().getRoles())
+              .containsExactlyInAnyOrder("role1", "role2", "role3");
+          assertThat(tokenConfig.getAudience()).containsExactlyInAnyOrder("client", "server");
+          return true;
+        })
         .onComplete(testContext.succeedingThenComplete());
   }
 
@@ -645,20 +650,19 @@ class KeycloakMockIntegrationTest {
                 .add("grant_type", "password"))
         .expecting(SC_OK)
         .map(HttpResponse::bodyAsJsonObject)
-        .expecting(
-            json -> {
-              String accessToken = json.getString("access_token");
+        .expecting(json -> {
+          String accessToken = json.getString("access_token");
 
-              Jws<Claims> jwt = jwtParser.parseSignedClaims(accessToken);
-              assertThat(jwt.getPayload().getIssuer())
-                  .isEqualTo("http://localhost:8000/auth/realms/realm");
-              TokenConfig tokenConfig = aTokenConfig().withSourceToken(accessToken).build();
-              assertThat(tokenConfig.getPreferredUsername()).isEqualTo("username");
-              assertThat(tokenConfig.getRealmAccess().getRoles())
-                  .containsExactlyInAnyOrder("role1", "role2", "role3");
-              assertThat(tokenConfig.getAudience()).containsExactlyInAnyOrder("client", "server");
-              return true;
-            })
+          Jws<Claims> jwt = jwtParser.parseSignedClaims(accessToken);
+          assertThat(jwt.getPayload().getIssuer())
+              .isEqualTo("http://localhost:8000/auth/realms/realm");
+          TokenConfig tokenConfig = aTokenConfig().withSourceToken(accessToken).build();
+          assertThat(tokenConfig.getPreferredUsername()).isEqualTo("username");
+          assertThat(tokenConfig.getRealmAccess().getRoles())
+              .containsExactlyInAnyOrder("role1", "role2", "role3");
+          assertThat(tokenConfig.getAudience()).containsExactlyInAnyOrder("client", "server");
+          return true;
+        })
         .onComplete(testContext.succeedingThenComplete());
   }
 
@@ -675,20 +679,19 @@ class KeycloakMockIntegrationTest {
         .sendForm(MultiMap.caseInsensitiveMultiMap().add("grant_type", "client_credentials"))
         .expecting(SC_OK)
         .map(HttpResponse::bodyAsJsonObject)
-        .expecting(
-            json -> {
-              String accessToken = json.getString("access_token");
+        .expecting(json -> {
+          String accessToken = json.getString("access_token");
 
-              Jws<Claims> jwt = jwtParser.parseSignedClaims(accessToken);
-              assertThat(jwt.getPayload().getIssuer())
-                  .isEqualTo("http://localhost:8000/auth/realms/realm");
-              TokenConfig tokenConfig = aTokenConfig().withSourceToken(accessToken).build();
-              assertThat(tokenConfig.getPreferredUsername()).isEqualTo("client");
-              assertThat(tokenConfig.getRealmAccess().getRoles())
-                  .containsExactlyInAnyOrder("role1", "role2", "role3");
-              assertThat(tokenConfig.getAudience()).containsExactlyInAnyOrder("client", "server");
-              return true;
-            })
+          Jws<Claims> jwt = jwtParser.parseSignedClaims(accessToken);
+          assertThat(jwt.getPayload().getIssuer())
+              .isEqualTo("http://localhost:8000/auth/realms/realm");
+          TokenConfig tokenConfig = aTokenConfig().withSourceToken(accessToken).build();
+          assertThat(tokenConfig.getPreferredUsername()).isEqualTo("client");
+          assertThat(tokenConfig.getRealmAccess().getRoles())
+              .containsExactlyInAnyOrder("role1", "role2", "role3");
+          assertThat(tokenConfig.getAudience()).containsExactlyInAnyOrder("client", "server");
+          return true;
+        })
         .onComplete(testContext.succeedingThenComplete());
   }
 
@@ -708,20 +711,19 @@ class KeycloakMockIntegrationTest {
                 .add("grant_type", "client_credentials"))
         .expecting(SC_OK)
         .map(HttpResponse::bodyAsJsonObject)
-        .expecting(
-            json -> {
-              String accessToken = json.getString("access_token");
+        .expecting(json -> {
+          String accessToken = json.getString("access_token");
 
-              Jws<Claims> jwt = jwtParser.parseSignedClaims(accessToken);
-              assertThat(jwt.getPayload().getIssuer())
-                  .isEqualTo("http://localhost:8000/auth/realms/realm");
-              TokenConfig tokenConfig = aTokenConfig().withSourceToken(accessToken).build();
-              assertThat(tokenConfig.getPreferredUsername()).isEqualTo("client");
-              assertThat(tokenConfig.getRealmAccess().getRoles())
-                  .containsExactlyInAnyOrder("role1", "role2", "role3");
-              assertThat(tokenConfig.getAudience()).containsExactlyInAnyOrder("client", "server");
-              return true;
-            })
+          Jws<Claims> jwt = jwtParser.parseSignedClaims(accessToken);
+          assertThat(jwt.getPayload().getIssuer())
+              .isEqualTo("http://localhost:8000/auth/realms/realm");
+          TokenConfig tokenConfig = aTokenConfig().withSourceToken(accessToken).build();
+          assertThat(tokenConfig.getPreferredUsername()).isEqualTo("client");
+          assertThat(tokenConfig.getRealmAccess().getRoles())
+              .containsExactlyInAnyOrder("role1", "role2", "role3");
+          assertThat(tokenConfig.getAudience()).containsExactlyInAnyOrder("client", "server");
+          return true;
+        })
         .onComplete(testContext.succeedingThenComplete());
   }
 
@@ -736,17 +738,16 @@ class KeycloakMockIntegrationTest {
         .send()
         .expecting(SC_OK)
         .map(HttpResponse::bodyAsString)
-        .expecting(
-            body -> {
-              assertThat(body)
-                  .contains(
-                      "    <tr>\n"
-                          + "      <td>GET</td>\n"
-                          + "      <td>/docs</td>\n"
-                          + "      <td>documentation endpoint</td>\n"
-                          + "    </tr>");
-              return true;
-            })
+        .expecting(body -> {
+          assertThat(body)
+              .contains(
+                  "    <tr>\n"
+                      + "      <td>GET</td>\n"
+                      + "      <td>/docs</td>\n"
+                      + "      <td>documentation endpoint</td>\n"
+                      + "    </tr>");
+          return true;
+        })
         .onComplete(testContext.succeedingThenComplete());
   }
 
@@ -767,12 +768,11 @@ class KeycloakMockIntegrationTest {
                 .add("client_id", "myclient"))
         .expecting(SC_OK)
         .map(HttpResponse::bodyAsJsonObject)
-        .expecting(
-            json -> {
-              assertThat(json.getBoolean("active")).isTrue();
-              assertThat(json.getMap()).containsAllEntriesOf(tokenConfig.getClaims());
-              return true;
-            })
+        .expecting(json -> {
+          assertThat(json.getBoolean("active")).isTrue();
+          assertThat(json.getMap()).containsAllEntriesOf(tokenConfig.getClaims());
+          return true;
+        })
         .onComplete(testContext.succeedingThenComplete());
   }
 
@@ -795,11 +795,10 @@ class KeycloakMockIntegrationTest {
                 .add("client_id", "myclient"))
         .expecting(SC_OK)
         .map(HttpResponse::bodyAsJsonObject)
-        .expecting(
-            json -> {
-              assertThat(json.getMap()).containsExactly(entry("active", false));
-              return true;
-            })
+        .expecting(json -> {
+          assertThat(json.getMap()).containsExactly(entry("active", false));
+          return true;
+        })
         .onComplete(testContext.succeedingThenComplete());
   }
 

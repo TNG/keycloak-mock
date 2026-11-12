@@ -48,11 +48,10 @@ public class UserData {
     List<String> names =
         Arrays.stream(input.split("[._ ]"))
             .filter(s -> !s.isEmpty())
-            .map(
-                s -> {
-                  String firstChar = s.substring(0, 1);
-                  return firstChar.toUpperCase() + s.substring(1);
-                })
+            .map(s -> {
+              String firstChar = s.substring(0, 1);
+              return firstChar.toUpperCase() + s.substring(1);
+            })
             .collect(Collectors.toList());
     if (names.isEmpty()) {
       return new Name(null, input);

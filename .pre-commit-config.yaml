@@ -12,4 +12,4 @@ repos:
     rev: v2.16.0
     hooks:
       - id: pretty-format-java
-        args: [ --autofix ]
+        args: [ --autofix, --google-java-formatter-version=2.0.0 ]

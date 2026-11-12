@@ -45,26 +45,24 @@ public class DocumentationRoute implements Handler<RoutingContext> {
             .collect(Collectors.toList());
     if (APPLICATION_JSON.contentEquals(routingContext.getAcceptableContentType())) {
       JsonObject result = new JsonObject();
-      descriptions.forEach(
-          r -> {
-            JsonObject routeDescription = new JsonObject();
-            routeDescription.put(
-                "methods",
-                r.methods().stream().map(HttpMethod::name).sorted().collect(Collectors.toList()));
-            routeDescription.put("description", r.getName());
-            result.put(r.getPath(), routeDescription);
-          });
+      descriptions.forEach(r -> {
+        JsonObject routeDescription = new JsonObject();
+        routeDescription.put(
+            "methods",
+            r.methods().stream().map(HttpMethod::name).sorted().collect(Collectors.toList()));
+        routeDescription.put("description", r.getName());
+        result.put(r.getPath(), routeDescription);
+      });
       routingContext.response().putHeader(CONTENT_TYPE, APPLICATION_JSON).end(result.encode());
     } else {
       routingContext.put("descriptions", descriptions);
       engine
           .render(routingContext.data(), "documentation.ftl")
           .onSuccess(b -> routingContext.response().putHeader(CONTENT_TYPE, TEXT_HTML).end(b))
-          .onFailure(
-              t -> {
-                LOG.error("Unable to render documentation page", t);
-                routingContext.fail(t);
-              });
+          .onFailure(t -> {
+            LOG.error("Unable to render documentation page", t);
+            routingContext.fail(t);
+          });
     }
   }
 }

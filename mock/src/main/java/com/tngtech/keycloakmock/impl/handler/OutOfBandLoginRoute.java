@@ -32,10 +32,9 @@ public class OutOfBandLoginRoute implements Handler<RoutingContext> {
     engine
         .render(routingContext.data(), "oob.ftl")
         .onSuccess(b -> routingContext.response().putHeader(CONTENT_TYPE, TEXT_HTML).end(b))
-        .onFailure(
-            t -> {
-              LOG.error("Unable to render oob page", t);
-              routingContext.fail(t);
-            });
+        .onFailure(t -> {
+          LOG.error("Unable to render oob page", t);
+          routingContext.fail(t);
+        });
   }
 }
