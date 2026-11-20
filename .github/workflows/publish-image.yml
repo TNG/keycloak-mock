@@ -1,0 +1,33 @@
+name: Publish container image
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+# The image is pushed with the default token, which only resolves to a valid
+# installation for the upstream repository. Forks must not attempt to publish.
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  publish:
+    if: ${{ github.repository == 'TNG/keycloak-mock' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - name: Set up JDK 25
+        uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78 # v6.2.0
+        with:
+          distribution: 'temurin'
+          java-version: '25'
+      - name: Build and push image
+        run: >
+          ./gradlew standalone:jib
+          -Djib.to.auth.username="${{ github.actor }}"
+          -Djib.to.auth.password="${{ secrets.GITHUB_TOKEN }}"
