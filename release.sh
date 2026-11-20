@@ -43,11 +43,6 @@ echo Building, Testing, and Uploading Archives...
 ./gradlew --no-parallel clean build publishAggregationToCentralPortal -PsonatypeUsername="$SONATYPE_USERNAME" -PsonatypePassword="$SONATYPE_PASSWORD" -PsigningKey="$SIGNING_KEY" -PsigningPassword="$SIGNING_PASSWORD"
 
 echo Pushing tag to GitHub repository...
+# Publishing the tag triggers the container image build and push to ghcr.io
+# (see .github/workflows/publish-image.yml).
 git push "$(git config --get remote.origin.url)" "$VERSION_PREFIXED"
-
-echo Building docker image...
-./gradlew standalone:jibDockerBuild
-
-echo Pushing image to registry...
-docker push ghcr.io/tng/keycloak-mock:"$VERSION"
-docker push ghcr.io/tng/keycloak-mock:latest
