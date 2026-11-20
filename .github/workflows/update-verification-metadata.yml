@@ -38,12 +38,16 @@ jobs:
             echo "Head commit is already the verification metadata update; nothing to do."
           fi
 
-      - name: Set up JDK 25
+      - name: Set up JDKs
+        # The production code is compiled with a Java 8 toolchain, tests run on
+        # Java 25 (the last entry becomes the default).
         if: steps.skip.outputs.skip != 'true'
         uses: actions/setup-java@d1374f8ac74474200d16ef8ecee22c7ae7a51880 # v6.3.0
         with:
           distribution: 'temurin'
-          java-version: '25'
+          java-version: |
+            8
+            25
 
       - name: Regenerate dependency verification metadata
         if: steps.skip.outputs.skip != 'true'

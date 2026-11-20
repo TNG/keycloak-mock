@@ -21,11 +21,15 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
-      - name: Set up JDK 25
+      - name: Set up JDKs
+        # The production code is compiled with a Java 8 toolchain, the image is
+        # built with Java 25 (the last entry becomes the default).
         uses: actions/setup-java@d1374f8ac74474200d16ef8ecee22c7ae7a51880 # v6.3.0
         with:
           distribution: 'temurin'
-          java-version: '25'
+          java-version: |
+            8
+            25
       - name: Build and push image
         run: >
           ./gradlew standalone:jib
